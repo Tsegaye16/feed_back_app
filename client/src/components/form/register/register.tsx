@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
 import "./../form.css";
+import { signup } from "../../../logics/action/auth";
 
 const initialState = {
   name: "",
@@ -25,7 +26,7 @@ function Registration() {
   };
   return (
     <div className="form-container sign-up-container">
-      <form>
+      <form onSubmit={handleSubmit}>
         <h1 className="h1">Create Account</h1>
 
         <span>or use your email for registration</span>
@@ -57,7 +58,9 @@ function Registration() {
           onChange={handleChange}
           value={formData.confirmPassword}
         />
-        <button className="button">Sign Up</button>
+        <button className="button" type="submit">
+          Sign Up
+        </button>
       </form>
     </div>
   );
