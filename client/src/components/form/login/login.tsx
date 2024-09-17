@@ -1,36 +1,29 @@
 import React, { useState } from "react";
 import "./../form.css";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { signin } from "../../../logics/action/auth";
 
+const initialState = {
+  email: "",
+  password: "",
+};
 const Login: React.FC = () => {
-  const [state, setState] = useState({
-    email: "",
-    password: "",
-  });
-  const handleChange = (evt: any) => {
-    const value = evt.target.value;
-    setState({
-      ...state,
-      [evt.target.name]: value,
-    });
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(initialState);
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    dispatch(signin(formData, navigate) as any);
   };
 
-  const handleOnSubmit = (evt: any) => {
-    evt.preventDefault();
-
-    const { email, password } = state;
-    alert(`You are login with email: ${email} and password: ${password}`);
-
-    for (const key in state) {
-      setState({
-        ...state,
-        [key]: "",
-      });
-    }
+  const handleChange = (event: any) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
   };
-
   return (
     <div className="form-container sign-in-container">
-      <form onSubmit={handleOnSubmit}>
+      <form onSubmit={handleSubmit}>
         <h1 className="h1">Sign in</h1>
 
         <span>or use your account</span>
@@ -38,18 +31,20 @@ const Login: React.FC = () => {
           type="email"
           placeholder="Email"
           name="email"
-          value={state.email}
+          value={formData.email}
           onChange={handleChange}
         />
         <input
           type="password"
           name="password"
           placeholder="Password"
-          value={state.password}
           onChange={handleChange}
+          value={formData.password}
         />
         <a href="#">Forgot your password?</a>
-        <button className="button">Sign In</button>
+        <button className="button" type="submit">
+          Sign In
+        </button>
       </form>
     </div>
   );

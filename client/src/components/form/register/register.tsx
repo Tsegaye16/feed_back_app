@@ -4,21 +4,21 @@ import { useDispatch } from "react-redux";
 
 import "./../form.css";
 import { signup } from "../../../logics/action/auth";
+import axios from "axios";
 
 const initialState = {
   name: "",
   email: "",
   password: "",
-  confirmPassword: "",
 };
 function Registration() {
   const [formData, setFormData] = useState(initialState);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(signup(formData, navigate) as any);
+    await dispatch(signup(formData, navigate) as any);
   };
 
   const handleChange = (event: any) => {
@@ -51,13 +51,7 @@ function Registration() {
           onChange={handleChange}
           value={formData.password}
         />
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          onChange={handleChange}
-          value={formData.confirmPassword}
-        />
+
         <button className="button" type="submit">
           Sign Up
         </button>

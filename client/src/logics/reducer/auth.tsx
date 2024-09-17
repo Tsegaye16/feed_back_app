@@ -1,16 +1,33 @@
-import { AUTH, LOGOUT } from "../../constants/types/actionType";
+import {
+  SIGNIN,
+  SIGNUP,
+  LOGOUT,
+  GET_USER_BY_ID,
+} from "../../constants/types/actionType";
 
 // Define the initial state
 const initialState = {
-  authData: null,
+  authData: localStorage.getItem("user"),
+};
+const userState = {
+  user: null,
 };
 
 const authReducer = (state = initialState, action: any) => {
   switch (action.type) {
-    case AUTH:
-      return { ...state, authData: action?.payload }; // Fixed: use action.data instead of action.payload
+    case SIGNIN:
+      localStorage.setItem("user", JSON.stringify({ ...action?.payload }));
+      console.log("PPayLoad:", action.payload);
+      return { ...state, authData: action?.payload };
     case LOGOUT:
-      return { ...state, authData: null }; // Fixed: set authData to null instead of auth
+      return { ...state, authData: null };
+    case SIGNUP:
+      // localStorage.setItem("user", JSON.stringify({ ...action?.payload }));
+
+      return { ...state, authData: action?.payload };
+    case GET_USER_BY_ID:
+      console.log("Get user:", action.payload);
+      return { ...state, user: action.payload };
     default:
       return state;
   }
