@@ -33,14 +33,14 @@ const Header: React.FC = () => {
       <div className="logo">Logo</div>
       {currenTtoken ? (
         <div className={`nav-links ${menuOpen ? "active" : ""}`}>
-          <a href="#" className="nav-link">
+          <a href="/manager/servey" className="nav-link">
             Create survey
           </a>
           <a href="#" className="nav-link">
             Feedbacks
           </a>
           <a href="#" className="nav-link">
-            {user.newUser.name}
+            {user?.newUser.name}
           </a>
         </div>
       ) : (
