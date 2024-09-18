@@ -1,25 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+import {
+  Grid,
+  Paper,
+  Box,
+  TextField,
+  Button,
+  Input,
+  Typography,
+} from "@mui/material";
 import "./servey.css";
+import TrueFalse from "./questionCategory/trueFalse/trueFalse";
+import Rate from "./questionCategory/rate/rate";
+import MultipleChoice from "./questionCategory/multipleChoice/multipleChoice";
+import Essay from "./questionCategory/essay/essay";
+import { useResolvedPath } from "react-router-dom";
 
 const Servey: React.FC = () => {
   const [logo, setLogo] = useState<File | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [bgColor, setBgColor] = useState<string>("#ffffff");
   const [textColor, setTextColor] = useState<string>("#000000");
   const [companyName, setCompanyName] = useState<string>("");
   const [showNavbar, setShowNavbar] = useState<boolean>(false);
-
-  const [hasQuestion, setHasQuestion] = useState<boolean>(false);
-  const [question, setQuestion] = useState<string>("");
-  const [questions, setQuestions] = useState<
-    { question: string; reason: string }[]
-  >([]);
-  const [reason, setReason] = useState<string>("");
+  const [submitText, setSubmitText] = useState<string>("Next");
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setLogo(e.target.files[0]);
+      const file = e.target.files[0];
+      if (file.type.startsWith("image/")) {
+        setLogo(file);
+      } else {
+        alert("Please upload a valid image file.");
+      }
     }
   };
+
+  useEffect(() => {
+    if (logo) {
+      const url = URL.createObjectURL(logo);
+      setLogoUrl(url);
+
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+  }, [logo]);
 
   const handleBgColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBgColor(e.target.value);
@@ -37,69 +63,95 @@ const Servey: React.FC = () => {
     setShowNavbar(true);
   };
 
-  const handleHasQuestionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setHasQuestion(e.target.value === "yes");
-  };
+  // Components array for page navigation
+  const components = [<TrueFalse />, <MultipleChoice />, <Essay />, <Rate />];
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleQuestionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuestion(e.target.value);
-  };
-
-  const handleAddQuestion = () => {
-    if (question) {
-      setQuestions([...questions, { question, reason }]);
-      setQuestion("");
-      setReason(""); // Clear reason after adding question
+  const handleNext = () => {
+    if (currentIndex < components.length - 1) {
+      setCurrentIndex(currentIndex + 1);
     }
   };
 
-  const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setReason(e.target.value);
+  const handleBack = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleSubmit = () => {
+    // Handle the submission logic here
+    alert("Survey submitted!");
   };
 
   return (
     <div>
       {!showNavbar ? (
-        <div className="nav-bar-container">
-          <h1>Design Your Navbar</h1>
-          <div className="inner-container">
-            <div className="input-container">
-              <input type="file" id="logo-input" onChange={handleLogoChange} />
-              <label htmlFor="logo-input">Logo</label>
-            </div>
-            <div className="input-container">
-              <input
-                type="color"
-                id="bg-color-input"
-                value={bgColor}
-                onChange={handleBgColorChange}
-                title="Select background color"
-              />
-              <label htmlFor="bg-color-input">Background Color</label>
-            </div>
-            <div className="input-container">
-              <input
-                type="color"
-                id="text-color-input"
-                value={textColor}
-                onChange={handleTextColorChange}
-                title="Select text color"
-              />
-              <label htmlFor="text-color-input">Text Color</label>
-            </div>
-            <div className="input-container">
-              <input
-                type="text"
-                id="company-name-input"
-                value={companyName}
-                onChange={handleCompanyNameChange}
-                placeholder="Enter company name"
-              />
-              <label htmlFor="company-name-input">Company Name</label>
-            </div>
-            <button onClick={handleSave}>Save</button>
-          </div>
-        </div>
+        <Box
+          sx={{
+            maxWidth: 600,
+            mx: "auto",
+            p: 3,
+            boxShadow: 3,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h4" align="center" gutterBottom>
+            Design Your Navbar
+          </Typography>
+
+          <Box sx={{ my: 3 }}>
+            <Input
+              type="file"
+              onChange={handleLogoChange}
+              inputProps={{ accept: "image/*" }}
+              sx={{ display: "block", mb: 2 }}
+            />
+            <Typography variant="caption">Upload Logo</Typography>
+          </Box>
+
+          <Box sx={{ my: 3 }}>
+            <TextField
+              label="Background Color"
+              type="color"
+              value={bgColor}
+              onChange={handleBgColorChange}
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+          </Box>
+
+          <Box sx={{ my: 3 }}>
+            <TextField
+              label="Text Color"
+              type="color"
+              value={textColor}
+              onChange={handleTextColorChange}
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+          </Box>
+
+          <Box sx={{ my: 3 }}>
+            <TextField
+              label="Company Name"
+              value={companyName}
+              onChange={handleCompanyNameChange}
+              fullWidth
+              sx={{ mb: 2 }}
+            />
+          </Box>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            fullWidth
+            sx={{ mt: 3 }}
+          >
+            Save
+          </Button>
+        </Box>
       ) : (
         <>
           <nav
@@ -118,9 +170,9 @@ const Servey: React.FC = () => {
               zIndex: 1000,
             }}
           >
-            {logo && (
+            {logoUrl && (
               <img
-                src={URL.createObjectURL(logo)}
+                src={logoUrl}
                 alt="Company Logo"
                 style={{
                   height: "60%",
@@ -133,55 +185,47 @@ const Servey: React.FC = () => {
               {companyName}
             </div>
           </nav>
+          <div style={{ paddingTop: "120px" }}>
+            <Grid container justifyContent="center">
+              <Grid item xs={12} md={8}>
+                {/* Container with box shadow */}
+                <Paper elevation={3}>
+                  <Box p={4} boxShadow={3} borderRadius={2}>
+                    {/* Displaying the current component */}
+                    <Box>{components[currentIndex]}</Box>
 
-          <div style={{ marginTop: "120px", padding: "20px" }}>
-            <div className="question-section">
-              <label>Do you have a true or false question?</label>
-              <select onChange={handleHasQuestionChange}>
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-              </select>
-            </div>
-
-            {hasQuestion && (
-              <div className="questions-container">
-                <div className="input-group">
-                  <input
-                    type="text"
-                    value={question}
-                    onChange={handleQuestionChange}
-                    placeholder="Enter your question"
-                    className="question-input"
-                  />
-                  <button onClick={handleAddQuestion} className="add-button">
-                    Add
-                  </button>
-                </div>
-
-                {questions.map((q, index) => (
-                  <div key={index} className="question-block">
-                    <h3 className="question-title">{q.question}</h3>
-                    <div className="checkbox-group">
-                      <label>
-                        True
-                        <input type="radio" />
-                      </label>
-                      <label>
-                        False
-                        <input type="radio" />
-                      </label>
-                    </div>
-                    <textarea
-                      value={q.reason}
-                      onChange={handleReasonChange}
-                      placeholder="Enter reason"
-                      rows={4}
-                      className="reason-textarea"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+                    {/* Navigation Buttons */}
+                    <Box mt={3} display="flex" justifyContent="space-between">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleBack}
+                        disabled={currentIndex === 0}
+                      >
+                        Back
+                      </Button>
+                      {currentIndex === components.length - 1 ? (
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={handleSubmit}
+                        >
+                          Submit
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={handleNext}
+                        >
+                          Next
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                </Paper>
+              </Grid>
+            </Grid>
           </div>
         </>
       )}
