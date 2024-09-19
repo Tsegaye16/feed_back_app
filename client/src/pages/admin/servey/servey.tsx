@@ -14,6 +14,7 @@ import TrueFalse from "./questionCategory/trueFalse/trueFalse";
 import Rate from "./questionCategory/rate/rate";
 import MultipleChoice from "./questionCategory/multipleChoice/multipleChoice";
 import Essay from "./questionCategory/essay/essay";
+import GenerateQR from "./QR/GenerateQR";
 import { useResolvedPath } from "react-router-dom";
 
 const Servey: React.FC = () => {
@@ -23,7 +24,6 @@ const Servey: React.FC = () => {
   const [textColor, setTextColor] = useState<string>("#000000");
   const [companyName, setCompanyName] = useState<string>("");
   const [showNavbar, setShowNavbar] = useState<boolean>(false);
-  const [submitText, setSubmitText] = useState<string>("Next");
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -64,7 +64,13 @@ const Servey: React.FC = () => {
   };
 
   // Components array for page navigation
-  const components = [<TrueFalse />, <MultipleChoice />, <Essay />, <Rate />];
+  const components = [
+    <TrueFalse />,
+    <MultipleChoice />,
+    <Essay />,
+    <Rate />,
+    <GenerateQR />,
+  ];
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleNext = () => {
