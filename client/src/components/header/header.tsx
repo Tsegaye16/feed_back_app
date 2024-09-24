@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { jwtDecode } from "jwt-decode"; // Fix import
-import { getUserById } from "../../logics/action/auth";
+
+import { getUserById } from "../../logics/action/user";
 import "./header.css";
 
 interface CustomJwtPayload {
@@ -11,8 +12,7 @@ interface CustomJwtPayload {
 const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useDispatch();
-  const currenTtoken =
-    useSelector((state: any) => state.authReducer.authData) || null;
+  const currenTtoken = useSelector((state: any) => state.auth?.authData);
 
   useEffect(() => {
     if (currenTtoken) {
@@ -21,8 +21,7 @@ const Header: React.FC = () => {
     }
   }, [currenTtoken, dispatch]);
 
-  const user = useSelector((state: any) => state.userReducer?.user);
-  console.log("Dispatched User: ", user);
+  const user = useSelector((state: any) => state.user?.user);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -36,7 +35,7 @@ const Header: React.FC = () => {
           <a href="/manager/servey" className="nav-link">
             Create survey
           </a>
-          <a href="#" className="nav-link">
+          <a href="/manager/feedBack" className="nav-link">
             Feedbacks
           </a>
           <a href="#" className="nav-link">

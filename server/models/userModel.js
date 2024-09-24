@@ -22,25 +22,7 @@ const User = sequelize.define("User", {
   password: {
     type: DataTypes.STRING,
     allowNull: false,
-    validate: {
-      len: {
-        args: [8],
-        msg: "Password should be at least 8 characters long",
-      },
-    },
   },
-  //   passwordConfirm: {
-  //     type: DataTypes.STRING,
-  //     allowNull: true,
-  //     validate: {
-  //       notEmpty: true,
-  //       matchesPassword(value) {
-  //         if (value !== this.password) {
-  //           throw new Error("Passwords are not the same!");
-  //         }
-  //       },
-  //     },
-  //   },
 });
 
 // Before saving, hash the password and remove passwordConfirm
@@ -48,7 +30,6 @@ User.beforeCreate(async (user) => {
   if (user.password) {
     user.password = await bcrypt.hash(user.password, 12);
   }
-  //user.passwordConfirm = undefined;
 });
 
 export default User;

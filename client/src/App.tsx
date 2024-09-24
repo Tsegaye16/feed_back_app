@@ -4,13 +4,14 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Home from "./components/home";
 import Form from "./components/form/form";
-import Dashboard from "./pages/admin/dashboard/dashboard";
+//import Dashboard from "./pages/admin/dashboard/dashboard";
 import { useSelector } from "react-redux";
 import Servey from "./pages/admin/servey/servey";
+import Dashboard from "./pages/admin/dashboard/dashboard";
+//import Dashboard from "./pages/dashboard/dashboard";
 
 const App: React.FC = () => {
-  const user = useSelector((state: any) => state.userReducer?.user);
-  console.log("Dispatched User: ", user);
+  const user = useSelector((state: any) => state.user?.user);
 
   return (
     <BrowserRouter>

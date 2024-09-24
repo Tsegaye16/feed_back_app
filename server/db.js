@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: "./.env" });
 export const sequelize = new Sequelize(
-  "sample",
+  "FeedBack",
   "postgres",
   process.env.DB_PASSWORD,
   {

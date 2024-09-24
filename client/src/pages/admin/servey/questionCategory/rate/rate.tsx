@@ -31,7 +31,7 @@ const Rate: React.FC = () => {
   };
 
   const handleSave = () => {
-    if (question.trim() && ratingValue !== null) {
+    if (question.trim()) {
       setSavedQuestions([...savedQuestions, { question, ratingValue }]);
       setIsAdding(false);
       setQuestion("");
@@ -91,18 +91,6 @@ const Rate: React.FC = () => {
             }}
           />
 
-          <Typography variant="body1" mb={1}>
-            Select Rating
-          </Typography>
-          <Rating
-            name="rate-question"
-            value={ratingValue}
-            onChange={(_, newValue) => {
-              setRatingValue(newValue);
-            }}
-            size="large"
-          />
-
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button variant="contained" color="primary" onClick={handleSave}>
               Save
@@ -128,7 +116,14 @@ const Rate: React.FC = () => {
             boxShadow={3}
           >
             <Typography variant="body1">{q.question}</Typography>
-            <Rating name="read-only" value={q.ratingValue} readOnly />
+            <Rating
+              name="rate-question"
+              value={ratingValue}
+              onChange={(_, newValue) => {
+                setRatingValue(newValue);
+              }}
+              size="large"
+            />
 
             <Box display="flex" justifyContent="flex-end" mt={2}>
               <Button

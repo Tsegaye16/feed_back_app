@@ -6,20 +6,23 @@ import user from "../models/userModel.js";
 const secret = "my-secret";
 
 export const signin = async (req, res) => {
-  console.log(req.body);
   const { email, password } = req.body;
 
   try {
-    const oldUser = await user.findOne({ where: { email: email } });
-    console.log("User:", typeof oldUser.id);
+    const oldUser = await user.findOne({ where: { email: email } }); // FIX: ensure correct email query
+    // console.log("oldUser", oldUser); // Log oldUser.password to verify the password is fetched
 
-    if (!oldUser)
+    if (!oldUser) {
       return res.status(404).json({ message: "User doesn't exist" });
+    }
 
     const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
 
-    if (!isPasswordCorrect)
+    if (!isPasswordCorrect) {
+      console.log("Invalid credential");
+
       return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const token = jwt.sign({ email: oldUser.email, id: oldUser.id }, secret, {
       expiresIn: "1h",
@@ -27,8 +30,7 @@ export const signin = async (req, res) => {
 
     res.status(200).json({ token, oldUser });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Something was wrong" });
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -36,16 +38,17 @@ export const signup = async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
-    const oldUser = await user.findOne({ email });
+    const oldUser = await user.findOne({ where: { email: email } });
+    console.log("Old user:", oldUser);
 
     if (oldUser)
       return res.status(400).json({ message: "User already exists" });
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // const hashedPassword = await bcrypt.hash(password, 12);
 
     const result = await user.create({
       email,
-      password: hashedPassword,
+      password,
       name,
     });
 
@@ -64,7 +67,6 @@ export const signup = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const id = req.params.userId;
-    console.log("ID:", id);
 
     // Ensure the id is a valid number
     //const parsedId = parseInt(id, 10);

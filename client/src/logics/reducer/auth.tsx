@@ -9,15 +9,12 @@ import {
 const initialState = {
   authData: localStorage.getItem("user"),
 };
-const userState = {
-  user: null,
-};
 
 const authReducer = (state = initialState, action: any) => {
   switch (action.type) {
     case SIGNIN:
-      localStorage.setItem("user", JSON.stringify({ ...action?.payload }));
-      console.log("PPayLoad:", action.payload);
+      localStorage.setItem("user", action.payload.token);
+
       return { ...state, authData: action?.payload };
     case LOGOUT:
       return { ...state, authData: null };
@@ -25,9 +22,7 @@ const authReducer = (state = initialState, action: any) => {
       // localStorage.setItem("user", JSON.stringify({ ...action?.payload }));
 
       return { ...state, authData: action?.payload };
-    case GET_USER_BY_ID:
-      console.log("Get user:", action.payload);
-      return { ...state, user: action.payload };
+
     default:
       return state;
   }

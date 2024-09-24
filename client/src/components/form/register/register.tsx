@@ -36,6 +36,7 @@ function Registration() {
           placeholder="Full Name"
           onChange={handleChange}
           value={formData.name}
+          required
         />
         <input
           type="email"
@@ -43,6 +44,7 @@ function Registration() {
           placeholder="Email"
           onChange={handleChange}
           value={formData.email}
+          required
         />
         <input
           type="password"
@@ -50,6 +52,7 @@ function Registration() {
           placeholder="Password"
           onChange={handleChange}
           value={formData.password}
+          required
         />
 
         <button className="button" type="submit">

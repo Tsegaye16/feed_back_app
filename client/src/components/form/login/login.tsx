@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./../form.css";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { signin } from "../../../logics/action/auth";
 
@@ -33,6 +33,7 @@ const Login: React.FC = () => {
           name="email"
           value={formData.email}
           onChange={handleChange}
+          required
         />
         <input
           type="password"
@@ -40,6 +41,7 @@ const Login: React.FC = () => {
           placeholder="Password"
           onChange={handleChange}
           value={formData.password}
+          required
         />
         <a href="#">Forgot your password?</a>
         <button className="button" type="submit">
