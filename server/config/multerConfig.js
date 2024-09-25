@@ -1,16 +1,24 @@
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-import cloudinary from "./cloudinaryConfig.js"; // Your cloudinary configuration
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "company_logos", // The folder in your Cloudinary account where images will be stored
-    allowed_formats: ["jpg", "png"], // Allowed image formats
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const uploadFolder = path.join(__dirname, "../uploads");
+    // Create the 'uploads' folder if it doesn't exist
+    if (!fs.existsSync(uploadFolder)) {
+      fs.mkdirSync(uploadFolder);
+    }
+    cb(null, uploadFolder);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
   },
 });
 
 const upload = multer({ storage: storage });
-console.log("Upload:", upload);
-
 export default upload;

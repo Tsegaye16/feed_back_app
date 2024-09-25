@@ -1,54 +1,75 @@
-import React, { useState } from "react";
+// Servey.tsx
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-import { Grid, Paper, Box, TextField, Button, Typography } from "@mui/material";
-import Tooltip from "@mui/material";
+import { Grid, Paper, Box, Button } from "@mui/material";
+import { jwtDecode } from "jwt-decode";
 import TrueFalse from "./questionCategory/trueFalse/trueFalse";
 import Rate from "./questionCategory/rate/rate";
 import MultipleChoice from "./questionCategory/multipleChoice/multipleChoice";
 import Essay from "./questionCategory/essay/essay";
 import GenerateQR from "./QR/GenerateQR";
-import { addCompanyInfo } from "../../../logics/action/company";
-import CustomizedTooltips from "./toolTip";
-import { jwtDecode } from "jwt-decode";
-//import { jwtDecode } from "jwt-decode"; // Ensure correct import
+import CompanyForm from "./companyForm";
+import CompanyNav from "./companyNav";
+import { addCompanyInfo, getCompanyById } from "../../../logics/action/company";
 
 const Servey: React.FC = () => {
   const dispatch = useDispatch();
-  const [showNavbar, setShowNavbar] = useState<boolean>(false);
+  const [showNavbar, setShowNavbar] = useState<boolean>(true);
   const [companyData, setCompanyData] = useState<any>({
     name: "",
-    logo: "",
+    logo: null,
     backGroundColor: "#bcb9b9",
     textColor: "#000000",
   });
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+
   const token = useSelector((state: any) => state.auth?.authData);
   const decodedToken: any = jwtDecode(token);
   const managerId = decodedToken.id;
-  console.log("managerId: ", managerId);
+
+  useEffect(() => {
+    if (managerId) {
+      dispatch(getCompanyById(managerId) as any);
+    }
+  }, [dispatch, managerId]);
+
+  const companyInfo = useSelector(
+    (state: any) => state.company?.companyData?.result
+  );
+
+  useEffect(() => {
+    if (companyInfo) {
+      setCompanyData({
+        name: companyInfo.name,
+        logo: companyInfo.logo,
+        backGroundColor: companyInfo.backGroundColor,
+        textColor: companyInfo.textColor,
+      });
+    }
+  }, [companyInfo]);
 
   const handleSave = async (event: React.FormEvent) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
     const formData = new FormData();
     formData.append("name", companyData.name);
+    if (companyData.logo) {
+      formData.append("logo", companyData.logo);
+    }
     formData.append("backGroundColor", companyData.backGroundColor);
     formData.append("textColor", companyData.textColor);
+    formData.append("managerId", managerId);
 
-    if (logoFile) {
-      formData.append("logo", logoFile); // Append logo file to form data
-    }
-
-    // Add any other form data you need to send to backend
-
-    setShowNavbar(true);
-
-    // Dispatch FormData to the backend
     await dispatch(addCompanyInfo(formData) as any);
   };
 
-  // Components array for page navigation
+  const handleFileChange = (e: any) => {
+    const logo = e.target.files[0];
+    setCompanyData((prevData: any) => ({
+      ...prevData,
+      logo: logo,
+    }));
+  };
+
   const components = [
     <TrueFalse />,
     <MultipleChoice />,
@@ -77,7 +98,7 @@ const Servey: React.FC = () => {
   const logo = (
     <img
       src={
-        companyData.logo ||
+        `http://localhost:4000/${companyInfo?.logo}` ||
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTyBB8FzTKP7KAP2No_Ow0TjIOLTch2COaLHMJ-VvsDz2rfl5v1FPbmSfyhaf_9cr2Kg7U&usqp=CAU"
       }
       alt="Company Logo"
@@ -95,112 +116,20 @@ const Servey: React.FC = () => {
   return (
     <div>
       {!showNavbar ? (
-        <form encType="multipart/form-data" onSubmit={handleSave}>
-          <Box
-            sx={{
-              maxWidth: 600,
-              mx: "auto",
-              p: 3,
-              boxShadow: 3,
-              borderRadius: 2,
-            }}
-          >
-            <Typography variant="h4" align="center" gutterBottom>
-              Design Your Navbar
-            </Typography>
-            <Box sx={{ my: 3 }}>
-              <TextField
-                label="Company Name"
-                name="name"
-                value={companyData.name}
-                onChange={(event) =>
-                  setCompanyData({ ...companyData, name: event.target.value })
-                }
-                fullWidth
-                sx={{ mb: 2 }}
-              />
-            </Box>
-
-            <Box sx={{ my: 3 }}>
-              <input
-                type="file"
-                accept="image/*"
-                name="logo"
-                onChange={(event: any) => {
-                  setLogoFile(event?.target.files[0]);
-                }}
-              />
-              <Typography variant="caption">Upload Logo</Typography>
-            </Box>
-
-            <Box sx={{ my: 3 }}>
-              <TextField
-                label="Background Color"
-                type="color"
-                name="backGroundColor"
-                value={companyData.backGroundColor}
-                onChange={(event) =>
-                  setCompanyData({
-                    ...companyData,
-                    backGroundColor: event.target.value,
-                  })
-                }
-                fullWidth
-                sx={{ mb: 2 }}
-              />
-            </Box>
-
-            <Box sx={{ my: 3 }}>
-              <TextField
-                label="Text Color"
-                type="color"
-                name="textColor"
-                value={companyData.textColor}
-                onChange={(event) =>
-                  setCompanyData({
-                    ...companyData,
-                    textColor: event.target.value,
-                  })
-                }
-                fullWidth
-                sx={{ mb: 2 }}
-              />
-            </Box>
-
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              fullWidth
-              sx={{ mt: 3 }}
-            >
-              Save
-            </Button>
-          </Box>
-        </form>
+        <CompanyForm
+          companyData={companyData}
+          setCompanyData={setCompanyData}
+          handleSave={handleSave}
+          handleFileChange={handleFileChange}
+          onCancel={() => setShowNavbar(true)}
+        />
       ) : (
         <>
-          <nav
-            style={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: companyData.backGroundColor,
-              color: companyData.textColor,
-              padding: "10px 20px",
-              height: "100px",
-              width: "100%",
-              position: "fixed",
-              top: "0",
-              left: "0",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              zIndex: 1000,
-            }}
-          >
-            {<CustomizedTooltips logo={logo} />}
-            <div style={{ fontSize: "24px", fontWeight: "bold" }}>
-              {companyData.name || "Anonymous"}
-            </div>
-          </nav>
+          <CompanyNav
+            companyData={companyData}
+            logo={logo}
+            onLogoClick={() => setShowNavbar(false)}
+          />
           <div style={{ paddingTop: "120px" }}>
             <Grid container justifyContent="center">
               <Grid item xs={12} md={8}>

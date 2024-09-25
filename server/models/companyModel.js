@@ -19,6 +19,11 @@ const Company = sequelize.define("Company", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  managerId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    unique: true,
+  },
 });
 
 export default Company;

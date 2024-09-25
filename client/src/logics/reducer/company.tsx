@@ -1,13 +1,21 @@
-import { SAVE_COMPANY_DATA } from "../../constants/types/actionType";
+import {
+  SAVE_COMPANY_DATA,
+  GATE_COMPANY_BY_MANAGER_ID,
+  ADD_TRUE_FALSE_QUESTION,
+  GET_ALL_QUESTIONS,
+} from "../../constants/types/actionType";
 
 const companyState = {
-  company: null,
+  companyData: null,
 };
 
 const companyReducer = (state = companyState, action: any) => {
   switch (action.type) {
     case SAVE_COMPANY_DATA:
-      return { ...state, company: action.payload };
+      return { ...state, companyData: action.payload };
+    case GATE_COMPANY_BY_MANAGER_ID:
+      return { ...state, companyData: action.payload };
+
     default:
       return state;
   }

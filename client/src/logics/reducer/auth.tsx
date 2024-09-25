@@ -1,9 +1,4 @@
-import {
-  SIGNIN,
-  SIGNUP,
-  LOGOUT,
-  GET_USER_BY_ID,
-} from "../../constants/types/actionType";
+import { SIGNIN, SIGNUP, LOGOUT } from "../../constants/types/actionType";
 
 // Define the initial state
 const initialState = {
