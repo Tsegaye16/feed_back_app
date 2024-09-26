@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -15,21 +15,45 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addChoiceQuestion,
+  deleteTrueFalseQuestion,
+  getAllQuestion,
+  updateTrueFalseQuestion,
+} from "../../../../../logics/action/company";
 
 const MultipleChoice: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState<string[]>([]);
   const [option, setOption] = useState("");
-  const [savedQuestions, setSavedQuestions] = useState<
-    { question: string; options: string[]; type: string }[]
-  >([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [inputType, setInputType] = useState("radio");
 
-  // Handlers for adding a new question
+  const dispatch = useDispatch();
+
+  const companyId = useSelector(
+    (state: any) => state.company?.companyData?.result?.id
+  );
+  const questions = useSelector(
+    (state: any) => state.question?.questionDaata?.result || []
+  );
+
+  useEffect(() => {
+    if (companyId) {
+      dispatch(getAllQuestion(companyId) as any);
+    }
+  }, [dispatch, companyId]);
+
+  const filteredQuestions = questions.filter(
+    (q: any) =>
+      q.type === "multiple_choice" && q.options && q.options.length > 0
+  );
+
   const handleAdd = () => {
     setIsAdding(true);
+    setEditingIndex(null); // Reset editing index when adding a new question
   };
 
   const handleCancel = () => {
@@ -39,31 +63,40 @@ const MultipleChoice: React.FC = () => {
     setEditingIndex(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async (event: any) => {
+    event.preventDefault();
     if (question.trim() && options.length > 0) {
-      const newQuestion = { question, options, type: inputType };
+      const newQuestion = {
+        text: question,
+        options,
+        type: "multiple_choice",
+        singleSelect: inputType === "radio",
+        companyId,
+      };
 
       if (editingIndex !== null) {
-        const updatedQuestions = [...savedQuestions];
-        updatedQuestions[editingIndex] = newQuestion;
-        setSavedQuestions(updatedQuestions);
-        setEditingIndex(null);
+        // If editing an existing question
+        const questionId = filteredQuestions[editingIndex]?.id;
+        if (questionId) {
+          await dispatch(
+            updateTrueFalseQuestion(questionId, newQuestion) as any
+          );
+        }
       } else {
-        setSavedQuestions([...savedQuestions, newQuestion]);
+        // If adding a new question
+        await dispatch(addChoiceQuestion(newQuestion) as any);
       }
 
-      setIsAdding(false);
-      setQuestion("");
-      setOptions([]);
+      // Fetch updated list
+      dispatch(getAllQuestion(companyId) as any);
+
+      // Clear fields
+      handleCancel();
     }
   };
 
   const handleQuestionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuestion(event.target.value);
-  };
-
-  const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setOption(event.target.value);
   };
 
   const handleAddOption = () => {
@@ -77,40 +110,59 @@ const MultipleChoice: React.FC = () => {
     setOptions(options.filter((_, i) => i !== index));
   };
 
-  const handleDeleteQuestion = (index: number) => {
-    setSavedQuestions(savedQuestions.filter((_, i) => i !== index));
+  const handleDeleteQuestion = async (index: number) => {
+    const questionId = filteredQuestions[index]?.id;
+    if (questionId) {
+      // Dispatch the delete action to remove the question from the backend
+      await dispatch(deleteTrueFalseQuestion(questionId) as any);
+
+      // Re-fetch the updated questions list after deletion
+      dispatch(getAllQuestion(companyId) as any);
+    }
   };
 
   const handleEditQuestion = (index: number) => {
-    const { question, options, type } = savedQuestions[index];
-    setQuestion(question);
-    setOptions(options);
-    setInputType(type);
+    const questionToEdit = filteredQuestions[index];
+    setQuestion(questionToEdit?.text);
+    setOptions(questionToEdit?.options);
+    setInputType(questionToEdit?.singleSelect ? "radio" : "checkbox");
     setIsAdding(true);
     setEditingIndex(index);
-    setSavedQuestions(savedQuestions.filter((_, i) => i !== index));
   };
 
   const handleInputTypeChange = (
     event: React.MouseEvent<HTMLElement>,
     newType: string
   ) => {
-    setInputType(newType);
-  };
-
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-
-  const handleOptionSelect = (opt: string) => {
-    setSelectedOption(opt); // Set the selected radio option
-  };
-
-  const handleCheckboxToggle = (opt: string) => {
-    if (selectedOptions.includes(opt)) {
-      setSelectedOptions(selectedOptions.filter((option) => option !== opt)); // Uncheck
-    } else {
-      setSelectedOptions([...selectedOptions, opt]); // Check
+    if (newType !== null) {
+      setInputType(newType);
     }
+  };
+
+  const [selectedOptions, setSelectedOptions] = useState<{
+    [key: string]: string[];
+  }>({});
+
+  const handleOptionChange = (
+    questionId: number,
+    option: string,
+    singleSelect: boolean
+  ) => {
+    setSelectedOptions((prevState) => {
+      if (singleSelect) {
+        return { ...prevState, [questionId]: [option] }; // Single select
+      } else {
+        const currentSelections = prevState[questionId] || [];
+        if (currentSelections.includes(option)) {
+          return {
+            ...prevState,
+            [questionId]: currentSelections.filter((opt) => opt !== option),
+          }; // Deselect
+        } else {
+          return { ...prevState, [questionId]: [...currentSelections, option] }; // Select
+        }
+      }
+    });
   };
 
   return (
@@ -143,7 +195,7 @@ const MultipleChoice: React.FC = () => {
               fullWidth
               label="Add an option"
               value={option}
-              onChange={handleOptionChange}
+              onChange={(e) => setOption(e.target.value)} // Direct handler here
             />
             <Button
               variant="contained"
@@ -182,12 +234,12 @@ const MultipleChoice: React.FC = () => {
             sx={{ mt: 2 }}
           >
             <ToggleButton value="radio">Single selection</ToggleButton>
-            <ToggleButton value="checkbox">multiple selection</ToggleButton>
+            <ToggleButton value="checkbox">Multiple selection</ToggleButton>
           </ToggleButtonGroup>
 
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button variant="contained" color="primary" onClick={handleSave}>
-              Save
+              {editingIndex !== null ? "Update" : "Save"}
             </Button>
             <Button variant="outlined" onClick={handleCancel}>
               Cancel
@@ -197,59 +249,66 @@ const MultipleChoice: React.FC = () => {
       )}
 
       {/* Display Saved Questions */}
-      <Box mt={2}>
-        {savedQuestions.map((q, index) => (
-          <Box
-            key={index}
-            display="flex"
-            flexDirection="column"
-            p={2}
-            mb={2}
-            bgcolor="#f0f0f0"
-            borderRadius={2}
-            boxShadow={3}
-          >
-            <Typography variant="body1">{q.question}</Typography>
-            <List>
-              {q.options.map((opt, i) => (
-                <ListItem key={i}>
-                  {q.type === "radio" ? (
-                    <Radio
-                      checked={selectedOption === opt} // Ensure only one radio can be checked
-                      onChange={() => handleOptionSelect(opt)}
-                    />
-                  ) : (
-                    <Checkbox
-                      checked={selectedOptions.includes(opt)} // Ensure checkboxes allow multiple selections
-                      onChange={() => handleCheckboxToggle(opt)}
-                    />
-                  )}
-                  <ListItemText primary={opt} />
-                </ListItem>
-              ))}
-            </List>
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-              <Button
-                variant="outlined"
-                color="secondary"
-                sx={{ ml: 1 }}
-                onClick={() => handleEditQuestion(index)}
+      <Box mt={3}>
+        {filteredQuestions.map(
+          (q: any, index: number) =>
+            editingIndex !== index && (
+              <Box
+                key={index}
+                display="flex"
+                flexDirection="column"
+                p={2}
+                mb={2}
+                border="1px solid #ddd"
+                borderRadius={2}
+                boxShadow={3}
               >
-                Update
-                <EditIcon sx={{ ml: 1 }} />
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                sx={{ ml: 1 }}
-                onClick={() => handleDeleteQuestion(index)}
-              >
-                Delete
-                <DeleteIcon sx={{ ml: 1 }} />
-              </Button>
-            </Box>
-          </Box>
-        ))}
+                <Typography variant="body1">{q.text}</Typography>
+                <List>
+                  {q.options.map((opt: string, i: number) => (
+                    <ListItem key={i}>
+                      {q.singleSelect ? (
+                        <Radio
+                          checked={selectedOptions[q.id]?.[0] === opt}
+                          onChange={() =>
+                            handleOptionChange(q.id, opt, q.singleSelect)
+                          }
+                        />
+                      ) : (
+                        <Checkbox
+                          checked={selectedOptions[q.id]?.includes(opt)}
+                          onChange={() =>
+                            handleOptionChange(q.id, opt, q.singleSelect)
+                          }
+                        />
+                      )}
+                      <ListItemText primary={opt} />
+                    </ListItem>
+                  ))}
+                </List>
+
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    sx={{ ml: 1 }}
+                    onClick={() => handleEditQuestion(index)}
+                  >
+                    Update <EditIcon sx={{ ml: 1 }} />
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    sx={{ ml: 1 }}
+                    onClick={() => handleDeleteQuestion(index)}
+                  >
+                    Delete
+                    <DeleteIcon sx={{ ml: 1 }} />
+                  </Button>
+                </Box>
+              </Box>
+            )
+        )}
       </Box>
     </Box>
   );

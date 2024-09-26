@@ -33,3 +33,5 @@ export const updateTrueFalse = async (id: any, questionData: any) =>
 
 export const deleteTrueFalse = async (id: any) =>
   API.delete(`/deleteTrueFalse/${id}`);
+export const addChoiceQuestion = async (questionData: any) =>
+  API.post("/addChoiceQuestion", questionData);

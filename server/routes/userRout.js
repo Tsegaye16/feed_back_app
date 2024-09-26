@@ -1,12 +1,15 @@
 import express from "express";
 import { signup, signin, getUserById } from "../controllers/authController.js";
-import { addOrUpdateCompanyInfo } from "../controllers/companyController.js";
 import upload from "../config/multerConfig.js";
-import { getCompanyById } from "../controllers/companyController.js";
-import { addTrueFalseQuestion } from "../controllers/companyController.js";
-import { getAllquestion } from "../controllers/companyController.js";
-import { updateTrueFalse } from "../controllers/companyController.js";
-import { deleteTrueFalse } from "../controllers/companyController.js";
+import {
+  addOrUpdateCompanyInfo,
+  getCompanyById,
+  addTrueFalseQuestion,
+  getAllquestion,
+  updateTrueFalse,
+  deleteTrueFalse,
+  addChoiceQuestion,
+} from "../controllers/companyController.js";
 
 const router = express.Router();
 router.route("/signup").post(signup);
@@ -18,5 +21,6 @@ router.route("/addTrueFalse").post(addTrueFalseQuestion);
 router.route("/getAllQuestions/:companyId").get(getAllquestion);
 router.route("/updateTrueFalse/:id").put(updateTrueFalse);
 router.route("/deleteTrueFalse/:id").delete(deleteTrueFalse);
+router.route("/addChoiceQuestion").post(addChoiceQuestion);
 
 export default router;

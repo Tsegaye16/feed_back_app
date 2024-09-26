@@ -5,6 +5,7 @@ import {
   GET_ALL_QUESTIONS,
   DELETE_TRUE_FALSE_QUESTION,
   UPDATE_TRUE_FALSE_QUESTION,
+  ADD_CHOICE_QUESTION,
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
@@ -71,3 +72,18 @@ export const deleteTrueFalseQuestion = (id: any) => async (dispatch: any) => {
     console.error(err);
   }
 };
+
+export const addChoiceQuestion =
+  (questionData: any) => async (dispatch: any) => {
+    try {
+      const response = await api.addChoiceQuestion(questionData);
+
+      const data = await dispatch({
+        type: ADD_CHOICE_QUESTION,
+        payload: response.data,
+      });
+      return data;
+    } catch (err) {
+      console.error(err);
+    }
+  };

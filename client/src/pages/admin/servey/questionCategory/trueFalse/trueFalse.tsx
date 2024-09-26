@@ -7,6 +7,8 @@ import {
   RadioGroup,
   FormControlLabel,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addTrueFalseQuestion,
@@ -18,26 +20,40 @@ import {
 const TrueFalse: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [question, setQuestion] = useState("");
-  const [questionsList, setQuestionsList] = useState<any[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [questionsList, setQuestionsList] = useState<any[]>([]);
 
   const companyId = useSelector(
     (state: any) => state.company?.companyData?.result?.id
   );
+
+  // Fetch questions directly using useSelector here
+  const questions = useSelector(
+    (state: any) => state.question?.questionDaata?.result || []
+  );
+
   const dispatch = useDispatch();
+
+  // Filter true/false questions when questions change
+  useEffect(() => {
+    const trueFalseQuestions = Array.isArray(questions)
+      ? questions.filter((question: any) => question.type === "true_false")
+      : [];
+    setQuestionsList(trueFalseQuestions);
+  }, [questions]); // Re-run when questions change
+
+  // Fetch all questions when the component mounts
+  useEffect(() => {
+    if (companyId) {
+      dispatch(getAllQuestion(companyId) as any);
+    }
+  }, [dispatch, companyId]);
 
   const handleAddClick = () => {
     setIsAdding(true);
     setEditingIndex(null);
     setQuestion(""); // Reset the question input
   };
-
-  const questions = useSelector(
-    (state: any) => state.question?.questionDaata?.result || []
-  );
-  const trueFalseQuestions = Array.isArray(questions)
-    ? questions.filter((question: any) => question.type === "true_false")
-    : [];
 
   // Save the question to the backend and update the list
   const handleSave = async (event: any) => {
@@ -57,8 +73,14 @@ const TrueFalse: React.FC = () => {
           await dispatch(
             updateTrueFalseQuestion(questionId, updatedQuestion) as any
           );
+          // Update local questionsList to reflect the change
+          const updatedList = [...questionsList];
+          updatedList[editingIndex] = {
+            ...updatedList[editingIndex],
+            text: question,
+          };
+          setQuestionsList(updatedList);
         }
-        dispatch(getAllQuestion(companyId) as any); // Fetch latest questions
         setEditingIndex(null);
       } else {
         // Add the question to the backend and dispatch action
@@ -69,7 +91,8 @@ const TrueFalse: React.FC = () => {
             companyId,
           }) as any
         );
-        dispatch(getAllQuestion(companyId) as any); // Refresh the list after adding
+        // Re-fetch the list after adding
+        dispatch(getAllQuestion(companyId) as any);
       }
     } catch (error) {
       console.error("Error saving the question:", error);
@@ -78,20 +101,6 @@ const TrueFalse: React.FC = () => {
     setIsAdding(false);
     setQuestion(""); // Reset the input field
   };
-
-  // Fetch all questions when the component mounts
-  useEffect(() => {
-    if (companyId) {
-      dispatch(getAllQuestion(companyId) as any);
-    }
-  }, [dispatch, companyId]);
-
-  // Update the question list when questions are fetched
-  useEffect(() => {
-    if (questionsList.length !== trueFalseQuestions.length) {
-      setQuestionsList(trueFalseQuestions);
-    }
-  }, [trueFalseQuestions, questionsList]);
 
   // Cancel adding or editing
   const handleCancel = () => {
@@ -116,7 +125,9 @@ const TrueFalse: React.FC = () => {
     if (questionId) {
       try {
         await dispatch(deleteTrueFalseQuestion(questionId) as any);
-        dispatch(getAllQuestion(companyId) as any); // Fetch updated list
+        // Update local questionsList after deletion
+        const updatedList = questionsList.filter((_, i) => i !== index);
+        setQuestionsList(updatedList);
       } catch (error) {
         console.error("Error deleting the question", error);
       }
@@ -148,7 +159,7 @@ const TrueFalse: React.FC = () => {
           />
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button variant="contained" color="primary" onClick={handleSave}>
-              Save
+              {editingIndex !== null ? "Update" : "Save"}
             </Button>
             <Button variant="outlined" onClick={handleCancel}>
               Cancel
@@ -163,11 +174,12 @@ const TrueFalse: React.FC = () => {
           (q: any, index: any) =>
             editingIndex !== index && (
               <Box
-                key={q.id || index} // Use ID if available
+                key={q.id} // Use ID if available
                 mb={2}
                 p={2}
                 border="1px solid #ddd"
                 borderRadius={2}
+                boxShadow={3}
               >
                 <h4>{q.text}</h4>
                 <RadioGroup>
@@ -182,20 +194,23 @@ const TrueFalse: React.FC = () => {
                     label="False"
                   />
                 </RadioGroup>
-                <Box mt={1} display="flex" justifyContent="space-between">
+                <Box display="flex" justifyContent="flex-end" mt={2}>
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     color="secondary"
+                    sx={{ ml: 1 }}
                     onClick={() => handleUpdate(index)}
                   >
-                    Update
+                    Update <EditIcon sx={{ ml: 1 }} />
                   </Button>
                   <Button
                     variant="outlined"
                     color="error"
+                    sx={{ ml: 1 }}
                     onClick={() => handleDelete(index)}
                   >
                     Delete
+                    <DeleteIcon sx={{ ml: 1 }} />
                   </Button>
                 </Box>
               </Box>

@@ -88,9 +88,11 @@ export const getAllquestion = async (req, res) => {
 export const updateTrueFalse = async (req, res) => {
   try {
     const id = req.params.id;
+
     const updatedQuestion = await Question.update(req.body, {
       where: { id: id },
     });
+
     return res.status(200).json({
       message: "Question updated successfully",
       result: updatedQuestion,
@@ -107,5 +109,50 @@ export const deleteTrueFalse = async (req, res) => {
     return res.status(200).json({ message: "Question deleted successfully" });
   } catch (err) {
     console.error("Error deleting question:", err);
+  }
+};
+
+export const addChoiceQuestion = async (req, res) => {
+  try {
+    console.log("updatedQuestion:", req.body);
+    const { text, options, type, singleSelect, companyId } = req.body;
+
+    // Validate request body
+    if (!text || !type) {
+      return res
+        .status(400)
+        .json({ message: "Question text and type are required." });
+    }
+
+    // Check if the type is valid for the available options
+    if (type !== "multiple_choice" && options && options.length > 0) {
+      return res.status(400).json({
+        message: "Options are only allowed for multiple choice questions.",
+      });
+    }
+
+    // Determine if it's single select (radio button) or multiple select (checkbox)
+
+    // Create the question in the database
+    const newQuestion = await Question.create({
+      text: text,
+      type: type === "radio" || type === "checkbox" ? "multiple_choice" : type,
+      options: type === "multiple_choice" ? options : null,
+      singleSelect: singleSelect,
+      rate: null,
+      companyId: companyId,
+    });
+
+    // Return success response
+    return res.status(201).json({
+      message: "Question added successfully",
+      question: newQuestion,
+    });
+  } catch (err) {
+    console.error("Error adding question:", err);
+    return res.status(500).json({
+      message: "An error occurred while adding the question",
+      error: err.message,
+    });
   }
 };
