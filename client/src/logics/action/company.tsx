@@ -6,6 +6,7 @@ import {
   DELETE_TRUE_FALSE_QUESTION,
   UPDATE_TRUE_FALSE_QUESTION,
   ADD_CHOICE_QUESTION,
+  SUBMIT_ANSWER,
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
@@ -87,3 +88,15 @@ export const addChoiceQuestion =
       console.error(err);
     }
   };
+
+export const submitAnswer = (answerData: any) => async (dispatch: any) => {
+  try {
+    const response = await api.submitAnswer(answerData);
+    dispatch({
+      type: SUBMIT_ANSWER,
+      payload: response.data,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};

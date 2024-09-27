@@ -35,3 +35,6 @@ export const deleteTrueFalse = async (id: any) =>
   API.delete(`/deleteTrueFalse/${id}`);
 export const addChoiceQuestion = async (questionData: any) =>
   API.post("/addChoiceQuestion", questionData);
+
+export const submitAnswer = async (answerData: any) =>
+  API.post("/submitAnswer", answerData);

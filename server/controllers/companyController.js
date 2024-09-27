@@ -60,7 +60,6 @@ export const getCompanyById = async (req, res) => {
 
 export const addTrueFalseQuestion = async (req, res) => {
   try {
-    console.log("Request:", req.body);
     const newQuestion = await Question.create(req.body);
     return res.status(201).json({
       message: "Question added successfully",
@@ -156,3 +155,14 @@ export const addChoiceQuestion = async (req, res) => {
     });
   }
 };
+
+// export const submitAnswer = async(req, res) => {
+//   try {
+//     const { questionId, answer, companyId } = req.body;
+//     const question = await Question.findById(questionId);
+//     if (!question) {
+//       return res.status(404).json({ message: "Question not found" });
+//       }
+
+//     }
+// }

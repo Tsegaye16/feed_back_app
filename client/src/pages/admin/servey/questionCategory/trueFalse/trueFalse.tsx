@@ -6,13 +6,14 @@ import {
   Radio,
   RadioGroup,
   FormControlLabel,
+  Typography,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addTrueFalseQuestion,
   getAllQuestion,
+  addTrueFalseQuestion,
   updateTrueFalseQuestion,
   deleteTrueFalseQuestion,
 } from "../../../../../logics/action/company";
@@ -138,7 +139,7 @@ const TrueFalse: React.FC = () => {
     <Box>
       {/* Heading and Add button */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <h3>True/False Questions</h3>
+        <Typography variant="h6">True/False Questions</Typography>
         <Button
           variant="contained"
           onClick={handleAddClick}

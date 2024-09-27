@@ -1,59 +1,131 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  Rating,
-} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, Button, Typography, Rating, TextField } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import {
+  addTrueFalseQuestion,
+  deleteTrueFalseQuestion,
+  getAllQuestion,
+  updateTrueFalseQuestion,
+} from "../../../../../logics/action/company";
 
 const Rate: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [question, setQuestion] = useState("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [questionsList, setQuestionsList] = useState<any[]>([]);
   const [ratingValue, setRatingValue] = useState<number | null>(null);
-  const [savedQuestions, setSavedQuestions] = useState<
-    { question: string; ratingValue: number | null }[]
-  >([]);
 
-  // Handlers for adding a new question
-  const handleAdd = () => {
+  const companyId = useSelector(
+    (state: any) => state.company?.companyData?.result?.id
+  );
+
+  // Fetch questions directly using useSelector here
+  const questions = useSelector(
+    (state: any) => state.question?.questionDaata?.result || []
+  );
+
+  const dispatch = useDispatch();
+
+  // Filter true/false questions when questions change
+  useEffect(() => {
+    const trueFalseQuestions = Array.isArray(questions)
+      ? questions.filter((question: any) => question.type === "rate")
+      : [];
+    setQuestionsList(trueFalseQuestions);
+  }, [questions]); // Re-run when questions change
+
+  // Fetch all questions when the component mounts
+  useEffect(() => {
+    if (companyId) {
+      dispatch(getAllQuestion(companyId) as any);
+    }
+  }, [dispatch, companyId]);
+
+  const handleAddClick = () => {
     setIsAdding(true);
+    setEditingIndex(null);
+    setQuestion(""); // Reset the question input
   };
 
+  // Save the question to the backend and update the list
+  const handleSave = async (event: any) => {
+    event.preventDefault();
+    if (!question) return; // Avoid saving if the question is empty
+
+    try {
+      if (editingIndex !== null) {
+        // Update the existing question (if editing)
+        const updatedQuestion = {
+          text: question,
+          type: "rate",
+          companyId,
+        };
+        const questionId = questionsList[editingIndex]?.id; // Safety check for undefined
+        if (questionId) {
+          await dispatch(
+            updateTrueFalseQuestion(questionId, updatedQuestion) as any
+          );
+          // Update local questionsList to reflect the change
+          const updatedList = [...questionsList];
+          updatedList[editingIndex] = {
+            ...updatedList[editingIndex],
+            text: question,
+          };
+          setQuestionsList(updatedList);
+        }
+        setEditingIndex(null);
+      } else {
+        // Add the question to the backend and dispatch action
+        await dispatch(
+          addTrueFalseQuestion({
+            text: question,
+            type: "rate",
+            companyId,
+          }) as any
+        );
+        // Re-fetch the list after adding
+        dispatch(getAllQuestion(companyId) as any);
+      }
+    } catch (error) {
+      console.error("Error saving the question:", error);
+    }
+
+    setIsAdding(false);
+    setQuestion(""); // Reset the input field
+  };
+
+  // Cancel adding or editing
   const handleCancel = () => {
     setIsAdding(false);
     setQuestion("");
-    setRatingValue(null);
+    setEditingIndex(null); // Reset the editing index if any
   };
 
-  const handleSave = () => {
-    if (question.trim()) {
-      setSavedQuestions([...savedQuestions, { question, ratingValue }]);
-      setIsAdding(false);
-      setQuestion("");
-      setRatingValue(null);
+  // Handle updating an existing question
+  const handleUpdate = (index: number) => {
+    if (questionsList[index]) {
+      // Ensure the question exists at the index
+      setIsAdding(true);
+      setQuestion(questionsList[index]?.text || ""); // Load the question's text
+      setEditingIndex(index); // Set the current index to edit
     }
   };
 
-  const handleQuestionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuestion(event.target.value);
-  };
-
-  // Update and delete functions
-  const handleDelete = (index: number) => {
-    setSavedQuestions(savedQuestions.filter((_, i) => i !== index));
-  };
-
-  const handleUpdate = (index: number) => {
-    const updatedQuestion = savedQuestions[index];
-    setQuestion(updatedQuestion.question);
-    setRatingValue(updatedQuestion.ratingValue);
-    setSavedQuestions(savedQuestions.filter((_, i) => i !== index));
-    setIsAdding(true);
+  // Handle deleting a question from backend
+  const handleDelete = async (index: number) => {
+    const questionId = questionsList[index]?.id; // Get the question's ID with safety check
+    if (questionId) {
+      try {
+        await dispatch(deleteTrueFalseQuestion(questionId) as any);
+        // Update local questionsList after deletion
+        const updatedList = questionsList.filter((_, i) => i !== index);
+        setQuestionsList(updatedList);
+      } catch (error) {
+        console.error("Error deleting the question", error);
+      }
+    }
   };
 
   return (
@@ -66,7 +138,12 @@ const Rate: React.FC = () => {
         mb={2}
       >
         <Typography variant="h6">Rate</Typography>
-        <Button variant="contained" color="primary" onClick={handleAdd}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddClick}
+          disabled={isAdding}
+        >
           Add
         </Button>
       </Box>
@@ -74,26 +151,16 @@ const Rate: React.FC = () => {
       {/* Add Question Section */}
       {isAdding && (
         <Box mt={2} width="100%">
-          <Typography variant="body1" mb={1}>
-            Enter your question
-          </Typography>
-          <input
-            type="text"
+          <TextField
+            fullWidth
+            label="Enter your question"
             value={question}
-            onChange={handleQuestionChange}
-            style={{
-              width: "100%",
-              padding: "10px",
-              marginBottom: "15px",
-              fontSize: "16px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-            }}
+            onChange={(event) => setQuestion(event.target.value)}
           />
 
           <Box mt={2} display="flex" justifyContent="space-between">
             <Button variant="contained" color="primary" onClick={handleSave}>
-              Save
+              {editingIndex !== null ? "Update" : "Save"}
             </Button>
             <Button variant="outlined" onClick={handleCancel}>
               Cancel
@@ -104,47 +171,49 @@ const Rate: React.FC = () => {
 
       {/* Display Saved Questions */}
       <Box mt={2}>
-        {savedQuestions.map((q, index) => (
-          <Box
-            key={index}
-            display="flex"
-            flexDirection="column"
-            p={2}
-            mb={2}
-            bgcolor="#f0f0f0"
-            borderRadius={2}
-            boxShadow={3}
-          >
-            <Typography variant="body1">{q.question}</Typography>
-            <Rating
-              name="rate-question"
-              value={ratingValue}
-              onChange={(_, newValue) => {
-                setRatingValue(newValue);
-              }}
-              size="large"
-            />
+        {questionsList.map(
+          (q, index) =>
+            editingIndex !== index && (
+              <Box
+                key={q.id} // Use ID if available
+                mb={2}
+                p={2}
+                border="1px solid #ddd"
+                borderRadius={2}
+                boxShadow={3}
+              >
+                <h4>{q.text}</h4>
+                <Rating
+                  name="rate-question"
+                  value={ratingValue}
+                  onChange={(_, newValue) => {
+                    setRatingValue(newValue);
+                  }}
+                  size="large"
+                />
 
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={() => handleUpdate(index)}
-                sx={{ ml: 1 }}
-              >
-                Update
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => handleDelete(index)}
-                sx={{ ml: 1 }}
-              >
-                Delete
-              </Button>
-            </Box>
-          </Box>
-        ))}
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => handleUpdate(index)}
+                    sx={{ ml: 1 }}
+                  >
+                    Update <EditIcon sx={{ ml: 1 }} />
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDelete(index)}
+                    sx={{ ml: 1 }}
+                  >
+                    Delete
+                    <DeleteIcon sx={{ ml: 1 }} />
+                  </Button>
+                </Box>
+              </Box>
+            )
+        )}
       </Box>
     </Box>
   );
