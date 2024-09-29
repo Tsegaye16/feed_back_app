@@ -17,7 +17,7 @@ import {
   updateTrueFalseQuestion,
   deleteTrueFalseQuestion,
   getAllQuestion,
-} from "../../../../../logics/action/company";
+} from "../../../../../redux/action/company";
 import { useDispatch, useSelector } from "react-redux";
 
 const Essay: React.FC = () => {

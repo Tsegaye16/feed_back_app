@@ -21,7 +21,7 @@ import {
   deleteTrueFalseQuestion,
   getAllQuestion,
   updateTrueFalseQuestion,
-} from "../../../../../logics/action/company";
+} from "../../../../../redux/action/company";
 
 const MultipleChoice: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);

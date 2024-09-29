@@ -9,6 +9,12 @@
         "label": "off",
         "select-name": "off"
       }
+    ],
+    "axe/aria": [
+      "default",
+      {
+        "aria-required-parent": "off"
+      }
     ]
   }
 }

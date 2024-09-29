@@ -16,7 +16,7 @@ import {
   addTrueFalseQuestion,
   updateTrueFalseQuestion,
   deleteTrueFalseQuestion,
-} from "../../../../../logics/action/company";
+} from "../../../../../redux/action/company";
 
 const TrueFalse: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);

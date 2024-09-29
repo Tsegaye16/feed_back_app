@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { jwtDecode } from "jwt-decode"; // Fix import
 
-import { getUserById } from "../../logics/action/user";
+import { getUserById } from "../../redux/action/user";
 import "./header.css";
 
 interface CustomJwtPayload {

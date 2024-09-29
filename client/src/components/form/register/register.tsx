@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
 import "./../form.css";
-import { signup } from "../../../logics/action/auth";
+import { signup } from "../../../redux/action/auth";
 import axios from "axios";
 
 const initialState = {

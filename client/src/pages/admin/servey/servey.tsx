@@ -10,7 +10,7 @@ import Essay from "./questionCategory/essay/essay";
 import GenerateQR from "./QR/GenerateQR";
 import CompanyForm from "./companyForm";
 import CompanyNav from "./companyNav";
-import { addCompanyInfo, getCompanyById } from "../../../logics/action/company";
+import { addCompanyInfo, getCompanyById } from "../../../redux/action/company";
 
 const Servey: React.FC = () => {
   const dispatch = useDispatch();

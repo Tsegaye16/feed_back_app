@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./../form.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { signin } from "../../../logics/action/auth";
+import { signin } from "../../../redux/action/auth";
 
 const initialState = {
   email: "",
