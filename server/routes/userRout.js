@@ -9,6 +9,8 @@ import {
   updateTrueFalse,
   deleteTrueFalse,
   addChoiceQuestion,
+  addServey,
+  getAllServey,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -22,5 +24,7 @@ router.route("/getAllQuestions/:companyId").get(getAllquestion);
 router.route("/updateTrueFalse/:id").put(updateTrueFalse);
 router.route("/deleteTrueFalse/:id").delete(deleteTrueFalse);
 router.route("/addChoiceQuestion").post(addChoiceQuestion);
+router.route("/addServey").post(addServey);
+router.route("/getAllServey/:companyId").get(getAllServey);
 
 export default router;

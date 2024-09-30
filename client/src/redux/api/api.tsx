@@ -4,17 +4,13 @@ const API = axios.create({
   baseURL: "http://localhost:4000/user",
 });
 
-export const signIn = async (formData: any) => {
-  console.log("Form Data", formData);
-  const response = await API.post("/signin", formData);
-
-  return response;
-};
+export const signIn = async (formData: any) => API.post("/signin", formData);
 
 export const signUp = async (formData: AuthFormData) =>
   API.post("/signup", formData);
 
-export const getUserById = async (userId: any) => API.get(`/getuser/${userId}`);
+export const getUserById = async (userId: string) =>
+  API.get(`/getuser/${userId}`);
 
 export const addCompanyInfo = async (companyData: any) =>
   API.post("/addCompany", companyData);
@@ -38,3 +34,8 @@ export const addChoiceQuestion = async (questionData: any) =>
 
 export const submitAnswer = async (answerData: any) =>
   API.post("/submitAnswer", answerData);
+
+export const addServey = async (serveyInfo: any) =>
+  API.post("/addServey", serveyInfo);
+export const getAllServey = async (companyId: any) =>
+  API.get(`/getAllServey/${companyId}`);

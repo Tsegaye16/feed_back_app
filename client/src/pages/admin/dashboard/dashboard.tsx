@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-//import InboxIcon from "@mui/icons-material/Inbox";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -27,14 +26,19 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import DraftsIcon from "@mui/icons-material/Drafts";
 import PublishedWithChangesIcon from "@mui/icons-material/PublishedWithChanges";
-import PollIcon from "@mui/icons-material/Poll"; // For Survey
-import FeedbackIcon from "@mui/icons-material/Feedback"; // For Feedback
+import PollIcon from "@mui/icons-material/Poll";
+import FeedbackIcon from "@mui/icons-material/Feedback";
+import Person4Icon from "@mui/icons-material/Person4";
+import Draft from "../serveys/draft";
+import Published from "../serveys/published";
+import Detail from "../serveys/detail";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedItem, setSelectedItem] = useState("Dashboard");
   const [isServeysOpen, setIsServeysOpen] = useState(false);
+  const [selectedDetail, setSelectedDetail] = useState<any>(null); // Add state for detail
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -50,12 +54,16 @@ const Dashboard = () => {
 
   const handleMenuItemClick = (item: string) => {
     setSelectedItem(item);
+    setSelectedDetail(null); // Reset detail when switching menus
   };
 
   const handleServeysClick = () => {
     setIsServeysOpen(!isServeysOpen);
   };
 
+  const handleDetailClick = (id: number) => {
+    setSelectedDetail(id);
+  };
   return (
     <Box sx={{ display: "flex" }}>
       {/* AppBar/Navbar */}
@@ -90,7 +98,7 @@ const Dashboard = () => {
           >
             <MenuItem onClick={handleClose}>
               <ListItemIcon>
-                <SettingsIcon />
+                <Person4Icon />
               </ListItemIcon>
               <ListItemText primary="Profile" />
             </MenuItem>
@@ -220,20 +228,27 @@ const Dashboard = () => {
         sx={{
           flexGrow: 1,
           p: 3,
-          marginLeft: isSidebarOpen ? "240px" : "60px",
+          marginLeft: isSidebarOpen ? "1px" : "1px",
           transition: "margin 0.3s",
         }}
       >
         <Toolbar />
-        {selectedItem === "Dashboard" && (
-          <Typography>Dashboard Content</Typography>
-        )}
-        {selectedItem === "Published" && (
-          <Typography>Published Surveys</Typography>
-        )}
-        {selectedItem === "Draft" && <Typography>Draft Surveys</Typography>}
-        {selectedItem === "FeedBacks" && (
-          <Typography>Feedback Content</Typography>
+        {selectedDetail ? (
+          <Detail id={selectedDetail} /> // Render the Detail component when a survey is selected
+        ) : (
+          <>
+            {selectedItem === "Dashboard" && <div>Dashboard Content</div>}
+
+            {selectedItem === "Published" && (
+              <Published onDetailClick={handleDetailClick} />
+            )}
+
+            {selectedItem === "Draft" && (
+              <Draft onDetailClick={handleDetailClick} />
+            )}
+
+            {selectedItem === "FeedBacks" && <div>FeedBacks Content</div>}
+          </>
         )}
       </Box>
     </Box>

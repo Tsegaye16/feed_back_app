@@ -1,5 +1,6 @@
 import Company from "../models/companyModel.js";
 import Question from "../models/questionModel.js";
+import Servey from "../models/serveyModel.js";
 
 export const addOrUpdateCompanyInfo = async (req, res) => {
   try {
@@ -153,6 +154,36 @@ export const addChoiceQuestion = async (req, res) => {
       message: "An error occurred while adding the question",
       error: err.message,
     });
+  }
+};
+
+export const addServey = async (req, res) => {
+  try {
+    console.log("updatedQuestion:", req.body);
+    const newQuestion = await Servey.create({
+      name: req.body.surveyName,
+      isPublished: req.body.isPublished,
+      companyId: req.body.companyId,
+    });
+    return res.status(201).json({
+      message: "Question added successfully",
+      result: newQuestion,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+export const getAllServey = async (req, res) => {
+  try {
+    const companyId = req.params.companyId;
+    const servey = await Servey.findAll({
+      where: { companyId: companyId },
+    });
+    console.log("servey:", servey);
+    res.status(200).json({ message: "success", servey });
+  } catch (error) {
+    console.error("Error getting all servey:", error);
+    res.status(400).json({ message: "failed", error });
   }
 };
 

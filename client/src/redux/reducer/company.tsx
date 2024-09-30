@@ -1,8 +1,6 @@
 import {
   SAVE_COMPANY_DATA,
   GATE_COMPANY_BY_MANAGER_ID,
-  ADD_TRUE_FALSE_QUESTION,
-  GET_ALL_QUESTIONS,
 } from "../../constants/types/actionType";
 
 const companyState = {

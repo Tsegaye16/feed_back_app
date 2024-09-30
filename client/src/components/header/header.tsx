@@ -30,31 +30,19 @@ const Header: React.FC = () => {
   return (
     <nav className="navbar">
       <div className="logo">Logo</div>
-      {currenTtoken ? (
-        <div className={`nav-links ${menuOpen ? "active" : ""}`}>
-          <a href="/manager/servey" className="nav-link">
-            Create survey
-          </a>
-          <a href="/manager/feedBack" className="nav-link">
-            Feedbacks
-          </a>
-          <a href="#" className="nav-link">
-            {user?.newUser.name}
-          </a>
-        </div>
-      ) : (
-        <div className={`nav-links ${menuOpen ? "active" : ""}`}>
-          <a href="/" className="nav-link">
-            Home
-          </a>
-          <a href="/contact" className="nav-link">
-            Contact us
-          </a>
-          <a href="/auth" className="nav-link">
-            Login
-          </a>
-        </div>
-      )}
+
+      <div className={`nav-links ${menuOpen ? "active" : ""}`}>
+        <a href="/" className="nav-link">
+          Home
+        </a>
+        <a href="/contact" className="nav-link">
+          Contact us
+        </a>
+        <a href="/login" className="nav-link">
+          Login
+        </a>
+      </div>
+
       <div className="menu-icon" onClick={toggleMenu}>
         {menuOpen ? "✖" : "☰"}
       </div>

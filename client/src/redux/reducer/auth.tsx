@@ -2,7 +2,7 @@ import { SIGNIN, SIGNUP, LOGOUT } from "../../constants/types/actionType";
 
 // Define the initial state
 const initialState = {
-  authData: localStorage.getItem("user"),
+  authData: null,
 };
 
 const authReducer = (state = initialState, action: any) => {

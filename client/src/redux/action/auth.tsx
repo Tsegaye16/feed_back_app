@@ -5,20 +5,31 @@ import * as api from "../api/api";
 export const signup =
   (formData: any, navigate: NavigateFunction) => async (dispatch: any) => {
     try {
-      const { data } = await api.signUp(formData);
+      const response = await api.signUp(formData);
 
-      dispatch({ type: SIGNUP, payload: data });
-    } catch (err) {}
+      const data = await dispatch({ type: SIGNUP, payload: response.data });
+      navigate("/login");
+      return data;
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message || "Something went wrong";
+      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      return { error: errorMessage };
+    }
   };
 
 export const signin =
   (formData: any, navigate: NavigateFunction) => async (dispatch: any) => {
     try {
-      const { data } = await api.signIn(formData); // Ensure the API method is named correctly
-
-      dispatch({ type: SIGNIN, payload: data });
+      const response = await api.signIn(formData); // API call to backend
+      const data = await dispatch({ type: SIGNIN, payload: response.data });
+      console.log("Success:", data); // Log success for debugging
       navigate("/manager");
-    } catch (err) {
-      console.log(err);
+      return data;
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message || "Something went wrong";
+      console.log("Error Message from Server:", errorMessage);
+      return { error: errorMessage };
     }
   };

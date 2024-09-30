@@ -1,12 +1,18 @@
 import { GET_USER_BY_ID } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
-export const getUserById = (userId: any) => async (dispatch: any) => {
+// Thunk action to get user by ID
+export const getUserById = (userId: string) => async (dispatch: any) => {
   try {
-    const { data } = await api.getUserById(userId);
+    const response = await api.getUserById(userId);
 
-    dispatch({ type: GET_USER_BY_ID, payload: data });
+    const data = await dispatch({
+      type: GET_USER_BY_ID,
+      payload: response.data,
+    });
+    console.log("User Data: ", data);
+    return data;
   } catch (err) {
-    console.log(err);
+    console.error("Error fetching user:", err);
   }
 };
