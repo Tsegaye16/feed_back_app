@@ -9,6 +9,10 @@ import {
   SUBMIT_ANSWER,
   ADD_SERVEY,
   GET_ALL_SERVEY,
+  DELETE_SERVEY,
+  ADD_QUESTION,
+  GET_PREVIEW_PARAMS,
+  GET_PREVIEW_DATA,
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
@@ -134,3 +138,64 @@ export const getAllServey = (companyId: any) => async (dispatch: any) => {
     console.error(error);
   }
 };
+
+export const deleteServey = (id: any) => async (dispatch: any) => {
+  try {
+    const response = await api.deleteServey(id);
+    const data = await dispatch({
+      type: DELETE_SERVEY,
+      payload: response.data,
+    });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    return { error: errorMessage };
+  }
+};
+
+export const addQuestion = (questionInfo: any) => async (dispatch: any) => {
+  try {
+    const response = await api.addQuestion(questionInfo);
+    const data = await dispatch({ type: ADD_QUESTION, payload: response.data });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    return { error: errorMessage };
+  }
+};
+export const getPreviewParams = (serveyId: any) => async (dispatch: any) => {
+  try {
+    const response = await api.getPreviewParams(serveyId);
+    const data = await dispatch({
+      type: GET_PREVIEW_PARAMS,
+      payload: response.data,
+    });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    return { error: errorMessage };
+  }
+};
+
+export const getPreviewData =
+  (companyName: any, surveyId: any) => async (dispatch: any) => {
+    try {
+      const response = await api.getPreviewData(companyName, surveyId);
+      const data = await dispatch({
+        type: GET_PREVIEW_DATA,
+        payload: response.data,
+      });
+      return data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Something went wrong";
+      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      return { error: errorMessage };
+    }
+  };

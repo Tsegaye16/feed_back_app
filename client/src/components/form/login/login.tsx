@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -29,6 +29,14 @@ const Login: React.FC = () => {
   const [formData, setFormData] = useState(initialState);
 
   const [showPassword, setShowPassword] = useState(false);
+
+  const token = localStorage.getItem("user");
+
+  useEffect(() => {
+    if (token) {
+      navigate("/manager");
+    }
+  }, [dispatch, navigate, token]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

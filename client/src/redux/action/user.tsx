@@ -10,7 +10,7 @@ export const getUserById = (userId: string) => async (dispatch: any) => {
       type: GET_USER_BY_ID,
       payload: response.data,
     });
-    console.log("User Data: ", data);
+
     return data;
   } catch (err) {
     console.error("Error fetching user:", err);

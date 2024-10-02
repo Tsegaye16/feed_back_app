@@ -6,6 +6,7 @@ import companyReducer from "./company";
 import questionReducer from "./question";
 import answerReducer from "./answer";
 import serveyReducer from "./servey";
+import previewReducer from "./preview";
 
 export default combineReducers({
   auth: authReducer,
@@ -14,4 +15,5 @@ export default combineReducers({
   question: questionReducer,
   answer: answerReducer,
   survey: serveyReducer,
+  preview: previewReducer,
 });

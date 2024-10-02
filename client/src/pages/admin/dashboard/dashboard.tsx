@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -32,6 +32,11 @@ import Person4Icon from "@mui/icons-material/Person4";
 import Draft from "../serveys/draft";
 import Published from "../serveys/published";
 import Detail from "../serveys/detail";
+import { jwtDecode } from "jwt-decode";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { getUserById } from "../../../redux/action/user";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -39,6 +44,32 @@ const Dashboard = () => {
   const [selectedItem, setSelectedItem] = useState("Dashboard");
   const [isServeysOpen, setIsServeysOpen] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState<any>(null); // Add state for detail
+  const [selectedAddQuestion, setSelectedAddQuestion] = useState<any>(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const token = localStorage.getItem("user");
+
+  const handleLogout = async () => {
+    localStorage.removeItem("user");
+    toast.warn("You are loged out");
+    navigate("/");
+  };
+  useEffect(() => {
+    if (!token) {
+      navigate("/");
+    }
+    if (token) {
+      const decodedToken: any = jwtDecode(token);
+
+      // If token is expired, log out the user
+      if (decodedToken.exp * 1000 < new Date().getTime()) {
+        handleLogout();
+      }
+      dispatch(getUserById(decodedToken.id) as any);
+    }
+  }, [dispatch, navigate, token]);
+  const user = useSelector((state: any) => state.user?.user?.newUser);
+  // console.log("user: ", user.name);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -63,6 +94,9 @@ const Dashboard = () => {
 
   const handleDetailClick = (id: number) => {
     setSelectedDetail(id);
+  };
+  const handleAddQuestionSelection = (id: any) => {
+    setSelectedAddQuestion(id);
   };
   return (
     <Box sx={{ display: "flex" }}>
@@ -90,6 +124,7 @@ const Dashboard = () => {
           <IconButton onClick={handleAvatarClick}>
             <Avatar alt="User Avatar" src="/avatar.png" />
           </IconButton>
+          {user?.name}
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -108,7 +143,7 @@ const Dashboard = () => {
               </ListItemIcon>
               <ListItemText primary="Settings" />
             </MenuItem>
-            <MenuItem onClick={handleClose}>
+            <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <ExitToAppIcon />
               </ListItemIcon>
@@ -127,6 +162,7 @@ const Dashboard = () => {
           "& .MuiDrawer-paper": {
             width: isSidebarOpen ? 240 : 60,
             transition: "width 0.3s",
+            overflowX: "hidden",
           },
         }}
       >
@@ -233,6 +269,7 @@ const Dashboard = () => {
         }}
       >
         <Toolbar />
+
         {selectedDetail ? (
           <Detail id={selectedDetail} /> // Render the Detail component when a survey is selected
         ) : (

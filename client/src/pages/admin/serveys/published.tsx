@@ -9,6 +9,7 @@ import {
   getCompanyById,
   addServey,
   getAllServey,
+  deleteServey,
 } from "../../../redux/action/company";
 import {
   Button,
@@ -27,6 +28,11 @@ import {
   TablePagination,
   Checkbox,
   Toolbar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { toast } from "react-toastify";
 
@@ -42,9 +48,8 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   const [openCompanyModal, setOpenCompanyModal] = useState(false);
   const [openSurveyModal, setOpenSurveyModal] = useState(false);
   const [surveyName, setSurveyName] = useState("");
-  const [selectedSurveys, setSelectedSurveys] = useState<Set<number>>(
-    new Set()
-  );
+  const [selectedSurveys, setSelectedSurveys] = useState<any>(new Set());
+  const [editingId, setEditingId] = useState(null);
 
   const currenTtoken: any = localStorage.getItem("user");
 
@@ -85,9 +90,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   }, [company, dispatch]);
 
   // Handle modal visibility for adding new survey
-  const handleAddSurveyClick = () => {
-    setOpenSurveyModal(true);
-  };
 
   // Handling the company form
   const [companyData, setCompanyData] = useState<any>({
@@ -143,14 +145,18 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
           surveyName,
           isPublished: false,
           companyId: company?.id,
+          id: editingId,
         }) as any
       );
       if (response) {
         toast.success("Survey saved as draft!");
         setOpenSurveyModal(false);
         setSurveyName("");
+        selectedSurveys.clear();
       }
       dispatch(getAllServey(company.id) as any);
+    } else {
+      toast.error("Survey name is required");
     }
   };
 
@@ -161,14 +167,20 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
           surveyName,
           isPublished: true,
           companyId: company?.id,
+          id: editingId,
         }) as any
       );
       if (response) {
-        toast.success("Survey published successfully!");
+        toast.success(`${response?.payload?.message}`);
         setOpenSurveyModal(false);
         setSurveyName("");
+      } else if (response?.error) {
       }
+      console.log("response: ", response);
+
       dispatch(getAllServey(company.id) as any);
+    } else {
+      toast.error("Survey name is required");
     }
   };
 
@@ -204,9 +216,22 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   const isSurveySelected = (surveyId: number) => selectedSurveys.has(surveyId);
 
   // Handle delete surveys
-  const handleDeleteSurveys = () => {
-    // Implement delete logic for selected surveys
-    console.log("Deleting surveys:", Array.from(selectedSurveys));
+  const handleDeleteSurveys = async (event: any) => {
+    event.preventDefault();
+
+    // Convert Set to array
+    const selectedIds = Array.from(selectedSurveys);
+
+    if (selectedIds.length === 0) return; // Ensure there's something to delete
+
+    // Send array of selected IDs to backend
+    const response = await dispatch(deleteServey(selectedIds) as any);
+    if (response) {
+      toast.success("Survey deleted successfully!");
+      setOpen(false);
+    }
+    dispatch(getAllServey(company.id) as any);
+
     // Reset selection after deletion
     setSelectedSurveys(new Set());
   };
@@ -230,11 +255,11 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
               }}
             >
               {selectedCount} selected
-              <Button color="error" onClick={handleDeleteSurveys}>
+              <Button color="error" onClick={handleClickOpen}>
                 Delete <DeleteIcon sx={{ ml: 1 }} />
               </Button>
               {selectedCount === 1 && (
-                <Button onClick={() => console.log("Edit selected survey")}>
+                <Button onClick={() => handleAddSurveyClick("edit")}>
                   Edit <EditIcon sx={{ ml: 1 }} />
                 </Button>
               )}
@@ -244,6 +269,85 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       </>
     );
   };
+  // Delete Confirmation detail
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const confirmDialog = (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        {"Use Google's location service?"}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          Are you sure?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>No</Button>
+        <Button onClick={handleDeleteSurveys} autoFocus>
+          Yes
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  // Edit selected servey functionality
+
+  const handleAddSurveyClick = (option: any) => {
+    if (option === "add") {
+      setEditingId(null);
+      setOpenSurveyModal(true);
+    } else if (option === "edit") {
+      const editingId = Array.from(selectedSurveys)[0];
+      console.log("surveys: ", surveys);
+      const editingSurvey = surveys.find(
+        (servey: any) => servey.id === editingId
+      );
+      //console.log("editingSurvey:", editingSurvey);
+      setSurveyName(editingSurvey?.name);
+      setEditingId(editingId as any);
+      setOpenSurveyModal(true);
+    }
+
+    console.log("surveyName: ", surveyName);
+  };
+
+  // const handleSaveEditedSurvey = async () => {
+  //   if (!currentSurvey?.name) {
+  //     toast.error("Survey name is required");
+  //     return;
+  //   }
+
+  //   const response = await dispatch(
+  //     addServey({
+  //       surveyId: currentSurvey.id, // Pass survey ID to identify the survey being edited
+  //       surveyName: currentSurvey.name,
+  //       companyId: company?.id,
+  //       isPublished: currentSurvey.isPublished, // Maintain published state
+  //     }) as any
+  //   );
+
+  //   if (response) {
+  //     toast.success("Survey updated successfully!");
+  //     setOpenEditModal(false); // Close the modal
+  //     dispatch(getAllServey(company?.id) as any); // Refresh surveys
+  //   } else {
+  //     toast.error("Failed to update survey");
+  //   }
+  // };
 
   return (
     <Box component="section" sx={{ p: 3, width: "100%" }}>
@@ -257,7 +361,10 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
         <Button
           variant="outlined"
           color="primary"
-          onClick={handleAddSurveyClick}
+          onClick={(event) => {
+            event.stopPropagation();
+            handleAddSurveyClick("add");
+          }}
           disabled={!company}
         >
           Add New Survey
@@ -539,7 +646,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
         </Paper>
       </Modal>
 
-      {/* Add Survey Modal */}
       {/* Modal for Adding New Survey */}
       <Modal open={openSurveyModal} onClose={handleCancelSurveyModal}>
         <Paper
@@ -554,7 +660,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
           }}
         >
           <Typography variant="h6" gutterBottom>
-            Add New Survey
+            {!editingId ? "Add New Survey" : "Updating servey"}
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -562,6 +668,8 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
                 fullWidth
                 label="Survey Name"
                 variant="outlined"
+                // value={selectedSurveyName}
+                // onChange={(e) => setSelectedSurveyName(e.target.value)}
                 value={surveyName}
                 onChange={(e) => setSurveyName(e.target.value)}
               />
@@ -598,7 +706,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       </Modal>
 
       {/* Company Modal */}
-      <Modal open={openCompanyModal} onClose={() => setOpenCompanyModal(false)}>
+      {/* <Modal open={openCompanyModal} onClose={() => setOpenCompanyModal(false)}>
         <Box
           sx={{
             p: 4,
@@ -613,14 +721,16 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
             Register Company
           </Typography>
           {/* Company registration form goes here */}
-          <Button
+      {/* <Button
             variant="contained"
             onClick={() => setOpenCompanyModal(false)}
           >
             Submit
           </Button>
         </Box>
-      </Modal>
+      </Modal> */}
+
+      {confirmDialog}
     </Box>
   );
 };

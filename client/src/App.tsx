@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import "./App.css";
 import Home from "./components/home";
@@ -12,11 +12,10 @@ import Questionaire from "./pages/customers/questionaire";
 import Login from "./components/form/login/login";
 import Registration from "./components/form/register/register";
 import { ToastContainer } from "react-toastify";
+import Preview from "./pages/admin/serveys/preview";
 //import Dashboard from "./pages/dashboard/dashboard";
 
 const App: React.FC = () => {
-  const user = useSelector((state: any) => state.user?.user);
-
   return (
     <BrowserRouter>
       <ToastContainer
@@ -36,6 +35,7 @@ const App: React.FC = () => {
         <Route path="/manager/servey" element={<Servey />} />
         <Route path="/" element={<Home />} />
         <Route path="/client" element={<Questionaire />} />
+        <Route path={"/:companyName/surveys/:surveyId"} element={<Preview />} />
 
         <Route path="/manager" element={<Dashboard />} />
       </Routes>

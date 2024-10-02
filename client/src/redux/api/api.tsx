@@ -39,3 +39,13 @@ export const addServey = async (serveyInfo: any) =>
   API.post("/addServey", serveyInfo);
 export const getAllServey = async (companyId: any) =>
   API.get(`/getAllServey/${companyId}`);
+export const deleteServey = async (id: any) =>
+  API.delete("/deleteServey", { data: { id } });
+
+export const addQuestion = async (questionInfo: any) =>
+  API.post("/addQuestion", questionInfo);
+export const getPreviewParams = async (serveyId: any) =>
+  API.get(`/getPreviewParams/${serveyId}`);
+
+export const getPreviewData = async (companyName: any, surveyId: any) =>
+  API.get(`/getPreviewData/${companyName}/${surveyId}`);

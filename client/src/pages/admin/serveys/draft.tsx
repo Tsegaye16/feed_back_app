@@ -26,6 +26,11 @@ import {
   TablePagination,
   Toolbar,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -47,6 +52,7 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
   const [selectedSurveys, setSelectedSurveys] = useState<Set<number>>(
     new Set()
   );
+  const [editingId, setEditingId] = useState(null);
 
   const currenTtoken: any = localStorage.getItem("user");
 
@@ -105,9 +111,15 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
     setPage(0); // Reset page when rows per page change
   };
 
-  // Handle modal visibility for adding new survey
-  const handleAddSurveyClick = () => {
-    setOpenSurveyModal(true);
+  // Delete Confirmation detail
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
   };
 
   // Handling the company form
@@ -156,7 +168,6 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
     setSurveyName("");
   };
 
-  // Handling save as draft
   const handleSaveAsDraft = async () => {
     if (surveyName) {
       const response = await dispatch(
@@ -164,6 +175,7 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
           surveyName,
           isPublished: false,
           companyId: company?.id,
+          id: editingId,
         }) as any
       );
       if (response) {
@@ -172,10 +184,11 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
         setSurveyName("");
       }
       dispatch(getAllServey(company.id) as any);
+    } else {
+      toast.error("Survey name is required");
     }
   };
 
-  // Handling publish survey
   const handlePublish = async () => {
     if (surveyName) {
       const response = await dispatch(
@@ -183,14 +196,21 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
           surveyName,
           isPublished: true,
           companyId: company?.id,
+          id: editingId,
         }) as any
       );
       if (response) {
-        toast.success("Survey published successfully!");
+        toast.success(`${response?.payload?.message}`);
         setOpenSurveyModal(false);
         setSurveyName("");
+        selectedSurveys.clear();
+      } else if (response?.error) {
       }
+      console.log("response: ", response);
+
       dispatch(getAllServey(company.id) as any);
+    } else {
+      toast.error("Survey name is required");
     }
   };
 
@@ -216,6 +236,7 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
     setSelectedSurveys(new Set());
   };
 
+  // Toolbar component for actions
   const CustomToolbar: React.FC = () => {
     const selectedCount = selectedSurveys.size;
 
@@ -234,11 +255,11 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
               }}
             >
               {selectedCount} selected
-              <Button color="error" onClick={handleDeleteSurveys}>
+              <Button color="error" onClick={handleClickOpen}>
                 Delete <DeleteIcon sx={{ ml: 1 }} />
               </Button>
               {selectedCount === 1 && (
-                <Button onClick={() => console.log("Edit selected survey")}>
+                <Button onClick={() => handleAddSurveyClick("edit")}>
                   Edit <EditIcon sx={{ ml: 1 }} />
                 </Button>
               )}
@@ -249,6 +270,48 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
     );
   };
 
+  const confirmDialog = (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        {"Use Google's location service?"}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          Are you sure?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>No</Button>
+        <Button onClick={handleDeleteSurveys} autoFocus>
+          Yes
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const handleAddSurveyClick = (option: any) => {
+    if (option === "add") {
+      setEditingId(null);
+      setOpenSurveyModal(true);
+    } else if (option === "edit") {
+      const editingId = Array.from(selectedSurveys)[0];
+      console.log("surveys: ", surveys);
+      const editingSurvey = surveys.find(
+        (servey: any) => servey.id === editingId
+      );
+      //console.log("editingSurvey:", editingSurvey);
+      setSurveyName(editingSurvey?.name);
+      setEditingId(editingId as any);
+      setOpenSurveyModal(true);
+    }
+
+    console.log("surveyName: ", surveyName);
+  };
   return (
     <Box component="section" sx={{ p: 3, width: "100%" }}>
       {/* Page Heading */}
@@ -261,7 +324,7 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
         <Button
           variant="outlined"
           color="primary"
-          onClick={handleAddSurveyClick}
+          onClick={() => handleAddSurveyClick("add")}
           disabled={!company}
         >
           Add New Survey
@@ -559,7 +622,7 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
           }}
         >
           <Typography variant="h6" gutterBottom>
-            Add New Survey
+            {!editingId ? "Add New Survey" : "Updating servey"}
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -567,6 +630,8 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
                 fullWidth
                 label="Survey Name"
                 variant="outlined"
+                // value={selectedSurveyName}
+                // onChange={(e) => setSelectedSurveyName(e.target.value)}
                 value={surveyName}
                 onChange={(e) => setSurveyName(e.target.value)}
               />
@@ -601,6 +666,7 @@ const Draft: React.FC<onClickType> = ({ onDetailClick }) => {
           </Grid>
         </Paper>
       </Modal>
+      {confirmDialog}
     </Box>
   );
 };

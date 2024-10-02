@@ -11,6 +11,10 @@ import {
   addChoiceQuestion,
   addServey,
   getAllServey,
+  deleteServey,
+  addQuestion,
+  getPreviewParams,
+  getPreviewData,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -26,5 +30,9 @@ router.route("/deleteTrueFalse/:id").delete(deleteTrueFalse);
 router.route("/addChoiceQuestion").post(addChoiceQuestion);
 router.route("/addServey").post(addServey);
 router.route("/getAllServey/:companyId").get(getAllServey);
+router.route("/deleteServey").delete(deleteServey);
+router.route("/addQuestion").post(addQuestion);
+router.route("/getPreviewParams/:serveyId").get(getPreviewParams);
+router.route("/getPreviewData/:companyName/:surveyId").get(getPreviewData);
 
 export default router;

@@ -1,6 +1,7 @@
 import Company from "../models/companyModel.js";
 import Question from "../models/questionModel.js";
 import Servey from "../models/serveyModel.js";
+import { Op } from "sequelize";
 
 export const addOrUpdateCompanyInfo = async (req, res) => {
   try {
@@ -160,14 +161,29 @@ export const addChoiceQuestion = async (req, res) => {
 export const addServey = async (req, res) => {
   try {
     console.log("updatedQuestion:", req.body);
-    const newQuestion = await Servey.create({
-      name: req.body.surveyName,
-      isPublished: req.body.isPublished,
-      companyId: req.body.companyId,
-    });
-    return res.status(201).json({
-      message: "Question added successfully",
-      result: newQuestion,
+    const { surveyName, isPublished, companyId, id } = req.body;
+    if (!id) {
+      const newQuestion = await Servey.create({
+        name: surveyName,
+        isPublished: isPublished,
+        companyId: companyId,
+      });
+      return res.status(201).json({
+        message: "Survey added successfully",
+        result: newQuestion,
+      });
+    }
+    const updatedQuestion = await Servey.update(
+      {
+        name: surveyName,
+        isPublished: isPublished,
+        companyId: companyId,
+      },
+      { where: { id: id } }
+    );
+    return res.status(200).json({
+      message: "Survey updated successfully",
+      result: updatedQuestion,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -179,11 +195,30 @@ export const getAllServey = async (req, res) => {
     const servey = await Servey.findAll({
       where: { companyId: companyId },
     });
-    console.log("servey:", servey);
+
     res.status(200).json({ message: "success", servey });
   } catch (error) {
     console.error("Error getting all servey:", error);
-    res.status(400).json({ message: "failed", error });
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const deleteServey = async (req, res) => {
+  try {
+    const { id } = req.body;
+    // delete all rows from surver based on the list of id
+    const result = await Servey.destroy({
+      where: {
+        id: {
+          [Op.in]: id,
+        },
+      },
+    });
+    //console.log("result: ", result);
+    res.status(200).json({ message: "success", result });
+  } catch (err) {
+    console.error("Error deleting servey:", err);
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -197,3 +232,98 @@ export const getAllServey = async (req, res) => {
 
 //     }
 // }
+
+export const addQuestion = async (req, res) => {
+  try {
+    console.log("Req.Body: ", req.body);
+    const newQuestion = await Question.create(req.body);
+    res
+      .status(201)
+      .json({ message: "question have successfully added", newQuestion });
+  } catch (error) {
+    console.error("Error adding question:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getPreviewParams = async (req, res) => {
+  try {
+    const serveyId = req.params.serveyId;
+
+    // 1. fetch companyId from Serveys where serveyId = serveyId
+    const ServerInfo = await Servey.findOne({
+      where: {
+        id: serveyId,
+      },
+      attributes: ["companyId"],
+    });
+    const companyId = ServerInfo.dataValues.companyId;
+
+    // 2. fetch company name from Companies where id = companyId
+    const CompanyInfo = await Company.findOne({
+      where: {
+        id: companyId,
+      },
+      attributes: ["name"],
+    });
+    const companyName = CompanyInfo.dataValues.name;
+
+    // 3. send company name, servey is and message to client
+    res.json({ companyName, serveyId, message: "succuss" });
+  } catch (error) {
+    console.error("Error getting preview:", error);
+  }
+};
+
+export const getPreviewData = async (req, res) => {
+  try {
+    const { companyName, surveyId } = req.params;
+
+    // 1. Fetch the company data from Companies by its name
+    const CompanyInfo = await Company.findOne({
+      where: {
+        name: companyName,
+      },
+    });
+
+    if (!CompanyInfo) {
+      console.log(`Company ${companyName} was not found`);
+      return res.status(404).json({ message: "Company not found" });
+    }
+
+    const companyId = CompanyInfo.id;
+    console.log("companyId: ", companyId);
+
+    // 2. Check whether surveyId exists in Serveys table with the correct companyId
+    const SurveyInfo = await Servey.findOne({
+      where: {
+        id: surveyId, // Include surveyId in the query
+        companyId: companyId, // Ensure the survey belongs to the company
+      },
+    });
+
+    if (!SurveyInfo) {
+      console.log(
+        `Survey with id ${surveyId} was not found for company ${companyId}`
+      );
+      return res.status(404).json({ message: "Survey not found" });
+    }
+
+    console.log("SurveyInfo: ", SurveyInfo);
+
+    // 3. Fetch all questions from the Questions table where surveyId matches
+    const QuestionInfo = await Question.findAll({
+      where: {
+        serveyId: surveyId,
+      },
+    });
+
+    res.status(200).json({
+      questions: QuestionInfo,
+      CompanyInfo,
+    });
+  } catch (error) {
+    console.error("Error getting preview:", error);
+    res.status(400).json({ message: error.message });
+  }
+};

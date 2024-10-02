@@ -22,7 +22,7 @@ Servey.belongsTo(Company, { foreignKey: "companyId" });
 //*************************** */
 // A Servey has many questions
 Servey.hasMany(Question, { foreignKey: "serveyId" });
-Question.belongsTo(Servey, { foreignKey: "companyId" });
+Question.belongsTo(Servey, { foreignKey: "serveyId" });
 //************************* */
 ///////////////////////////////////////////////////////////////////////////////////
 

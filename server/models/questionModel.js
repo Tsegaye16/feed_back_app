@@ -5,22 +5,22 @@ import { sequelize } from "../db.js";
 const Question = sequelize.define("Question", {
   text: {
     type: DataTypes.STRING,
-    allowNull: true,
+    allowNull: false,
   },
   type: {
-    type: DataTypes.ENUM("true_false", "multiple_choice", "essay", "rate"),
+    type: DataTypes.ENUM("True/False", "Choice", "Open", "Rate"),
     allowNull: false,
   },
   options: {
     type: DataTypes.ARRAY(DataTypes.STRING), // For multiple choice questions
     allowNull: true,
   },
-  singleSelect: {
-    type: DataTypes.BOOLEAN, // For single/multiple select
+  additionalOption: {
+    type: DataTypes.ENUM("True/False", "Agree/Disagree", "Yes/No"),
     allowNull: true,
   },
-  rate: {
-    type: DataTypes.INTEGER, // For rate question (1-5 stars)
+  singleSelect: {
+    type: DataTypes.BOOLEAN, // For single/multiple select
     allowNull: true,
   },
 });

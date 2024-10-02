@@ -30,7 +30,7 @@ import {
 
 const Questionaire = () => {
   const dispatch = useDispatch();
-  const token = useSelector((state: any) => state.auth?.authData);
+  const token = localStorage.getItem("user") as any;
   const decodedToken: any = jwtDecode(token);
   const managerId = decodedToken.id;
 
