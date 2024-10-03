@@ -76,6 +76,10 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === true)
     : [];
+  ////////////////////////////////////////////////////////////////////////
+  // Ant Table
+
+  //////////////////////////////////////////////////////////////////////////
 
   useEffect(() => {
     if (user) {
@@ -88,8 +92,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       dispatch(getAllServey(company.id) as any);
     }
   }, [company, dispatch]);
-
-  // Handle modal visibility for adding new survey
 
   // Handling the company form
   const [companyData, setCompanyData] = useState<any>({
@@ -324,30 +326,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
 
     console.log("surveyName: ", surveyName);
   };
-
-  // const handleSaveEditedSurvey = async () => {
-  //   if (!currentSurvey?.name) {
-  //     toast.error("Survey name is required");
-  //     return;
-  //   }
-
-  //   const response = await dispatch(
-  //     addServey({
-  //       surveyId: currentSurvey.id, // Pass survey ID to identify the survey being edited
-  //       surveyName: currentSurvey.name,
-  //       companyId: company?.id,
-  //       isPublished: currentSurvey.isPublished, // Maintain published state
-  //     }) as any
-  //   );
-
-  //   if (response) {
-  //     toast.success("Survey updated successfully!");
-  //     setOpenEditModal(false); // Close the modal
-  //     dispatch(getAllServey(company?.id) as any); // Refresh surveys
-  //   } else {
-  //     toast.error("Failed to update survey");
-  //   }
-  // };
 
   return (
     <Box component="section" sx={{ p: 3, width: "100%" }}>
@@ -704,31 +682,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
           </Grid>
         </Paper>
       </Modal>
-
-      {/* Company Modal */}
-      {/* <Modal open={openCompanyModal} onClose={() => setOpenCompanyModal(false)}>
-        <Box
-          sx={{
-            p: 4,
-            backgroundColor: "white",
-            borderRadius: 2,
-            width: 400,
-            margin: "auto",
-            mt: "10%",
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Register Company
-          </Typography>
-          {/* Company registration form goes here */}
-      {/* <Button
-            variant="contained"
-            onClick={() => setOpenCompanyModal(false)}
-          >
-            Submit
-          </Button>
-        </Box>
-      </Modal> */}
 
       {confirmDialog}
     </Box>

@@ -6,10 +6,16 @@ const Question = sequelize.define("Question", {
   text: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      notEmpty: { msg: "Please insert the question" },
+    },
   },
   type: {
     type: DataTypes.ENUM("True/False", "Choice", "Open", "Rate"),
     allowNull: false,
+    validate: {
+      notEmpty: { msg: "Please select question type" },
+    },
   },
   options: {
     type: DataTypes.ARRAY(DataTypes.STRING), // For multiple choice questions

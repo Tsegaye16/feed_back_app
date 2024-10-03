@@ -37,6 +37,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getUserById } from "../../../redux/action/user";
+import Sample from "../serveys/sample";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -98,6 +99,11 @@ const Dashboard = () => {
   const handleAddQuestionSelection = (id: any) => {
     setSelectedAddQuestion(id);
   };
+
+  const handleSaveQuestion = () => {
+    setSelectedAddQuestion(null); // Reset back to detail after saving
+  };
+
   return (
     <Box sx={{ display: "flex" }}>
       {/* AppBar/Navbar */}
@@ -269,9 +275,13 @@ const Dashboard = () => {
         }}
       >
         <Toolbar />
-
-        {selectedDetail ? (
-          <Detail id={selectedDetail} /> // Render the Detail component when a survey is selected
+        {selectedAddQuestion ? (
+          <Sample id={selectedDetail} onSave={handleSaveQuestion} />
+        ) : selectedDetail ? (
+          <Detail
+            id={selectedDetail}
+            onClickAddQuestion={handleAddQuestionSelection}
+          /> // Render the Detail component when a survey is selected
         ) : (
           <>
             {selectedItem === "Dashboard" && <div>Dashboard Content</div>}

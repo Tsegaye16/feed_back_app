@@ -1,30 +1,74 @@
 import React, { useState } from "react";
 import { Input, Select, Form, Button, Typography, Row, Col, Space } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { useDispatch } from "react-redux";
+import { addQuestion } from "../../../redux/action/company";
+import { toast } from "react-toastify";
 
 const { TextArea } = Input;
 const { Option } = Select;
+interface DetailProps {
+  id: any;
+  onSave: any;
+}
 
-const Sample: React.FC = () => {
+const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
   const [questionText, setQuestionText] = useState("");
   const [questionType, setQuestionType] = useState("");
   const [additionalOption, setAdditionalOption] = useState("");
   const [choices, setChoices] = useState([""]);
 
-  const handleAddChoice = () => setChoices([...choices, ""]);
-  const handleRemoveChoice = (index: number) => {
-    const newChoices = choices.filter((_, i) => i !== index);
-    setChoices(newChoices);
+  const dispatch = useDispatch();
+
+  const handleAddChoice = () => {
+    setChoices([...choices, ""]);
   };
+
+  // Handle removing choice input field
+  const handleRemoveChoice = (index: number) => {
+    const updatedChoices = choices.filter((_: any, i: any) => i !== index);
+    setChoices(updatedChoices);
+  };
+
+  // Handle change in choice text
   const handleChoiceChange = (index: number, value: string) => {
-    const newChoices = choices.map((choice, i) =>
+    const updatedChoices = choices.map((choice: any, i: any) =>
       i === index ? value : choice
     );
-    setChoices(newChoices);
+    setChoices(updatedChoices);
   };
-  const handleSubmit = () => {
-    // Handle form submission
-    console.log({ questionText, questionType, additionalOption, choices });
+
+  const handleClose = () => {
+    //setOpen(false);
+    setQuestionText("");
+    setQuestionType("");
+    setAdditionalOption("");
+    setChoices([""]); // Reset choices on close
+    onSave();
+  };
+
+  const handleSubmit = async () => {
+    const response = await dispatch(
+      addQuestion({
+        text: questionText,
+        type: questionType,
+        additionalOption:
+          questionType === "True/False" ? additionalOption : undefined,
+        serveyId: id,
+        singleSelect:
+          questionType === "Choice"
+            ? additionalOption === "SingleSelect"
+            : undefined,
+        options: questionType === "Choice" ? choices : undefined,
+      }) as any
+    );
+    console.log("response: ", response.error);
+    if (response?.payload?.message) {
+      toast.success(`${response?.payload?.message}`);
+      onSave();
+    } else if (response?.error) {
+      toast.error(`${response.error}`);
+    }
   };
 
   return (
@@ -35,7 +79,7 @@ const Sample: React.FC = () => {
         <Form.Item label="Question Text" required>
           <TextArea
             value={questionText}
-            onChange={(e: any) => setQuestionText(e.target.value)}
+            onChange={(value: any) => setQuestionText(value)}
             placeholder="Enter your question here"
             rows={3}
           />
@@ -44,7 +88,7 @@ const Sample: React.FC = () => {
         <Form.Item label="Question Type" required>
           <Select
             value={questionType}
-            onChange={(value: any) => setQuestionType(value)}
+            onChange={(value) => setQuestionType(value)}
             placeholder="Select question type"
           >
             <Option value="True/False">True/False</Option>
@@ -93,9 +137,7 @@ const Sample: React.FC = () => {
                 <Col span={20}>
                   <Input
                     value={choice}
-                    onChange={(e: any) =>
-                      handleChoiceChange(index, e.target.value)
-                    }
+                    onChange={(e) => handleChoiceChange(index, e.target.value)}
                     placeholder={`Choice ${index + 1}`}
                   />
                 </Col>
@@ -125,7 +167,7 @@ const Sample: React.FC = () => {
             <Button type="primary" htmlType="submit">
               Save
             </Button>
-            <Button htmlType="button" onClick={() => console.log("Form reset")}>
+            <Button htmlType="button" onClick={handleClose}>
               Reset
             </Button>
           </Space>

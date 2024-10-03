@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import {
-  Box,
+  Avatar,
   Typography,
   Card,
-  CardContent,
-  Avatar,
   Radio,
-  RadioGroup,
-  FormControlLabel,
   Checkbox,
-  FormGroup,
-  Rating,
-  TextField,
+  Rate,
+  Input,
   Button,
-} from "@mui/material";
+  Form,
+  message,
+} from "antd";
 import { getPreviewData } from "../../../redux/action/company";
-//import { backgroundClip } from "html2canvas/dist/types/css/property-descriptors/background-clip";
+import "antd/dist/reset.css";
+
+const { Title, Text } = Typography;
+const { TextArea } = Input;
 
 const Preview: React.FC = () => {
   const dispatch: any = useDispatch();
@@ -33,6 +31,21 @@ const Preview: React.FC = () => {
   const questions = previewData?.questions || [];
   const companyInfo = previewData?.CompanyInfo;
 
+  // State to hold all responses
+  const [responses, setResponses] = useState<any>({});
+
+  // Handler to collect responses
+  const handleResponseChange = (questionId: any, value: any) => {
+    setResponses((prev: any) => ({ ...prev, [questionId]: value }));
+  };
+
+  // Submit handler
+  const handleSubmit = () => {
+    // Here you would typically dispatch an action to submit the responses
+    console.log("User Responses:", responses);
+    message.success("Thank you for your feedback!");
+  };
+
   // Group questions by their type in the required order
   const groupedQuestions = {
     TrueFalse: questions.filter((q: any) => q.type === "True/False"),
@@ -42,339 +55,232 @@ const Preview: React.FC = () => {
   };
 
   return (
-    <Box>
+    <div style={{ backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
       {/* Company Header */}
       {companyInfo && (
-        <Box
-          sx={{
-            backgroundColor: companyInfo.backGroundColor,
-            color: companyInfo.textColor,
+        <div
+          style={{
+            backgroundColor: companyInfo.backGroundColor || "#fff",
+            color: companyInfo.textColor || "#000",
             display: "flex",
             alignItems: "center",
-            padding: 2,
+            padding: "16px",
             position: "fixed",
             top: 0,
             left: 0,
             right: 0,
             zIndex: 1000,
-            width: "100vw", // Full width of device screen
+            boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
           }}
         >
           <Avatar
             src={`http://localhost:4000/${companyInfo.logo}`}
             alt={companyInfo.name}
-            sx={{ marginRight: 2, width: 65, height: 65, objectFit: "cover" }}
+            size={65}
+            style={{ marginRight: "16px", objectFit: "cover" }}
           />
-          <Typography variant="h4">{companyInfo.name}</Typography>
-        </Box>
+          <Title level={3} style={{ margin: 0 }}>
+            {companyInfo.name}
+          </Title>
+        </div>
       )}
 
       {/* Questions Display */}
-      <Box
-        sx={{
-          padding: 3,
-          marginTop: 10, // To avoid content overlapping with fixed header
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center", // Center questions horizontally
+      <div
+        style={{
+          padding: "24px",
+          marginTop: "100px",
+          maxWidth: "800px",
+          marginLeft: "auto",
+          marginRight: "auto",
         }}
       >
-        {/* True/False Questions */}
-        {groupedQuestions.TrueFalse.length > 0 && (
-          <Typography variant="h6">True/False Questions</Typography>
-        )}
-        {groupedQuestions.TrueFalse.map((question: any) => (
-          <QuestionTrueFalse key={question.id} question={question} />
-        ))}
+        <Form layout="vertical" onFinish={handleSubmit}>
+          {/* Render all question types */}
+          {(
+            Object.keys(groupedQuestions) as (keyof typeof groupedQuestions)[]
+          ).map((type) =>
+            groupedQuestions[type].map((question: any) => {
+              switch (type) {
+                case "TrueFalse":
+                  return (
+                    <QuestionTrueFalse
+                      key={question.id}
+                      question={question}
+                      onChange={handleResponseChange}
+                    />
+                  );
+                case "Choice":
+                  return (
+                    <QuestionChoice
+                      key={question.id}
+                      question={question}
+                      onChange={handleResponseChange}
+                    />
+                  );
+                case "Rate":
+                  return (
+                    <QuestionRate
+                      key={question.id}
+                      question={question}
+                      onChange={handleResponseChange}
+                    />
+                  );
+                case "Open":
+                  return (
+                    <QuestionOpen
+                      key={question.id}
+                      question={question}
+                      onChange={handleResponseChange}
+                    />
+                  );
+                default:
+                  return null;
+              }
+            })
+          )}
 
-        {/* Choice Questions */}
-        {groupedQuestions.Choice.length > 0 && (
-          <Typography variant="h6" sx={{ marginTop: 3 }}>
-            Choice Questions
-          </Typography>
-        )}
-        {groupedQuestions.Choice.map((question: any) => (
-          <QuestionChoice key={question.id} question={question} />
-        ))}
-
-        {/* Rate Questions */}
-        {groupedQuestions.Rate.length > 0 && (
-          <Typography variant="h6" sx={{ marginTop: 3 }}>
-            Rate Questions
-          </Typography>
-        )}
-        {groupedQuestions.Rate.map((question: any) => (
-          <QuestionRate key={question.id} question={question} />
-        ))}
-
-        {/* Open Questions */}
-        {groupedQuestions.Open.length > 0 && (
-          <Typography variant="h6" sx={{ marginTop: 3 }}>
-            Open-Ended Questions
-          </Typography>
-        )}
-        {groupedQuestions.Open.map((question: any) => (
-          <QuestionOpen key={question.id} question={question} />
-        ))}
-      </Box>
-    </Box>
+          {/* Submit Button */}
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              style={{ marginTop: "24px" }}
+            >
+              Submit Feedback
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
+    </div>
   );
 };
 
 // QuestionTrueFalse Component
-const QuestionTrueFalse: React.FC<{ question: any }> = ({ question }) => {
-  const [selectedValue, setSelectedValue] = useState("");
+interface QuestionProps {
+  question: any;
+  onChange: (questionId: any, value: any) => void;
+}
 
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedValue(event.target.value);
+const QuestionTrueFalse: React.FC<QuestionProps> = ({ question, onChange }) => {
+  const [value, setValue] = useState<string>("");
+
+  const handleChange = (e: any) => {
+    setValue(e.target.value);
+    onChange(question.id, e.target.value);
   };
 
   return (
-    <Card
-      sx={{
-        marginBottom: 2,
-        width: "80%", // 80% of device screen width
-        border: "1px solid #e0e0e0",
-        padding: 2,
-        backgroundColor: "#f5f5f5",
-
-        boxShadow: 2,
-        borderRadius: 2,
-      }}
-    >
-      <CardContent>
-        <Typography variant="body1">{question.text}</Typography>
-        <RadioGroup
-          value={selectedValue}
-          onChange={handleRadioChange}
-          name={`radio-${question.id}`}
-        >
-          <FormControlLabel
-            control={
-              <Radio
-                sx={{
-                  color: "#1976d2", // Custom color for radio buttons
-                  "&.Mui-checked": {
-                    color: "#1976d2", // Color when selected
-                  },
-                }}
-              />
-            }
-            label={question.additionalOption.split("/")[0] || "Agree"}
-            value="agree"
-          />
-          <FormControlLabel
-            control={
-              <Radio
-                sx={{
-                  color: "#1976d2",
-                  "&.Mui-checked": {
-                    color: "#1976d2",
-                  },
-                }}
-              />
-            }
-            label={question.additionalOption.split("/")[1] || "Disagree"}
-            value="disagree"
-          />
-        </RadioGroup>
-        <Box display="flex" justifyContent="flex-end" mt={2}>
-          <Button variant="outlined" color="secondary" sx={{ ml: 1 }}>
-            Update <EditIcon sx={{ ml: 1 }} />
-          </Button>
-          <Button variant="outlined" color="error" sx={{ ml: 1 }}>
-            Delete
-            <DeleteIcon sx={{ ml: 1 }} />
-          </Button>
-        </Box>
-      </CardContent>
+    <Card style={cardStyle}>
+      <Form.Item
+        label={<Title level={5}>{question.text}</Title>}
+        required
+        style={{ marginBottom: 0 }}
+      >
+        <Radio.Group onChange={handleChange} value={value}>
+          {question.additionalOption.split("/").map((option: string) => (
+            <Radio key={option} value={option}>
+              {option}
+            </Radio>
+          ))}
+        </Radio.Group>
+      </Form.Item>
     </Card>
   );
 };
 
 // QuestionChoice Component
-const QuestionChoice: React.FC<{ question: any }> = ({ question }) => {
-  const [selectedValue, setSelectedValue] = useState<string>("");
+const QuestionChoice: React.FC<QuestionProps> = ({ question, onChange }) => {
+  const [value, setValue] = useState<any>(question.singleSelect ? "" : []);
 
-  const handleChoiceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    if (question.singleSelect) {
-      setSelectedValue(value);
-    } else {
-      const currentValues = Array.isArray(selectedValue)
-        ? [...selectedValue]
-        : [];
-      if (currentValues.includes(value)) {
-        setSelectedValue(currentValues.filter((v) => v !== value) as any);
-      } else {
-        setSelectedValue([...currentValues, value] as any);
-      }
-    }
+  const handleChange = (val: any) => {
+    setValue(val);
+    onChange(question.id, val);
   };
 
   return (
-    <Card
-      sx={{
-        marginBottom: 3,
-        width: "80%", // 80% of device screen width
-        boxShadow: 2,
-        borderRadius: 2,
-        border: "1px solid #e0e0e0",
-        padding: 2,
-        backgroundColor: "#f5f5f5",
-      }}
-    >
-      <CardContent>
-        <Typography
-          variant="h6"
-          sx={{
-            marginBottom: 2,
-            fontWeight: 500,
-            color: "#333",
-          }}
-        >
-          {question.text}
-        </Typography>
-        <FormGroup>
-          {question.options.map((option: string, index: number) => (
-            <FormControlLabel
-              key={index}
-              control={
-                question.singleSelect ? (
-                  <Radio
-                    checked={selectedValue === option}
-                    onChange={handleChoiceChange}
-                    value={option}
-                    name={`radio-choice-${question.id}`}
-                    sx={{
-                      color: "#1976d2", // Custom color for radio buttons
-                      "&.Mui-checked": {
-                        color: "#1976d2", // Color when selected
-                      },
-                    }}
-                  />
-                ) : (
-                  <Checkbox
-                    checked={
-                      Array.isArray(selectedValue) &&
-                      selectedValue.includes(option)
-                    }
-                    onChange={handleChoiceChange}
-                    value={option}
-                    sx={{
-                      color: "#1976d2",
-                      "&.Mui-checked": {
-                        color: "#1976d2",
-                      },
-                    }}
-                  />
-                )
-              }
-              label={option}
-              sx={{
-                marginBottom: 1,
-                color: "#555",
-                "& .MuiTypography-root": {
-                  fontWeight: 400,
-                  fontSize: "1rem",
-                },
-              }}
-            />
-          ))}
-        </FormGroup>
-        <Box display="flex" justifyContent="flex-end" mt={2}>
-          <Button variant="outlined" color="secondary" sx={{ ml: 1 }}>
-            Update <EditIcon sx={{ ml: 1 }} />
-          </Button>
-          <Button variant="outlined" color="error" sx={{ ml: 1 }}>
-            Delete
-            <DeleteIcon sx={{ ml: 1 }} />
-          </Button>
-        </Box>
-      </CardContent>
+    <Card style={cardStyle}>
+      <Form.Item
+        label={<Title level={5}>{question.text}</Title>}
+        required
+        style={{ marginBottom: 0 }}
+      >
+        {question.singleSelect ? (
+          <Radio.Group
+            onChange={(e) => handleChange(e.target.value)}
+            value={value}
+          >
+            {question.options.map((option: string, index: number) => (
+              <Radio key={index} value={option}>
+                {option}
+              </Radio>
+            ))}
+          </Radio.Group>
+        ) : (
+          <Checkbox.Group onChange={handleChange} value={value}>
+            {question.options.map((option: string, index: number) => (
+              <Checkbox key={index} value={option}>
+                {option}
+              </Checkbox>
+            ))}
+          </Checkbox.Group>
+        )}
+      </Form.Item>
     </Card>
   );
 };
 
 // QuestionRate Component
-const QuestionRate: React.FC<{ question: any }> = ({ question }) => {
-  const [rating, setRating] = useState<number | null>(null);
+const QuestionRate: React.FC<QuestionProps> = ({ question, onChange }) => {
+  const [value, setValue] = useState<number>(0);
 
-  const handleRateChange = (
-    event: React.ChangeEvent<{}>,
-    newValue: number | null
-  ) => {
-    setRating(newValue);
+  const handleChange = (val: number) => {
+    setValue(val);
+    onChange(question.id, val);
   };
 
   return (
-    <Card
-      sx={{
-        marginBottom: 3,
-        width: "80%", // 80% of device screen width
-        boxShadow: 2,
-        borderRadius: 2,
-        border: "1px solid #e0e0e0",
-        padding: 2,
-        backgroundColor: "#f5f5f5",
-      }}
-    >
-      <CardContent>
-        <Typography
-          variant="body1"
-          sx={{
-            marginBottom: 2,
-            fontWeight: 500,
-            color: "#333",
-          }}
-        >
-          {question.text}
-        </Typography>
-        <Rating
-          name={`rate-question-${question.id}`}
-          value={rating}
-          onChange={handleRateChange}
-          precision={1}
-        />
-      </CardContent>
+    <Card style={cardStyle}>
+      <Form.Item
+        label={<Title level={5}>{question.text}</Title>}
+        required
+        style={{ marginBottom: 0 }}
+      >
+        <Rate onChange={handleChange} value={value} />
+      </Form.Item>
     </Card>
   );
 };
 
 // QuestionOpen Component
-const QuestionOpen: React.FC<{ question: any }> = ({ question }) => {
-  const [response, setResponse] = useState<string>("");
+const QuestionOpen: React.FC<QuestionProps> = ({ question, onChange }) => {
+  const [value, setValue] = useState<string>("");
 
-  const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setResponse(event.target.value);
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setValue(e.target.value);
+    onChange(question.id, e.target.value);
   };
 
   return (
-    <Card
-      sx={{
-        marginBottom: 3,
-        width: "80%", // 80% of device screen width
-        boxShadow: 2,
-        borderRadius: 2,
-        border: "1px solid #e0e0e0",
-        padding: 2,
-        backgroundColor: "#f5f5f5",
-      }}
-    >
-      <CardContent>
-        <Typography variant="body1">{question.text}</Typography>
-        <TextField
-          fullWidth
-          multiline
-          minRows={3}
-          value={response}
-          onChange={handleTextChange}
-          placeholder="Your response here..."
-          sx={{ backgroundClip: "white", color: "black" }}
-        />
-      </CardContent>
+    <Card style={cardStyle}>
+      <Form.Item
+        label={<Title level={5}>{question.text}</Title>}
+        required
+        style={{ marginBottom: 0 }}
+      >
+        <TextArea rows={4} value={value} onChange={handleChange} />
+      </Form.Item>
     </Card>
   );
+};
+
+// Common Card Style
+const cardStyle = {
+  marginBottom: "16px",
+  backgroundColor: "#fff",
+  borderRadius: "8px",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
 };
 
 export default Preview;
