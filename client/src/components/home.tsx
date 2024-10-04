@@ -40,8 +40,8 @@ const InputWrapper = styled.div`
   margin-top: -100px;
 
   .ant-input-affix-wrapper {
-    width: 600px;
-    height: 60px;
+    width: 700px;
+    height: 50px;
     border-radius: 30px;
     font-size: 1.2rem;
     padding: 0 20px;
@@ -57,6 +57,23 @@ const InputWrapper = styled.div`
     .ant-input-prefix {
       color: rgba(0, 0, 0, 0.45); /* Icon color */
       font-size: 1.5rem;
+    }
+  }
+
+  /* Media queries for responsiveness */
+  @media (max-width: 768px) {
+    .ant-input-affix-wrapper {
+      width: 100%; /* Full width for tablet and mobile */
+      height: 50px;
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ant-input-affix-wrapper {
+      width: 90%; /* Slight margin for small screens */
+      height: 45px;
+      font-size: 0.9rem;
     }
   }
 `;

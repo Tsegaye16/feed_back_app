@@ -1,22 +1,17 @@
-import React, { useEffect, useState } from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import InputAdornment from "@mui/material/InputAdornment";
-import IconButton from "@mui/material/IconButton";
+import React, { useState, useEffect } from "react";
+import { Form, Input, Button, message, Typography, Avatar } from "antd";
+import {
+  LockOutlined,
+  MailOutlined,
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+} from "@ant-design/icons";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signin } from "../../../redux/action/auth";
-import "./../form.css";
 import { toast } from "react-toastify";
+
+const { Title } = Typography;
 
 const initialState = {
   email: "",
@@ -28,8 +23,6 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(initialState);
 
-  const [showPassword, setShowPassword] = useState(false);
-
   const token = localStorage.getItem("user");
 
   useEffect(() => {
@@ -38,120 +31,122 @@ const Login: React.FC = () => {
     }
   }, [dispatch, navigate, token]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const response = await dispatch(signin(formData, navigate) as any);
-
-    console.log("Response from signin action:", response);
+  const handleSubmit = async (values: any) => {
+    const response = await dispatch(signin(values, navigate) as any);
 
     if (response?.error) {
-      toast.error(`${response.error}`);
+      message.error(`${response.error}`);
     } else if (response?.payload?.message) {
-      toast.success(`${response?.payload?.message}`);
+      message.success(`${response?.payload?.message}`);
     }
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [event.target.name]: event.target.value });
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <div className="App">
-      <div className="container" id="container">
-        <Container component="main" maxWidth="xs">
-          <Box
-            sx={{
-              marginTop: 8,
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <div
+        style={{
+          width: "400px",
+          padding: "40px",
+          background: "#fff",
+          borderRadius: "8px",
+          boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <Avatar
+            style={{ backgroundColor: "#1890ff", marginBottom: "10px" }}
+            icon={<LockOutlined />}
+          />
+          <Title level={3}>Sign In</Title>
+        </div>
+
+        <Form
+          name="login"
+          onFinish={handleSubmit}
+          initialValues={formData}
+          layout="vertical"
+        >
+          {/* Email Field */}
+          <Form.Item
+            label="Email Address"
+            name="email"
+            rules={[
+              {
+                type: "email",
+                message: "The input is not a valid email address!",
+              },
+              {
+                required: true,
+                message: "Please enter your email!",
+              },
+            ]}
+          >
+            <Input
+              prefix={<MailOutlined />}
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+            />
+          </Form.Item>
+
+          {/* Password Field */}
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[
+              {
+                required: true,
+                message: "Please enter your password!",
+              },
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Password"
+              iconRender={(visible) =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+            />
+          </Form.Item>
+
+          <div
+            style={{
               display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "10px",
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-              <LockOutlinedIcon />
-            </Avatar>
-            <Typography component="h1" variant="h5">
-              Sign in
-            </Typography>
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              noValidate
-              sx={{ mt: 1 }}
-            >
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-                autoFocus
-                value={formData.email}
-                onChange={handleChange}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                id="password"
-                autoComplete="current-password"
-                onChange={handleChange}
-                value={formData.password}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+            <Link to="/forgot-password" style={{ color: "#1890ff" }}>
+              Forgot password?
+            </Link>
+          </div>
 
-              <Grid item xs={12} sm={6} sx={{ textAlign: "left" }}>
-                <Link href="#" variant="body2" sx={{ textAlign: "right" }}>
-                  Forgot password?
-                </Link>
-              </Grid>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                className="login"
-              >
-                Sign In
-              </Button>
+          {/* Submit Button */}
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Sign In
+            </Button>
+          </Form.Item>
+        </Form>
 
-              {/* Updated link section */}
-              <Grid
-                container
-                spacing={2}
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Grid item xs={12} sm={12}>
-                  <Link href="/register" variant="body2">
-                    {"Don't have an account? Sign Up"}
-                  </Link>
-                </Grid>
-              </Grid>
-            </Box>
-          </Box>
-        </Container>
+        <div style={{ textAlign: "center", marginTop: "10px" }}>
+          <Typography.Text>
+            Don't have an account? <Link to="/register">Sign Up</Link>
+          </Typography.Text>
+        </div>
       </div>
     </div>
   );

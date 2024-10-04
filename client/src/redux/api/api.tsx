@@ -49,3 +49,6 @@ export const getPreviewParams = async (serveyId: any) =>
 
 export const getPreviewData = async (companyName: any, surveyId: any) =>
   API.get(`/getPreviewData/${companyName}/${surveyId}`);
+
+export const getQuestionBySurveyId = async (id: any) =>
+  API.get(`/getQuestionBySurveyId/${id}`);

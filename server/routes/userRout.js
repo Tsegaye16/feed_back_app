@@ -15,6 +15,7 @@ import {
   addQuestion,
   getPreviewParams,
   getPreviewData,
+  getQuestionBySurveyId,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -34,5 +35,6 @@ router.route("/deleteServey").delete(deleteServey);
 router.route("/addQuestion").post(addQuestion);
 router.route("/getPreviewParams/:serveyId").get(getPreviewParams);
 router.route("/getPreviewData/:companyName/:surveyId").get(getPreviewData);
+router.route("/getQuestionBySurveyId/:surveyId").get(getQuestionBySurveyId);
 
 export default router;

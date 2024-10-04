@@ -41,7 +41,7 @@ export const addOrUpdateCompanyInfo = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error adding or updating company info:", error);
+    //console.error("Error adding or updating company info:", error);
     res.status(500).json({ message: "Internal Server Error", Error: error });
   }
 };
@@ -55,7 +55,7 @@ export const getCompanyById = async (req, res) => {
     }
     return res.status(200).json({ message: "Company found", result: company });
   } catch (error) {
-    console.error("Error getting company by id:", error);
+    //console.error("Error getting company by id:", error);
     res.status(500).json({ message: "Internal Server Error", Error: error });
   }
 };
@@ -115,7 +115,7 @@ export const deleteTrueFalse = async (req, res) => {
 
 export const addChoiceQuestion = async (req, res) => {
   try {
-    console.log("updatedQuestion:", req.body);
+    // console.log("updatedQuestion:", req.body);
     const { text, options, type, singleSelect, companyId } = req.body;
 
     // Validate request body
@@ -160,7 +160,7 @@ export const addChoiceQuestion = async (req, res) => {
 
 export const addServey = async (req, res) => {
   try {
-    console.log("updatedQuestion:", req.body);
+    //console.log("updatedQuestion:", req.body);
     const { surveyName, isPublished, companyId, id } = req.body;
     if (!id) {
       const newQuestion = await Servey.create({
@@ -198,7 +198,7 @@ export const getAllServey = async (req, res) => {
 
     res.status(200).json({ message: "success", servey });
   } catch (error) {
-    console.error("Error getting all servey:", error);
+    //console.error("Error getting all servey:", error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -217,7 +217,7 @@ export const deleteServey = async (req, res) => {
     //console.log("result: ", result);
     res.status(200).json({ message: "success", result });
   } catch (err) {
-    console.error("Error deleting servey:", err);
+    //console.error("Error deleting servey:", err);
     res.status(400).json({ message: error.message });
   }
 };
@@ -235,13 +235,13 @@ export const deleteServey = async (req, res) => {
 
 export const addQuestion = async (req, res) => {
   try {
-    console.log("Req.Body: ", req.body);
+    // console.log("Req.Body: ", req.body);
     const newQuestion = await Question.create(req.body);
     res
       .status(201)
       .json({ message: "question have successfully added", newQuestion });
   } catch (error) {
-    console.error("Error adding question:", error);
+    // console.error("Error adding question:", error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -287,12 +287,12 @@ export const getPreviewData = async (req, res) => {
     });
 
     if (!CompanyInfo) {
-      console.log(`Company ${companyName} was not found`);
+      // console.log(`Company ${companyName} was not found`);
       return res.status(404).json({ message: "Company not found" });
     }
 
     const companyId = CompanyInfo.id;
-    console.log("companyId: ", companyId);
+    // console.log("companyId: ", companyId);
 
     // 2. Check whether surveyId exists in Serveys table with the correct companyId
     const SurveyInfo = await Servey.findOne({
@@ -303,13 +303,13 @@ export const getPreviewData = async (req, res) => {
     });
 
     if (!SurveyInfo) {
-      console.log(
-        `Survey with id ${surveyId} was not found for company ${companyId}`
-      );
+      // console.log(
+      //   `Survey with id ${surveyId} was not found for company ${companyId}`
+      // );
       return res.status(404).json({ message: "Survey not found" });
     }
 
-    console.log("SurveyInfo: ", SurveyInfo);
+    // console.log("SurveyInfo: ", SurveyInfo);
 
     // 3. Fetch all questions from the Questions table where surveyId matches
     const QuestionInfo = await Question.findAll({
@@ -323,7 +323,25 @@ export const getPreviewData = async (req, res) => {
       CompanyInfo,
     });
   } catch (error) {
-    console.error("Error getting preview:", error);
+    // console.error("Error getting preview:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getQuestionBySurveyId = async (req, res) => {
+  try {
+    const id = req.params.surveyId;
+    // get all question from question where surveyId = id
+    const question = await Question.findAll({
+      where: {
+        serveyId: id,
+      },
+    });
+    console.log("question: ", question);
+
+    res.status(200).json({ question });
+  } catch (error) {
+    console.error("Error getting question by survey id:", error);
     res.status(400).json({ message: error.message });
   }
 };

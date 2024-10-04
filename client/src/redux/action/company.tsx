@@ -13,6 +13,7 @@ import {
   ADD_QUESTION,
   GET_PREVIEW_PARAMS,
   GET_PREVIEW_DATA,
+  GET_QUESTION_BY_SURVEY_ID,
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
@@ -199,3 +200,19 @@ export const getPreviewData =
       return { error: errorMessage };
     }
   };
+
+export const getQuestionBySurveyId = (id: any) => async (dispatch: any) => {
+  try {
+    const response = await api.getQuestionBySurveyId(id);
+    const data = await dispatch({
+      type: GET_QUESTION_BY_SURVEY_ID,
+      payload: response.data,
+    });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    return { error: errorMessage };
+  }
+};

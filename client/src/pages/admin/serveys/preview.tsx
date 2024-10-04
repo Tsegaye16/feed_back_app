@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { Editor } from "primereact/editor";
 import {
   Avatar,
   Typography,
@@ -100,12 +101,13 @@ const Preview: React.FC = () => {
           {(
             Object.keys(groupedQuestions) as (keyof typeof groupedQuestions)[]
           ).map((type) =>
-            groupedQuestions[type].map((question: any) => {
+            groupedQuestions[type].map((question: any, index: any) => {
               switch (type) {
                 case "TrueFalse":
                   return (
                     <QuestionTrueFalse
                       key={question.id}
+                      index={index}
                       question={question}
                       onChange={handleResponseChange}
                     />
@@ -114,6 +116,7 @@ const Preview: React.FC = () => {
                   return (
                     <QuestionChoice
                       key={question.id}
+                      index={index}
                       question={question}
                       onChange={handleResponseChange}
                     />
@@ -122,6 +125,7 @@ const Preview: React.FC = () => {
                   return (
                     <QuestionRate
                       key={question.id}
+                      index={index}
                       question={question}
                       onChange={handleResponseChange}
                     />
@@ -130,6 +134,7 @@ const Preview: React.FC = () => {
                   return (
                     <QuestionOpen
                       key={question.id}
+                      index={index}
                       question={question}
                       onChange={handleResponseChange}
                     />
@@ -160,10 +165,15 @@ const Preview: React.FC = () => {
 // QuestionTrueFalse Component
 interface QuestionProps {
   question: any;
+  index: any;
   onChange: (questionId: any, value: any) => void;
 }
 
-const QuestionTrueFalse: React.FC<QuestionProps> = ({ question, onChange }) => {
+const QuestionTrueFalse: React.FC<QuestionProps> = ({
+  question,
+  onChange,
+  index,
+}): any => {
   const [value, setValue] = useState<string>("");
 
   const handleChange = (e: any) => {
@@ -174,8 +184,14 @@ const QuestionTrueFalse: React.FC<QuestionProps> = ({ question, onChange }) => {
   return (
     <Card style={cardStyle}>
       <Form.Item
-        label={<Title level={5}>{question.text}</Title>}
-        required
+        label={
+          <Title level={5}>
+            {index + 1}
+            {". "}
+            <span dangerouslySetInnerHTML={{ __html: question.text }} />
+          </Title>
+        }
+        // required
         style={{ marginBottom: 0 }}
       >
         <Radio.Group onChange={handleChange} value={value}>
@@ -191,7 +207,11 @@ const QuestionTrueFalse: React.FC<QuestionProps> = ({ question, onChange }) => {
 };
 
 // QuestionChoice Component
-const QuestionChoice: React.FC<QuestionProps> = ({ question, onChange }) => {
+const QuestionChoice: React.FC<QuestionProps> = ({
+  question,
+  onChange,
+  index,
+}): any => {
   const [value, setValue] = useState<any>(question.singleSelect ? "" : []);
 
   const handleChange = (val: any) => {
@@ -202,8 +222,12 @@ const QuestionChoice: React.FC<QuestionProps> = ({ question, onChange }) => {
   return (
     <Card style={cardStyle}>
       <Form.Item
-        label={<Title level={5}>{question.text}</Title>}
-        required
+        label={
+          <Title level={5}>
+            <span dangerouslySetInnerHTML={{ __html: question.text }} />
+          </Title>
+        }
+        // required
         style={{ marginBottom: 0 }}
       >
         {question.singleSelect ? (
@@ -232,7 +256,11 @@ const QuestionChoice: React.FC<QuestionProps> = ({ question, onChange }) => {
 };
 
 // QuestionRate Component
-const QuestionRate: React.FC<QuestionProps> = ({ question, onChange }) => {
+const QuestionRate: React.FC<QuestionProps> = ({
+  question,
+  onChange,
+  index,
+}): any => {
   const [value, setValue] = useState<number>(0);
 
   const handleChange = (val: number) => {
@@ -243,8 +271,12 @@ const QuestionRate: React.FC<QuestionProps> = ({ question, onChange }) => {
   return (
     <Card style={cardStyle}>
       <Form.Item
-        label={<Title level={5}>{question.text}</Title>}
-        required
+        label={
+          <Title level={5}>
+            <span dangerouslySetInnerHTML={{ __html: question.text }} />
+          </Title>
+        }
+        //required
         style={{ marginBottom: 0 }}
       >
         <Rate onChange={handleChange} value={value} />
@@ -254,22 +286,33 @@ const QuestionRate: React.FC<QuestionProps> = ({ question, onChange }) => {
 };
 
 // QuestionOpen Component
-const QuestionOpen: React.FC<QuestionProps> = ({ question, onChange }) => {
+const QuestionOpen: React.FC<QuestionProps> = ({
+  question,
+  onChange,
+  index,
+}): any => {
   const [value, setValue] = useState<string>("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValue(e.target.value);
-    onChange(question.id, e.target.value);
+  const handleEditorChange = (e: any) => {
+    setValue(e.htmlValue);
+    onChange(question.id, e.htmlValue);
   };
 
   return (
     <Card style={cardStyle}>
       <Form.Item
-        label={<Title level={5}>{question.text}</Title>}
-        required
+        label={
+          <Title level={5}>
+            <span dangerouslySetInnerHTML={{ __html: question.text }} />
+          </Title>
+        }
         style={{ marginBottom: 0 }}
       >
-        <TextArea rows={4} value={value} onChange={handleChange} />
+        <Editor
+          value={value}
+          onTextChange={handleEditorChange}
+          style={{ height: "320px" }}
+        />
       </Form.Item>
     </Card>
   );

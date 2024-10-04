@@ -37,7 +37,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getUserById } from "../../../redux/action/user";
-import Sample from "../serveys/sample";
+import Sample from "../serveys/addQuestion";
 
 const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

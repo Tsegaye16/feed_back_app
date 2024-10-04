@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { Input, Select, Form, Button, Typography, Row, Col, Space } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
-import { addQuestion } from "../../../redux/action/company";
+
+import { Editor } from "primereact/editor";
+
 import { toast } from "react-toastify";
+import { addQuestion } from "../../../redux/action/company";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -77,11 +80,16 @@ const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
 
       <Form layout="vertical" onFinish={handleSubmit}>
         <Form.Item label="Question Text" required>
-          <TextArea
+          {/* <TextArea
             value={questionText}
-            onChange={(value: any) => setQuestionText(value)}
+            onChange={(e) => setQuestionText(e.target.value)}
             placeholder="Enter your question here"
             rows={3}
+          /> */}
+          <Editor
+            value={questionText}
+            onTextChange={(e: any) => setQuestionText(e.htmlValue)}
+            style={{ height: "320px" }}
           />
         </Form.Item>
 
@@ -168,7 +176,7 @@ const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
               Save
             </Button>
             <Button htmlType="button" onClick={handleClose}>
-              Reset
+              Cancel
             </Button>
           </Space>
         </Form.Item>
