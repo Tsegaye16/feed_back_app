@@ -68,12 +68,7 @@ export const getUserById = async (req, res) => {
     // Ensure the id is a valid number
     //const parsedId = parseInt(id, 10);
 
-    if (isNaN(id)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
-
     const newUser = await user.findByPk(id);
-    console.log("Params", newUser);
 
     if (!newUser) {
       return res.status(404).json({ message: "User not found" });

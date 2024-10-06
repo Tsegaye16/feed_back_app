@@ -5,12 +5,14 @@ import { Op } from "sequelize";
 
 export const addOrUpdateCompanyInfo = async (req, res) => {
   try {
+    console.log("managerIdd: ", req.body);
     const { name, backGroundColor, textColor, managerId } = req.body;
     const logo = req.file?.filename; // Extract the filename for the logo
-    const id = parseInt(managerId); // Parse managerId to an integer
+    // const id = managerId; // Parse managerId to an integer
+    // console.log("managerId: ", managerId);
 
     // Check if a company with this managerId already exists
-    let company = await Company.findOne({ where: { managerId: id } });
+    let company = await Company.findOne({ where: { managerId: managerId } });
 
     if (company) {
       // Company with this managerId exists, update the information
@@ -32,7 +34,7 @@ export const addOrUpdateCompanyInfo = async (req, res) => {
         logo,
         backGroundColor,
         textColor,
-        managerId: id,
+        managerId: managerId,
       });
 
       return res.status(201).json({
@@ -41,14 +43,14 @@ export const addOrUpdateCompanyInfo = async (req, res) => {
       });
     }
   } catch (error) {
-    //console.error("Error adding or updating company info:", error);
+    console.error("Error adding or updating company info:", error);
     res.status(500).json({ message: "Internal Server Error", Error: error });
   }
 };
 
 export const getCompanyById = async (req, res) => {
   try {
-    const id = parseInt(req.params.id); // Parse the id to an integer
+    const id = req.params.id; // Parse the id to an integer
     const company = await Company.findOne({ where: { managerId: id } });
     if (!company) {
       return res.status(404).json({ message: "Company not found" });
@@ -160,11 +162,12 @@ export const addChoiceQuestion = async (req, res) => {
 
 export const addServey = async (req, res) => {
   try {
-    //console.log("updatedQuestion:", req.body);
-    const { surveyName, isPublished, companyId, id } = req.body;
+    console.log("updatedQuestion:", req.body);
+    const { surveyName, secretPhrase, isPublished, companyId, id } = req.body;
     if (!id) {
       const newQuestion = await Servey.create({
         name: surveyName,
+        secretePhrase: secretPhrase,
         isPublished: isPublished,
         companyId: companyId,
       });
@@ -176,6 +179,7 @@ export const addServey = async (req, res) => {
     const updatedQuestion = await Servey.update(
       {
         name: surveyName,
+        secretePhrase: secretPhrase,
         isPublished: isPublished,
         companyId: companyId,
       },
@@ -216,7 +220,7 @@ export const deleteServey = async (req, res) => {
     });
     //console.log("result: ", result);
     res.status(200).json({ message: "success", result });
-  } catch (err) {
+  } catch (error) {
     //console.error("Error deleting servey:", err);
     res.status(400).json({ message: error.message });
   }
@@ -343,5 +347,95 @@ export const getQuestionBySurveyId = async (req, res) => {
   } catch (error) {
     console.error("Error getting question by survey id:", error);
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const deleteQuestionById = async (req, res) => {
+  try {
+    const id = req.body;
+    console.log("ID's: ", id);
+    // delete all rows from surver based on the list of id
+    const result = await Question.destroy({
+      where: {
+        id: {
+          [Op.in]: id,
+        },
+      },
+    });
+
+    res.status(200).json({ message: "success", result });
+  } catch (error) {
+    //console.error("Error deleting servey:", err);
+    res.status(400).json({ message: error.message });
+  }
+};
+// Update question
+export const updateQuestion = async (req, res) => {
+  try {
+    const id = req.params.id;
+    // I need to update the question based on the id
+    const result = await Question.update(req.body, {
+      where: {
+        id: id,
+      },
+    });
+    res.status(200).json({ message: "success", result });
+  } catch (error) {
+    console.error("Error updating question:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// get a full servey for client
+export const getFullSurvey = async (req, res) => {
+  try {
+    const secretePhrase = req.params.secretePhrase;
+    // 1. get companyId from survey table where secretePhrase = secretePhrase
+    const data = await Servey.findOne({
+      where: {
+        secretePhrase: secretePhrase,
+      },
+      attributes: ["id", "companyId"],
+    });
+    if (!data) {
+      return res
+        .status(404)
+        .json({ message: "Survey not found on this secrete phrase" });
+    }
+    const companyId = data.dataValues.companyId;
+    const surveyId = data.dataValues.id;
+    console.log("surveyId: ", surveyId);
+    // 2. get entire question data from question table where surveyId = surveyId
+
+    const questionData = await Question.findOne({
+      where: {
+        serveyId: surveyId,
+      },
+    });
+
+    if (!questionData) {
+      return res
+        .status(404)
+        .json({ message: "Question not found on this survey" });
+    }
+
+    // 3. get full company information where companyId = companyId
+    const companyData = await Company.findOne({
+      where: {
+        id: companyId,
+      },
+    });
+
+    // 4. get managerId from Company where companyId = companyId
+
+    if (!companyData) {
+      return res
+        .status(404)
+        .json({ message: "Company not found on this secrete phrase" });
+    }
+
+    res.status(200).json({ message: "success", companyData, questionData });
+  } catch (error) {
+    console.error("Error getting full survey:", error);
   }
 };

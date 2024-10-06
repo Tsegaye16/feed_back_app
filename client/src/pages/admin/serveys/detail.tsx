@@ -1,24 +1,42 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Col, Row, Table, Typography, Space, Flex } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Row,
+  Table,
+  Typography,
+  Space,
+  Flex,
+  message,
+  Modal,
+} from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import "antd/dist/reset.css";
+import { TableRowSelection } from "antd/es/table/interface";
+import { deleteQuestionById } from "../../../redux/action/company";
 import {
   getQuestionBySurveyId,
   getPreviewParams,
 } from "../../../redux/action/company";
-import "antd/dist/reset.css";
-import { TableRowSelection } from "antd/es/table/interface";
+import shadows from "@mui/material/styles/shadows";
 
 const { Title, Text } = Typography;
 
 interface DetailProps {
   id: any;
   onClickAddQuestion: any;
+  onClickEditQuestion: any;
 }
 
-const Detail: React.FC<DetailProps> = ({ id, onClickAddQuestion }) => {
+const Detail: React.FC<DetailProps> = ({
+  id,
+  onClickAddQuestion,
+  onClickEditQuestion,
+}) => {
   const dispatch = useDispatch();
-  console.log("Id: ", id);
+  const [deletingId, setDeletingId] = useState<React.Key | React.Key[]>([]);
 
   useEffect(() => {
     dispatch(getQuestionBySurveyId(id) as any);
@@ -27,7 +45,7 @@ const Detail: React.FC<DetailProps> = ({ id, onClickAddQuestion }) => {
   const questions = useSelector(
     (state: any) => state.question?.questionDaata?.question
   );
-  console.log("questions: ", questions);
+  // console.log("questions: ", questions);
 
   const handlePreview = async (event: any) => {
     event.preventDefault();
@@ -37,7 +55,7 @@ const Detail: React.FC<DetailProps> = ({ id, onClickAddQuestion }) => {
     const surveyId = response?.payload?.serveyId;
 
     if (companyName && surveyId) {
-      const previewUrl = `${window.location.origin}/${companyName}/surveys/${surveyId}`;
+      const previewUrl = `${window.location.origin}/${companyName}/surveys/preview/${surveyId}`;
       window.open(previewUrl, "_blank");
     } else {
       toast.error("Preview data is missing.");
@@ -70,42 +88,26 @@ const Detail: React.FC<DetailProps> = ({ id, onClickAddQuestion }) => {
         <Space size="middle">
           <Button
             type="link"
-            //onClick={() => onEditQuestion(record.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClickEditQuestion(record);
+            }}
           >
             Edit
           </Button>
-          <Button
-            type="link"
-            danger
-            //onClick={() => onDeleteQuestion(record.id)}
-          >
+          <Button type="link" danger onClick={() => showModal(record.id)}>
             Delete
           </Button>
-          <Button
-            type="link"
-            //onClick={() => onShowQuestion(record.id)}
-          >
-            Show
-          </Button>
+          <Button type="link">Show more</Button>
         </Space>
       ),
     },
   ];
 
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+    // console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -115,6 +117,51 @@ const Detail: React.FC<DetailProps> = ({ id, onClickAddQuestion }) => {
   };
 
   const hasSelected = selectedRowKeys.length > 0;
+  // Delete button functionality
+  const handleDelete = async () => {
+    // Convert to array if it's a single ID
+    const idsToDelete = Array.isArray(deletingId) ? deletingId : [deletingId];
+    if (idsToDelete.length === 0) return;
+    const response = await dispatch(deleteQuestionById(idsToDelete) as any);
+    console.log("response: ", response);
+    if (response?.error) {
+      message.error(`${response.error}`);
+    } else if (response?.payload?.message) {
+      setSelectedRowKeys(new Set() as any);
+      setConfirmLoading(true);
+      setTimeout(() => {
+        setOpen(false);
+        setConfirmLoading(false);
+      }, 1000);
+      await dispatch(getQuestionBySurveyId(id) as any);
+      message.success(`${response?.payload?.message}`);
+    }
+  };
+  // Modal for confirm to delete the question
+  const [open, setOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
+  const showModal = (idOrIds: React.Key | React.Key[]) => {
+    setDeletingId(idOrIds);
+    setOpen(true);
+  };
+
+  const handleCancel = () => {
+    console.log("Clicked cancel button");
+    setOpen(false);
+  };
+  const confirmModal = (
+    <Modal
+      title="Title"
+      open={open}
+      onOk={handleDelete}
+      // onClick={() => handleDelete(record.id)}
+      confirmLoading={confirmLoading}
+      onCancel={handleCancel}
+    >
+      <p>You are deleting a question</p>
+    </Modal>
+  );
 
   return (
     <div style={{ padding: "20px", backgroundColor: "#f5f5f5" }}>
@@ -144,9 +191,6 @@ const Detail: React.FC<DetailProps> = ({ id, onClickAddQuestion }) => {
         </Col>
       </Row>
 
-      {/* Questions Table */}
-
-      {/* Action Buttons */}
       <Row
         justify="space-between"
         gutter={[16, 16]}
@@ -174,27 +218,23 @@ const Detail: React.FC<DetailProps> = ({ id, onClickAddQuestion }) => {
       </Title>
       <Flex gap="middle" vertical>
         <Flex align="center" gap="middle" justify="space-between">
-          {hasSelected ? `Selected ${selectedRowKeys.length} items` : null}
+          <Title level={5} type="secondary">
+            {hasSelected ? `Selected ${selectedRowKeys.length} items` : null}
+          </Title>
 
-          {selectedRowKeys.length === 1 ? (
+          {/* {selectedRowKeys.length === 1 ? (
+            <Button type="primary">Edit</Button>
+          ) : null} */}
+          {selectedRowKeys.length >= 1 ? (
             <Button
               type="primary"
-              //  onClick={start}
-              disabled={!hasSelected}
-              // loading={loading}
+              //disabled={!hasSelected}
+              danger
+              onClick={() => showModal(selectedRowKeys)}
             >
-              Edit
+              Delete
             </Button>
           ) : null}
-          <Button
-            type="primary"
-            onClick={start}
-            disabled={!hasSelected}
-            // loading={loading}
-            danger
-          >
-            Delete
-          </Button>
         </Flex>
         <Table
           rowSelection={rowSelection}
@@ -203,6 +243,7 @@ const Detail: React.FC<DetailProps> = ({ id, onClickAddQuestion }) => {
           rowKey="id"
           pagination={{ pageSize: 10 }}
         />
+        {confirmModal}
       </Flex>
     </div>
   );

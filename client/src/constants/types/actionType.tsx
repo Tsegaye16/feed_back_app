@@ -18,3 +18,8 @@ export const ADD_QUESTION = "ADD_QUESTION";
 export const GET_PREVIEW_PARAMS = "GET_PREVIEW_PARAMS";
 export const GET_PREVIEW_DATA = "GET_PREVIEW_DATA";
 export const GET_QUESTION_BY_SURVEY_ID = "GET_QUESTION_BY_SURVEY_ID";
+export const DELETE_QUESTION_BY_ID = "DELETE_QUESTION_BY_ID";
+export const UPDATE_QUESTION = "UPDATE_QUESTION";
+
+// get full servey for client
+export const GET_FULL_SURVEY = "GET_FULL_SURVEY";

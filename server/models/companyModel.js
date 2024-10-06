@@ -1,8 +1,13 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, UUID, UUIDV4 } from "sequelize";
 
 import { sequelize } from "../db.js";
 
 const Company = sequelize.define("Company", {
+  id: {
+    type: UUID,
+    defaultValue: UUIDV4,
+    primaryKey: true,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -19,11 +24,11 @@ const Company = sequelize.define("Company", {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  managerId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    unique: true,
-  },
+  // managerId: {
+  //   type: DataTypes.STRING,
+  //   allowNull: false,
+  //   unique: true,
+  // },
 });
 
 export default Company;

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { Button, message, Table, Typography, Space, Flex } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode, JwtPayload } from "jwt-decode";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+
 import { getUserById } from "../../../redux/action/user";
 import {
   addCompanyInfo,
@@ -12,29 +12,21 @@ import {
   deleteServey,
 } from "../../../redux/action/company";
 import {
-  Button,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   Box,
-  Typography,
   Modal,
   TextField,
   Grid,
   Paper,
   Input,
-  TablePagination,
-  Checkbox,
-  Toolbar,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { toast } from "react-toastify";
+
+import { TableRowSelection } from "antd/es/table/interface";
+const { Title, Text } = Typography;
 
 interface MyJwtPayload extends JwtPayload {
   id: string;
@@ -48,6 +40,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   const [openCompanyModal, setOpenCompanyModal] = useState(false);
   const [openSurveyModal, setOpenSurveyModal] = useState(false);
   const [surveyName, setSurveyName] = useState("");
+  const [secretPhrase, setSecretPhrase] = useState("");
   const [selectedSurveys, setSelectedSurveys] = useState<any>(new Set());
   const [editingId, setEditingId] = useState(null);
 
@@ -58,7 +51,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
     const decoded = jwtDecode<MyJwtPayload>(currenTtoken);
     userId = decoded.id;
   }
-
+  console.log("userId: ", userId);
   useEffect(() => {
     if (currenTtoken) {
       dispatch(getUserById(userId) as any);
@@ -67,6 +60,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
 
   const user = useSelector((state: any) => state.user?.user?.newUser);
   const managerId = user?.id;
+  console.log("managerId: ", user);
   const company = useSelector(
     (state: any) => state.company?.companyData?.result
   );
@@ -76,10 +70,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === true)
     : [];
-  ////////////////////////////////////////////////////////////////////////
-  // Ant Table
-
-  //////////////////////////////////////////////////////////////////////////
 
   useEffect(() => {
     if (user) {
@@ -123,11 +113,11 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
     formData.append("managerId", managerId);
 
     const response = await dispatch(addCompanyInfo(formData) as any);
-    if (response) {
-      toast.success(`${response?.payload?.message}`);
+    if (response?.payload?.message) {
+      message.success(`${response?.payload?.message}`);
       setOpenCompanyModal(false);
     } else if (response?.error) {
-      toast.error(`${response.error}`);
+      message.error(`${response.error}`);
     }
   };
 
@@ -136,8 +126,20 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   };
 
   const handleCancelSurveyModal = () => {
-    setOpenSurveyModal(false);
     setSurveyName("");
+    setSecretPhrase("");
+    setOpenSurveyModal(false);
+  };
+  const generateSecretPhrase = () => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
+    }
+    return result;
   };
 
   const handleSaveAsDraft = async () => {
@@ -145,20 +147,24 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       const response = await dispatch(
         addServey({
           surveyName,
+          secretPhrase,
           isPublished: false,
           companyId: company?.id,
           id: editingId,
         }) as any
       );
-      if (response) {
-        toast.success("Survey saved as draft!");
+      if (response?.payload?.message) {
+        message.success(`${response?.payload?.message}`);
         setOpenSurveyModal(false);
         setSurveyName("");
+        setSecretPhrase("");
+        dispatch(getAllServey(company.id) as any);
         selectedSurveys.clear();
+      } else if (response?.error) {
+        message.error(`${response.error}`);
       }
-      dispatch(getAllServey(company.id) as any);
     } else {
-      toast.error("Survey name is required");
+      message.error("Survey name is required");
     }
   };
 
@@ -167,69 +173,40 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       const response = await dispatch(
         addServey({
           surveyName,
+          secretPhrase,
           isPublished: true,
           companyId: company?.id,
           id: editingId,
         }) as any
       );
-      if (response) {
-        toast.success(`${response?.payload?.message}`);
+      if (response?.payload?.message) {
+        message.success(`${response?.payload?.message}`);
         setOpenSurveyModal(false);
         setSurveyName("");
+        setSecretPhrase("");
+        dispatch(getAllServey(company.id) as any);
+        selectedSurveys.clear();
       } else if (response?.error) {
+        message.error(`${response.error}`);
       }
       console.log("response: ", response);
-
-      dispatch(getAllServey(company.id) as any);
     } else {
-      toast.error("Survey name is required");
+      message.error("Survey name is required");
     }
   };
-
-  // State for pagination
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  // Handle page change
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  // Handle rows per page change
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0); // Reset page when rows per page change
-  };
-
-  // Handle survey selection
-  const handleSelectSurvey = (surveyId: number) => {
-    const newSelection = new Set(selectedSurveys);
-    if (newSelection.has(surveyId)) {
-      newSelection.delete(surveyId);
-    } else {
-      newSelection.add(surveyId);
-    }
-    setSelectedSurveys(newSelection);
-  };
-
-  // Check if survey is selected
-  const isSurveySelected = (surveyId: number) => selectedSurveys.has(surveyId);
 
   // Handle delete surveys
-  const handleDeleteSurveys = async (event: any) => {
-    event.preventDefault();
-
+  const handleDeleteSurveys = async (idOrIds: React.Key | React.Key[]) => {
     // Convert Set to array
-    const selectedIds = Array.from(selectedSurveys);
+    const selectedIds = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
 
     if (selectedIds.length === 0) return; // Ensure there's something to delete
 
     // Send array of selected IDs to backend
     const response = await dispatch(deleteServey(selectedIds) as any);
     if (response) {
-      toast.success("Survey deleted successfully!");
+      message.success("Survey deleted successfully!");
+      setSelectedRowKeys(new Set() as any);
       setOpen(false);
     }
     dispatch(getAllServey(company.id) as any);
@@ -239,38 +216,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   };
 
   // Toolbar component for actions
-  const CustomToolbar: React.FC = () => {
-    const selectedCount = selectedSurveys.size;
 
-    return (
-      <>
-        {selectedCount > 0 && (
-          <Toolbar sx={{ backgroundColor: "#e6f7ff" }}>
-            <Typography
-              variant="h6"
-              display="flex"
-              justifyContent="space-between"
-              sx={{
-                flex: "1 1 100%",
-                color: "inherit",
-                fontWeight: "bold",
-              }}
-            >
-              {selectedCount} selected
-              <Button color="error" onClick={handleClickOpen}>
-                Delete <DeleteIcon sx={{ ml: 1 }} />
-              </Button>
-              {selectedCount === 1 && (
-                <Button onClick={() => handleAddSurveyClick("edit")}>
-                  Edit <EditIcon sx={{ ml: 1 }} />
-                </Button>
-              )}
-            </Typography>
-          </Toolbar>
-        )}
-      </>
-    );
-  };
   // Delete Confirmation detail
   const [open, setOpen] = useState(false);
 
@@ -290,7 +236,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">
-        {"Use Google's location service?"}
+        {"You are deleting survey"}
       </DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
@@ -299,7 +245,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>No</Button>
-        <Button onClick={handleDeleteSurveys} autoFocus>
+        <Button onClick={() => handleDeleteSurveys(selectedRowKeys)} autoFocus>
           Yes
         </Button>
       </DialogActions>
@@ -311,28 +257,90 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   const handleAddSurveyClick = (option: any) => {
     if (option === "add") {
       setEditingId(null);
+      setSecretPhrase(generateSecretPhrase());
       setOpenSurveyModal(true);
     } else if (option === "edit") {
-      const editingId = Array.from(selectedSurveys)[0];
-      console.log("surveys: ", surveys);
+      const editingId = Array.from(selectedRowKeys)[0];
+      //console.log("surveys: ", surveys);
       const editingSurvey = surveys.find(
         (servey: any) => servey.id === editingId
       );
       //console.log("editingSurvey:", editingSurvey);
       setSurveyName(editingSurvey?.name);
+      setSecretPhrase(editingSurvey?.secretePhrase || generateSecretPhrase());
       setEditingId(editingId as any);
       setOpenSurveyModal(true);
     }
 
-    console.log("surveyName: ", surveyName);
+    // console.log("surveyName: ", surveyName);
   };
+
+  //////// Ant Design Table
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const columns = [
+    {
+      title: "Survey ID",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title: "Survey Name",
+      dataIndex: "name",
+      key: "name",
+      render: (htmlContent: string) => (
+        <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+      ),
+    },
+    {
+      title: "Secret Phrase",
+      dataIndex: "secretePhrase",
+      key: "secretePhrase",
+    },
+    {
+      title: "Date Created",
+      dataIndex: "createdAt", // Use the correct dataIndex to access createdAt
+      key: "createdAt",
+      render: (createdAt: string) => (
+        <span>{new Date(createdAt).toLocaleDateString()}</span>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (text: any, record: any) => (
+        <Space size="middle">
+          <Button
+            type="link"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDetailClick(record.id); // Make sure onDetailClick is defined
+            }}
+          >
+            Detail
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    // console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const rowSelection: TableRowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
+
+  const hasSelected = selectedRowKeys.length > 0;
 
   return (
     <Box component="section" sx={{ p: 3, width: "100%" }}>
       {/* Page Heading */}
-      <Typography variant="h4" gutterBottom>
-        Published Surveys
-      </Typography>
+      <Title level={5} style={{ marginBottom: "20px" }}>
+        Published Survey
+      </Title>
 
       {/* Add New Survey Button */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
@@ -352,187 +360,48 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       {/* Company Check */}
       {!company ? (
         <Paper sx={{ p: 3, mb: 3, textAlign: "start" }}>
-          <Typography variant="h6" gutterBottom>
+          <Title level={5}>
             You have to register your company before proceeding to other tasks.
-          </Typography>
-          <Button variant="contained" onClick={() => setOpenCompanyModal(true)}>
-            Let's Start
-          </Button>
+          </Title>
+          <Button onClick={() => setOpenCompanyModal(true)}>Let's Start</Button>
         </Paper>
       ) : (
         <>
-          {/* Custom Toolbar */}
-          <CustomToolbar />
-
           {/* Surveys Table */}
-          {surveyList.length ? (
-            <>
-              <Table
-                component={Paper}
-                sx={{
-                  mb: 3,
-                  borderRadius: "10px",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                  overflow: "hidden",
-                }}
-              >
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedSurveys.size === surveyList.length}
-                        onChange={() => {
-                          if (selectedSurveys.size === surveyList.length) {
-                            setSelectedSurveys(new Set());
-                          } else {
-                            setSelectedSurveys(
-                              new Set(surveyList.map((survey) => survey.id))
-                            );
-                          }
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        color: "#555",
-                        fontSize: "16px",
-                        padding: "12px",
-                        textAlign: "center",
-                        borderBottom: "2px solid #ddd",
-                      }}
-                    >
-                      Survey ID
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        color: "#555",
-                        fontSize: "16px",
-                        padding: "12px",
-                        textAlign: "center",
-                        borderBottom: "2px solid #ddd",
-                      }}
-                    >
-                      Survey Name
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        color: "#555",
-                        fontSize: "16px",
-                        padding: "12px",
-                        textAlign: "center",
-                        borderBottom: "2px solid #ddd",
-                      }}
-                    >
-                      Date Created
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontWeight: "bold",
-                        color: "#555",
-                        fontSize: "16px",
-                        padding: "12px",
-                        textAlign: "center",
-                        borderBottom: "2px solid #ddd",
-                      }}
-                    >
-                      Action
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {surveyList
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((survey: any) => (
-                      <TableRow
-                        key={survey.id}
-                        onClick={() => handleSelectSurvey(survey.id)}
-                        sx={{
-                          "&:hover": {
-                            backgroundColor: "#f1f1f1",
-                          },
-                          backgroundColor: isSurveySelected(survey.id)
-                            ? "#e6f7ff"
-                            : "inherit",
-                        }}
-                      >
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={isSurveySelected(survey.id)}
-                            onChange={() => handleSelectSurvey(survey.id)}
-                          />
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            padding: "12px",
-                            textAlign: "center",
-                            borderBottom: "1px solid #ddd",
-                            color: "#333",
-                          }}
-                        >
-                          {survey.id}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            padding: "12px",
-                            textAlign: "center",
-                            borderBottom: "1px solid #ddd",
-                            color: "#333",
-                          }}
-                        >
-                          {survey.name}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            padding: "12px",
-                            textAlign: "center",
-                            borderBottom: "1px solid #ddd",
-                            color: "#333",
-                          }}
-                        >
-                          {new Date(survey.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            padding: "12px",
-                            textAlign: "center",
-                            borderBottom: "1px solid #ddd",
-                          }}
-                        >
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDetailClick(survey.id);
-                            }}
-                          >
-                            Detail
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
 
-              {/* Pagination */}
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={surveyList.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </>
-          ) : (
-            <Typography variant="h6" gutterBottom>
-              There are no registered surveys yet.
-            </Typography>
-          )}
+          <Flex gap="middle" vertical>
+            <Flex align="center" gap="middle" justify="space-between">
+              {hasSelected ? `Selected ${selectedRowKeys.length} items` : null}
+
+              {selectedRowKeys.length === 1 ? (
+                <Button
+                  type="primary"
+                  disabled={!hasSelected}
+                  onClick={() => handleAddSurveyClick("edit")}
+                >
+                  Edit
+                </Button>
+              ) : null}
+              {selectedRowKeys.length >= 1 ? (
+                <Button
+                  type="primary"
+                  //disabled={!hasSelected}
+                  danger
+                  onClick={handleClickOpen}
+                >
+                  Delete
+                </Button>
+              ) : null}
+            </Flex>
+
+            <Table
+              rowSelection={rowSelection}
+              columns={columns}
+              dataSource={surveyList}
+              rowKey="id"
+              pagination={{ pageSize: 10 }}
+            />
+          </Flex>
         </>
       )}
 
@@ -550,9 +419,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
             boxShadow: 24,
           }}
         >
-          <Typography variant="h6" gutterBottom>
-            Register Company
-          </Typography>
+          <Title level={5}>Register Company</Title>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -567,9 +434,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="body1" gutterBottom>
-                Upload Logo
-              </Typography>
+              <Title level={5}>Upload Logo</Title>
               <Input type="file" fullWidth onChange={handleFileChange} />
             </Grid>
             <Grid item xs={12}>
@@ -610,8 +475,8 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
               sx={{ display: "flex", justifyContent: "space-between" }}
             >
               <Button
-                variant="contained"
-                color="primary"
+                // variant="contained"
+                //color="primary"
                 onClick={handleSaveCompany}
               >
                 Save
@@ -637,19 +502,25 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
             boxShadow: 24,
           }}
         >
-          <Typography variant="h6" gutterBottom>
-            {!editingId ? "Add New Survey" : "Updating servey"}
-          </Typography>
+          <Title level={5}>
+            {!editingId ? "Add New Survey" : "Updating Survey"}
+          </Title>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Survey Name"
-                variant="outlined"
-                // value={selectedSurveyName}
-                // onChange={(e) => setSelectedSurveyName(e.target.value)}
                 value={surveyName}
                 onChange={(e) => setSurveyName(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Secret Phrase"
+                value={secretPhrase}
+                onChange={(e) => setSecretPhrase(e.target.value)}
+                helperText="This is a unique secret phrase that we sugest, you can change"
               />
             </Grid>
             <Grid
@@ -657,27 +528,9 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
               xs={12}
               sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
             >
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={handlePublish}
-              >
-                Publish
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleSaveAsDraft}
-              >
-                Save as Draft
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleCancelSurveyModal}
-              >
-                Cancel
-              </Button>
+              <Button onClick={handlePublish}>Publish</Button>
+              <Button onClick={handleSaveAsDraft}>Save as Draft</Button>
+              <Button onClick={handleCancelSurveyModal}>Cancel</Button>
             </Grid>
           </Grid>
         </Paper>

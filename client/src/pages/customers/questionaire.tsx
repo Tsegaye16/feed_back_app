@@ -106,7 +106,7 @@ const Questionaire = () => {
   };
 
   const renderOptions = () => {
-    if (currentQuestion?.type === "true_false") {
+    if (currentQuestion?.type === "True/False") {
       return (
         <RadioGroup
           name={`question_${currentQuestion.id}`}
@@ -121,7 +121,7 @@ const Questionaire = () => {
       );
     }
 
-    if (currentQuestion?.type === "multiple_choice") {
+    if (currentQuestion?.type === "Choice") {
       return currentQuestion.options.map((option: string, index: number) => (
         <FormControlLabel
           key={index}
@@ -156,7 +156,7 @@ const Questionaire = () => {
       ));
     }
 
-    if (currentQuestion?.type === "rate") {
+    if (currentQuestion?.type === "Rate") {
       return (
         <Rating
           name={`question_${currentQuestion.id}`}
@@ -170,7 +170,7 @@ const Questionaire = () => {
       );
     }
 
-    if (currentQuestion?.type === "essay") {
+    if (currentQuestion?.type === "Open") {
       return (
         <TextField
           label="Essay"

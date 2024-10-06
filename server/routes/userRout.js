@@ -16,6 +16,9 @@ import {
   getPreviewParams,
   getPreviewData,
   getQuestionBySurveyId,
+  deleteQuestionById,
+  updateQuestion,
+  getFullSurvey,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -36,5 +39,7 @@ router.route("/addQuestion").post(addQuestion);
 router.route("/getPreviewParams/:serveyId").get(getPreviewParams);
 router.route("/getPreviewData/:companyName/:surveyId").get(getPreviewData);
 router.route("/getQuestionBySurveyId/:surveyId").get(getQuestionBySurveyId);
-
+router.route("/deleteQuestionById").delete(deleteQuestionById);
+router.route("/updateQuestion/:id").put(updateQuestion);
+router.route("/getFullSurvey/:secretePhrase").get(getFullSurvey);
 export default router;

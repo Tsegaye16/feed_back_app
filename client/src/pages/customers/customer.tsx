@@ -9,20 +9,25 @@ import {
   Radio,
   Checkbox,
   Rate,
-  Input,
   Button,
   Form,
   message,
+  Progress,
+  Alert,
 } from "antd";
-import { getPreviewData } from "../../../redux/action/company";
+
 import "antd/dist/reset.css";
+import { getPreviewData } from "../../redux/action/company";
 
-const { Title, Text } = Typography;
-const { TextArea } = Input;
+const { Title } = Typography;
 
-const Preview: React.FC = () => {
+const Customer = () => {
   const dispatch: any = useDispatch();
   const { companyName, surveyId } = useParams();
+
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [responses, setResponses] = useState<any>({}); // Store all responses
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,30 +41,49 @@ const Preview: React.FC = () => {
   const questions = previewData?.questions || [];
   const companyInfo = previewData?.CompanyInfo;
 
-  // State to hold all responses
-  const [responses, setResponses] = useState<any>({});
-
   // Handler to collect responses
   const handleResponseChange = (questionId: any, value: any) => {
     setResponses((prev: any) => ({ ...prev, [questionId]: value }));
   };
 
-  // Submit handler
-  const handleSubmit = () => {
-    // Here you would typically dispatch an action to submit the responses
-    console.log("User Responses:", responses);
-    message.success("Thank you for your feedback!");
+  // Handler to go to the next question
+  const handleNext = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
 
-  // Group questions by their type in the required order
-  const groupedQuestions = {
-    TrueFalse: questions.filter((q: any) => q.type === "True/False"),
-    Choice: questions.filter((q: any) => q.type === "Choice"),
-    Rate: questions.filter((q: any) => q.type === "Rate"),
-    Open: questions.filter((q: any) => q.type === "Open"),
+  // Handler to go to the previous question
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
   };
+
+  // Submit handler
+  const handleSubmit = () => {
+    console.log("User Responses:", responses);
+    message.success("Thank you for your feedback!");
+    setIsSubmitted(true);
+  };
+
+  // Calculate progress percentage
+  const calculateProgress = () => {
+    const answeredCount = Object.keys(responses).length;
+    return (answeredCount / questions.length) * 100;
+  };
+
+  // If no preview data, return an error message
   if (!previewData) {
-    return <div>something was wrong...</div>;
+    return <div>Something went wrong...</div>;
+  }
+  if (isSubmitted) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <Title level={3}>Thank you for your feedback!</Title>
+        <p>Your responses have been submitted successfully.</p>
+      </div>
+    );
   }
   return (
     <div style={{ backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
@@ -67,8 +91,8 @@ const Preview: React.FC = () => {
       {companyInfo && (
         <div
           style={{
-            backgroundColor: companyInfo.backGroundColor || "#fff",
-            color: companyInfo.textColor || "#000",
+            backgroundColor: companyInfo.backGroundColor,
+            color: companyInfo.textColor,
             display: "flex",
             alignItems: "center",
             padding: "16px",
@@ -93,98 +117,133 @@ const Preview: React.FC = () => {
       )}
 
       {/* Questions Display */}
+
+      <div style={{ marginTop: "100px", padding: "16px" }}>
+        <Progress percent={calculateProgress()} />
+      </div>
       <div
         style={{
           padding: "24px",
-          marginTop: "100px",
           maxWidth: "800px",
           marginLeft: "auto",
           marginRight: "auto",
         }}
       >
         <Form layout="vertical" onFinish={handleSubmit}>
-          {/* Render all question types */}
-          {(
-            Object.keys(groupedQuestions) as (keyof typeof groupedQuestions)[]
-          ).map((type) =>
-            groupedQuestions[type].map((question: any, index: any) => {
-              switch (type) {
-                case "TrueFalse":
-                  return (
-                    <QuestionTrueFalse
-                      key={question.id}
-                      index={index}
-                      question={question}
-                      onChange={handleResponseChange}
-                    />
-                  );
-                case "Choice":
-                  return (
-                    <QuestionChoice
-                      key={question.id}
-                      index={index}
-                      question={question}
-                      onChange={handleResponseChange}
-                    />
-                  );
-                case "Rate":
-                  return (
-                    <QuestionRate
-                      key={question.id}
-                      index={index}
-                      question={question}
-                      onChange={handleResponseChange}
-                    />
-                  );
-                case "Open":
-                  return (
-                    <QuestionOpen
-                      key={question.id}
-                      index={index}
-                      question={question}
-                      onChange={handleResponseChange}
-                    />
-                  );
-                default:
-                  return null;
-              }
-            })
+          {/* Render the current question */}
+          {questions.length > 0 && (
+            <QuestionRenderer
+              question={questions[currentIndex]}
+              currentIndex={currentIndex}
+              responses={responses}
+              onChange={handleResponseChange}
+            />
           )}
 
+          {/* Navigation Buttons */}
+          <Form.Item>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Button onClick={handlePrevious} disabled={currentIndex === 0}>
+                Previous
+              </Button>
+              <Button
+                onClick={handleNext}
+                disabled={currentIndex === questions.length - 1}
+              >
+                Next
+              </Button>
+            </div>
+          </Form.Item>
+
           {/* Submit Button */}
-          {/* <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              style={{ marginTop: "24px" }}
-            >
-              Submit Feedback
-            </Button>
-          </Form.Item> */}
+          {currentIndex === questions.length - 1 && (
+            <Form.Item>
+              <Button type="primary" htmlType="submit" block>
+                Submit Feedback
+              </Button>
+            </Form.Item>
+          )}
         </Form>
       </div>
     </div>
   );
 };
 
-// QuestionTrueFalse Component
 interface QuestionProps {
   question: any;
-  index: any;
-  onChange: (questionId: any, value: any) => void;
+  index: number;
+  selected?: any; // Add the selected prop to hold the user's answer
+  onChange: (questionId: any, value: any) => void; // onChange function signature
 }
+
+const QuestionRenderer = ({
+  question,
+  currentIndex,
+  responses,
+  onChange,
+}: any) => {
+  const selectedAnswer = responses[question.id] || null; // Use the stored response for the current question
+  switch (question.type) {
+    case "True/False":
+      return (
+        <QuestionTrueFalse
+          key={question.id}
+          index={currentIndex}
+          question={question}
+          selected={selectedAnswer} // Pass the selected answer here
+          onChange={onChange}
+        />
+      );
+    case "Choice":
+      return (
+        <QuestionChoice
+          key={question.id}
+          index={currentIndex}
+          question={question}
+          selected={selectedAnswer} // Pass the selected answer here
+          onChange={onChange}
+        />
+      );
+    case "Rate":
+      return (
+        <QuestionRate
+          key={question.id}
+          index={currentIndex}
+          question={question}
+          selected={selectedAnswer} // Pass the selected answer here
+          onChange={onChange}
+        />
+      );
+    case "Open":
+      return (
+        <QuestionOpen
+          key={question.id}
+          index={currentIndex}
+          question={question}
+          selected={selectedAnswer} // Pass the selected answer here
+          onChange={onChange}
+        />
+      );
+    default:
+      return null;
+  }
+};
+
+// QuestionTrueFalse Component
+// interface QuestionProps {
+//   question: any;
+//   index: any;
+//   onChange: (questionId: any, value: any) => void;
+// }
 
 const QuestionTrueFalse: React.FC<QuestionProps> = ({
   question,
+  selected, // Use selected prop to set the value
   onChange,
   index,
 }): any => {
-  const [value, setValue] = useState<string>("");
-
   const handleChange = (e: any) => {
-    setValue(e.target.value);
-    onChange(question.id, e.target.value);
+    onChange(question.id, e.target.value); // Directly update the selected answer in the parent
   };
 
   return (
@@ -197,10 +256,9 @@ const QuestionTrueFalse: React.FC<QuestionProps> = ({
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
         }
-        // required
         style={{ marginBottom: 0 }}
       >
-        <Radio.Group onChange={handleChange} value={value}>
+        <Radio.Group onChange={handleChange} value={selected}>
           {question.additionalOption.split("/").map((option: string) => (
             <Radio key={option} value={option}>
               {option}
@@ -215,14 +273,12 @@ const QuestionTrueFalse: React.FC<QuestionProps> = ({
 // QuestionChoice Component
 const QuestionChoice: React.FC<QuestionProps> = ({
   question,
+  selected, // Use selected prop to set the value
   onChange,
   index,
 }): any => {
-  const [value, setValue] = useState<any>(question.singleSelect ? "" : []);
-
   const handleChange = (val: any) => {
-    setValue(val);
-    onChange(question.id, val);
+    onChange(question.id, val); // Directly update the selected answer in the parent
   };
 
   return (
@@ -233,13 +289,12 @@ const QuestionChoice: React.FC<QuestionProps> = ({
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
         }
-        // required
         style={{ marginBottom: 0 }}
       >
         {question.singleSelect ? (
           <Radio.Group
             onChange={(e) => handleChange(e.target.value)}
-            value={value}
+            value={selected}
           >
             {question.options.map((option: string, index: number) => (
               <Radio key={index} value={option}>
@@ -248,7 +303,7 @@ const QuestionChoice: React.FC<QuestionProps> = ({
             ))}
           </Radio.Group>
         ) : (
-          <Checkbox.Group onChange={handleChange} value={value}>
+          <Checkbox.Group onChange={handleChange} value={selected}>
             {question.options.map((option: string, index: number) => (
               <Checkbox key={index} value={option}>
                 {option}
@@ -264,14 +319,12 @@ const QuestionChoice: React.FC<QuestionProps> = ({
 // QuestionRate Component
 const QuestionRate: React.FC<QuestionProps> = ({
   question,
+  selected, // Use selected prop to set the value
   onChange,
   index,
 }): any => {
-  const [value, setValue] = useState<number>(0);
-
   const handleChange = (val: number) => {
-    setValue(val);
-    onChange(question.id, val);
+    onChange(question.id, val); // Directly update the selected answer in the parent
   };
 
   return (
@@ -282,10 +335,9 @@ const QuestionRate: React.FC<QuestionProps> = ({
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
         }
-        //required
         style={{ marginBottom: 0 }}
       >
-        <Rate onChange={handleChange} value={value} />
+        <Rate onChange={handleChange} value={selected} />
       </Form.Item>
     </Card>
   );
@@ -294,14 +346,12 @@ const QuestionRate: React.FC<QuestionProps> = ({
 // QuestionOpen Component
 const QuestionOpen: React.FC<QuestionProps> = ({
   question,
+  selected, // Use selected prop to set the value
   onChange,
   index,
 }): any => {
-  const [value, setValue] = useState<string>("");
-
   const handleEditorChange = (e: any) => {
-    setValue(e.htmlValue);
-    onChange(question.id, e.htmlValue);
+    onChange(question.id, e.htmlValue); // Directly update the selected answer in the parent
   };
 
   return (
@@ -315,7 +365,7 @@ const QuestionOpen: React.FC<QuestionProps> = ({
         style={{ marginBottom: 0 }}
       >
         <Editor
-          value={value}
+          value={selected}
           onTextChange={handleEditorChange}
           style={{ height: "320px" }}
         />
@@ -332,4 +382,4 @@ const cardStyle = {
   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
 };
 
-export default Preview;
+export default Customer;

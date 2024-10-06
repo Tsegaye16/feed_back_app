@@ -1,8 +1,13 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, UUID, UUIDV4 } from "sequelize";
 
 import { sequelize } from "../db.js";
 
 const Question = sequelize.define("Question", {
+  id: {
+    type: UUID,
+    defaultValue: UUIDV4,
+    primaryKey: true,
+  },
   text: {
     type: DataTypes.STRING,
     allowNull: false,

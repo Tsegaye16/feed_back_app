@@ -1,103 +1,64 @@
-import React from "react";
-import { Input, Button } from "antd";
+import React, { useState } from "react";
+import { Input, Button, message, Watermark } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import styled from "styled-components";
-
-// Styled container for layout and background
-const StyledContainer = styled.div`
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  background-color: #f0f2f5;
-  overflow: hidden; /* Prevent scrolling */
-
-  /* Attractive background */
-  background: linear-gradient(135deg, #e2e2e2, #c9d6ff);
-`;
-
-const Header = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 20px;
-  z-index: 1;
-
-  .ant-btn {
-    font-size: 1rem;
-    margin-left: 15px;
-  }
-`;
-
-// Wrapper for the input field
-const InputWrapper = styled.div`
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: -100px;
-
-  .ant-input-affix-wrapper {
-    width: 700px;
-    height: 50px;
-    border-radius: 30px;
-    font-size: 1.2rem;
-    padding: 0 20px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
-    border: none;
-    outline: none;
-    transition: all 0.3s ease;
-
-    &:focus-within {
-      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .ant-input-prefix {
-      color: rgba(0, 0, 0, 0.45); /* Icon color */
-      font-size: 1.5rem;
-    }
-  }
-
-  /* Media queries for responsiveness */
-  @media (max-width: 768px) {
-    .ant-input-affix-wrapper {
-      width: 100%; /* Full width for tablet and mobile */
-      height: 50px;
-      font-size: 1rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .ant-input-affix-wrapper {
-      width: 90%; /* Slight margin for small screens */
-      height: 45px;
-      font-size: 0.9rem;
-    }
-  }
-`;
+import { useDispatch } from "react-redux";
+import { StyledContainer, Header, InputWrapper } from "./HomeStyle"; // Import the styles
+import { getFullSurvey } from "../redux/action/company";
+import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
+  const [secretePhrase, setSecretePhrase] = useState<string>("");
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleSearch = async () => {
+    try {
+      const response = await dispatch(getFullSurvey(secretePhrase) as any);
+      console.log(response);
+      if (response?.error) {
+        message.error(response.error);
+      } else if (response?.payload) {
+        const surveyId = response.payload?.questionData?.serveyId;
+        const companyName = response.payload?.companyData?.name;
+        console.log("response: ", response);
+        //const companyName =
+        if (surveyId) {
+          // Append query string directly to the URL
+          navigate(`/${companyName}/surveys/${surveyId}`);
+          message.success(response.payload.message);
+        } else {
+          message.error("Survey ID not found");
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("An error occurred while fetching the survey.");
+    }
+  };
+
   return (
-    <StyledContainer>
-      <Header>
-        <Button type="link" href="/login">
-          Login
-        </Button>
-        <Button type="link" href="/register">
-          Register
-        </Button>
-      </Header>
-      <InputWrapper>
-        <Input
-          placeholder="Insert the secret phrase"
-          prefix={
-            <SearchOutlined />
-          } /* Adding the search icon inside the input */
-        />
-      </InputWrapper>
-    </StyledContainer>
+    <Watermark content="sample">
+      <StyledContainer>
+        <Header>
+          <Button type="link" onClick={() => navigate("/login")}>
+            Login
+          </Button>
+          <Button type="link" onClick={() => navigate("/register")}>
+            Register
+          </Button>
+        </Header>
+        <InputWrapper>
+          <Input
+            placeholder="Insert the secret phrase"
+            prefix={<SearchOutlined />}
+            value={secretePhrase}
+            onChange={(e) => setSecretePhrase(e.target.value)}
+            onPressEnter={handleSearch}
+          />
+        </InputWrapper>
+      </StyledContainer>
+    </Watermark>
   );
 };
 

@@ -44,6 +44,9 @@ export const deleteServey = async (id: any) =>
 
 export const addQuestion = async (questionInfo: any) =>
   API.post("/addQuestion", questionInfo);
+
+export const updateQuestion = async (id: any, questionInfo: any) =>
+  API.put(`/updateQuestion/${id}`, questionInfo);
 export const getPreviewParams = async (serveyId: any) =>
   API.get(`/getPreviewParams/${serveyId}`);
 
@@ -52,3 +55,10 @@ export const getPreviewData = async (companyName: any, surveyId: any) =>
 
 export const getQuestionBySurveyId = async (id: any) =>
   API.get(`/getQuestionBySurveyId/${id}`);
+
+export const deleteQuestionById = async (id: any) =>
+  API.delete("/deleteQuestionById", { data: id });
+
+// get full servey for client
+export const getFullSurvey = async (secretePhrase: any) =>
+  API.get(`/getFullSurvey/${secretePhrase}`);

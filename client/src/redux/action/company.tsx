@@ -14,6 +14,9 @@ import {
   GET_PREVIEW_PARAMS,
   GET_PREVIEW_DATA,
   GET_QUESTION_BY_SURVEY_ID,
+  DELETE_QUESTION_BY_ID,
+  UPDATE_QUESTION,
+  GET_FULL_SURVEY,
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
@@ -206,6 +209,57 @@ export const getQuestionBySurveyId = (id: any) => async (dispatch: any) => {
     const response = await api.getQuestionBySurveyId(id);
     const data = await dispatch({
       type: GET_QUESTION_BY_SURVEY_ID,
+      payload: response.data,
+    });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    return { error: errorMessage };
+  }
+};
+
+export const deleteQuestionById = (id: any) => async (dispatch: any) => {
+  try {
+    const response = await api.deleteQuestionById(id);
+    const data = await dispatch({
+      type: DELETE_QUESTION_BY_ID,
+      payload: response.data,
+    });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    return { error: errorMessage };
+  }
+};
+
+// Update the question
+export const updateQuestion =
+  (id: any, question: any) => async (dispatch: any) => {
+    try {
+      const response = await api.updateQuestion(id, question);
+      const data = await dispatch({
+        type: UPDATE_QUESTION,
+        payload: response.data,
+      });
+      return data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Something went wrong";
+      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      return { error: errorMessage };
+    }
+  };
+
+// get full servey for client
+export const getFullSurvey = (secretePhrase: any) => async (dispatch: any) => {
+  try {
+    const response = await api.getFullSurvey(secretePhrase);
+    const data = await dispatch({
+      type: GET_FULL_SURVEY,
       payload: response.data,
     });
     return data;

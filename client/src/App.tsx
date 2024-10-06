@@ -13,6 +13,7 @@ import Login from "./components/form/login/login";
 import Registration from "./components/form/register/register";
 import { ToastContainer } from "react-toastify";
 import Preview from "./pages/admin/serveys/preview";
+import Customer from "./pages/customers/customer";
 //import Dashboard from "./pages/dashboard/dashboard";
 
 const App: React.FC = () => {
@@ -35,7 +36,14 @@ const App: React.FC = () => {
         <Route path="/manager/servey" element={<Servey />} />
         <Route path="/" element={<Home />} />
         <Route path="/client" element={<Questionaire />} />
-        <Route path={"/:companyName/surveys/:surveyId"} element={<Preview />} />
+        <Route
+          path={"/:companyName/surveys/preview/:surveyId"}
+          element={<Preview />}
+        />
+        <Route
+          path={"/:companyName/surveys/:surveyId"}
+          element={<Customer />}
+        />
 
         <Route path="/manager" element={<Dashboard />} />
       </Routes>

@@ -1,41 +1,59 @@
-import React, { useState } from "react";
-import { Input, Select, Form, Button, Typography, Row, Col, Space } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+  Input,
+  Select,
+  Form,
+  Button,
+  Typography,
+  Row,
+  Col,
+  Space,
+  message,
+} from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 
 import { Editor } from "primereact/editor";
-
 import { toast } from "react-toastify";
-import { addQuestion } from "../../../redux/action/company";
+import { updateQuestion } from "../../../redux/action/company"; // Assuming you're using this action for both add/edit
 
-const { TextArea } = Input;
 const { Option } = Select;
+
 interface DetailProps {
-  id: any;
   onSave: any;
+  record?: any; // record prop to receive data for editing
 }
 
-const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
-  const [questionText, setQuestionText] = useState("");
-  const [questionType, setQuestionType] = useState("");
-  const [additionalOption, setAdditionalOption] = useState("");
-  const [choices, setChoices] = useState([""]);
+const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
+  // Initialize state based on whether record exists (edit mode) or not (add mode)
+  const [questionText, setQuestionText] = useState(record?.text || "");
+  const [questionType, setQuestionType] = useState(record?.type || "");
+  const [additionalOption, setAdditionalOption] = useState(
+    record?.additionalOption || ""
+  );
+  const [choices, setChoices] = useState(record?.options || [""]);
 
   const dispatch = useDispatch();
 
-  console.log("ID or Records", id);
+  // If record changes, update the state (helpful for when the component re-renders with new data)
+  useEffect(() => {
+    if (record) {
+      setQuestionText(record.text || "");
+      setQuestionType(record.type || "");
+      setAdditionalOption(record.additionalOption || "");
+      setChoices(record.options || [""]);
+    }
+  }, [record]);
 
   const handleAddChoice = () => {
     setChoices([...choices, ""]);
   };
 
-  // Handle removing choice input field
   const handleRemoveChoice = (index: number) => {
     const updatedChoices = choices.filter((_: any, i: any) => i !== index);
     setChoices(updatedChoices);
   };
 
-  // Handle change in choice text
   const handleChoiceChange = (index: number, value: string) => {
     const updatedChoices = choices.map((choice: any, i: any) =>
       i === index ? value : choice
@@ -44,50 +62,47 @@ const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
   };
 
   const handleClose = () => {
-    //setOpen(false);
     setQuestionText("");
     setQuestionType("");
     setAdditionalOption("");
-    setChoices([""]); // Reset choices on close
-    onSave();
+    setChoices([""]);
+    onSave(); // Close modal or clear form
   };
 
   const handleSubmit = async () => {
-    const response = await dispatch(
-      addQuestion({
-        text: questionText,
-        type: questionType,
-        additionalOption:
-          questionType === "True/False" ? additionalOption : undefined,
-        serveyId: id,
-        singleSelect:
-          questionType === "Choice"
-            ? additionalOption === "SingleSelect"
-            : undefined,
-        options: questionType === "Choice" ? choices : undefined,
-      }) as any
-    );
-    console.log("response: ", response.error);
+    const id = record?.id;
+    const questionData = {
+      id: record?.id || undefined, // Include ID if in edit mode
+      text: questionText,
+      type: questionType,
+      additionalOption:
+        questionType === "True/False" ? additionalOption : undefined,
+      serveyId: record?.serveyId || undefined, // Assuming surveyId comes from the record
+      singleSelect:
+        questionType === "Choice"
+          ? additionalOption === "SingleSelect"
+          : undefined,
+      options: questionType === "Choice" ? choices : undefined,
+    };
+
+    const response = await dispatch(updateQuestion(id, questionData) as any);
+
     if (response?.payload?.message) {
-      toast.success(`${response?.payload?.message}`);
+      message.success(`${response?.payload?.message}`);
       onSave();
     } else if (response?.error) {
-      toast.error(`${response.error}`);
+      message.error(`${response.error}`);
     }
   };
 
   return (
     <div style={{ padding: "20px", maxWidth: "90%", margin: "0 auto" }}>
-      <Typography.Title level={5}>Adding New Question</Typography.Title>
+      <Typography.Title level={5}>
+        {record ? "Edit Question" : "Add New Question"}
+      </Typography.Title>
 
       <Form layout="vertical" onFinish={handleSubmit}>
         <Form.Item label="Question Text" required>
-          {/* <TextArea
-            value={questionText}
-            onChange={(e) => setQuestionText(e.target.value)}
-            placeholder="Enter your question here"
-            rows={3}
-          /> */}
           <Editor
             value={questionText}
             onTextChange={(e: any) => setQuestionText(e.htmlValue)}
@@ -137,7 +152,7 @@ const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
 
             <Typography.Title level={5}>Choices</Typography.Title>
 
-            {choices.map((choice, index) => (
+            {choices.map((choice: any, index: any) => (
               <Row
                 key={index}
                 gutter={16}
@@ -187,4 +202,4 @@ const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
   );
 };
 
-export default Sample;
+export default EditQuestion;

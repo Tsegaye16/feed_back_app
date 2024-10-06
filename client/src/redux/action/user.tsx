@@ -5,14 +5,16 @@ import * as api from "../api/api";
 export const getUserById = (userId: string) => async (dispatch: any) => {
   try {
     const response = await api.getUserById(userId);
-
+    console.log("response: ", response);
     const data = await dispatch({
       type: GET_USER_BY_ID,
       payload: response.data,
     });
 
     return data;
-  } catch (err) {
-    console.error("Error fetching user:", err);
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || "Something went wrong";
+    console.log("Error Message from Server:", errorMessage);
+    return { error: errorMessage };
   }
 };
