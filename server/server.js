@@ -6,6 +6,7 @@ import User from "./models/userModel.js";
 import Question from "./models/questionModel.js";
 import Company from "./models/companyModel.js";
 import Servey from "./models/serveyModel.js";
+import Answer from "./models/answerModel.js";
 
 // Load environment variables
 dotenv.config();
@@ -24,6 +25,9 @@ Servey.belongsTo(Company, { foreignKey: "companyId" });
 Servey.hasMany(Question, { foreignKey: "serveyId" });
 Question.belongsTo(Servey, { foreignKey: "serveyId" });
 //************************* */
+// A question has many answers
+Question.hasMany(Answer, { foreignKey: "questionId" });
+Answer.belongsTo(Question, { foreignKey: "questionId" });
 ///////////////////////////////////////////////////////////////////////////////////
 
 // Test DB connectivity

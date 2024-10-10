@@ -23,3 +23,7 @@ export const UPDATE_QUESTION = "UPDATE_QUESTION";
 
 // get full servey for client
 export const GET_FULL_SURVEY = "GET_FULL_SURVEY";
+export const UPDATE_PROFILE = "UPDATE_PROFILE";
+export const UPDATE_COMPANY = "UPDATE_COMPANY";
+export const CHANGE_PASSWORD = "CHANGE_PASSWORD";
+export const GET_ALL_FEEDBACK = "GET_ALL_FEEDBACK";

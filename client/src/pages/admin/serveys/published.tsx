@@ -5,19 +5,13 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 
 import { getUserById } from "../../../redux/action/user";
 import {
-  addCompanyInfo,
   getCompanyById,
-  addServey,
   getAllServey,
   deleteServey,
 } from "../../../redux/action/company";
 import {
   Box,
-  Modal,
-  TextField,
-  Grid,
   Paper,
-  Input,
   Dialog,
   DialogActions,
   DialogContent,
@@ -26,23 +20,25 @@ import {
 } from "@mui/material";
 
 import { TableRowSelection } from "antd/es/table/interface";
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 interface MyJwtPayload extends JwtPayload {
   id: string;
 }
 interface onClickType {
   onDetailClick: (surveyId: any) => void; // Update type to string
+  onAddCompany: any;
+  onAddSurvey: any;
 }
 
-const Published: React.FC<onClickType> = ({ onDetailClick }) => {
+const Published: React.FC<onClickType> = ({
+  onDetailClick,
+  onAddCompany,
+  onAddSurvey,
+}) => {
   const dispatch = useDispatch();
-  const [openCompanyModal, setOpenCompanyModal] = useState(false);
-  const [openSurveyModal, setOpenSurveyModal] = useState(false);
-  const [surveyName, setSurveyName] = useState("");
-  const [secretPhrase, setSecretPhrase] = useState("");
+
   const [selectedSurveys, setSelectedSurveys] = useState<any>(new Set());
-  const [editingId, setEditingId] = useState(null);
 
   const currenTtoken: any = localStorage.getItem("user");
 
@@ -51,7 +47,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
     const decoded = jwtDecode<MyJwtPayload>(currenTtoken);
     userId = decoded.id;
   }
-  console.log("userId: ", userId);
+
   useEffect(() => {
     if (currenTtoken) {
       dispatch(getUserById(userId) as any);
@@ -60,7 +56,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
 
   const user = useSelector((state: any) => state.user?.user?.newUser);
   const managerId = user?.id;
-  console.log("managerId: ", user);
+
   const company = useSelector(
     (state: any) => state.company?.companyData?.result
   );
@@ -84,52 +80,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   }, [company, dispatch]);
 
   // Handling the company form
-  const [companyData, setCompanyData] = useState<any>({
-    name: "",
-    logo: null,
-    backgroundColor: "#b3acac",
-    textColor: "#000000",
-  });
 
-  const handleFileChange = (e: any) => {
-    const logo = e.target.files[0];
-    setCompanyData((prevData: any) => ({
-      ...prevData,
-      logo: logo,
-    }));
-  };
-
-  // Handle saving company info
-  const handleSaveCompany = async (event: any) => {
-    event.preventDefault();
-
-    const formData = new FormData();
-    formData.append("name", companyData.name);
-    if (companyData.logo) {
-      formData.append("logo", companyData.logo);
-    }
-    formData.append("backgroundColor", companyData.backgroundColor);
-    formData.append("textColor", companyData.textColor);
-    formData.append("managerId", managerId);
-
-    const response = await dispatch(addCompanyInfo(formData) as any);
-    if (response?.payload?.message) {
-      message.success(`${response?.payload?.message}`);
-      setOpenCompanyModal(false);
-    } else if (response?.error) {
-      message.error(`${response.error}`);
-    }
-  };
-
-  const handleCancelCompanyModal = () => {
-    setOpenCompanyModal(false);
-  };
-
-  const handleCancelSurveyModal = () => {
-    setSurveyName("");
-    setSecretPhrase("");
-    setOpenSurveyModal(false);
-  };
   const generateSecretPhrase = () => {
     const characters =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -140,59 +91,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
       );
     }
     return result;
-  };
-
-  const handleSaveAsDraft = async () => {
-    if (surveyName) {
-      const response = await dispatch(
-        addServey({
-          surveyName,
-          secretPhrase,
-          isPublished: false,
-          companyId: company?.id,
-          id: editingId,
-        }) as any
-      );
-      if (response?.payload?.message) {
-        message.success(`${response?.payload?.message}`);
-        setOpenSurveyModal(false);
-        setSurveyName("");
-        setSecretPhrase("");
-        dispatch(getAllServey(company.id) as any);
-        selectedSurveys.clear();
-      } else if (response?.error) {
-        message.error(`${response.error}`);
-      }
-    } else {
-      message.error("Survey name is required");
-    }
-  };
-
-  const handlePublish = async () => {
-    if (surveyName) {
-      const response = await dispatch(
-        addServey({
-          surveyName,
-          secretPhrase,
-          isPublished: true,
-          companyId: company?.id,
-          id: editingId,
-        }) as any
-      );
-      if (response?.payload?.message) {
-        message.success(`${response?.payload?.message}`);
-        setOpenSurveyModal(false);
-        setSurveyName("");
-        setSecretPhrase("");
-        dispatch(getAllServey(company.id) as any);
-        selectedSurveys.clear();
-      } else if (response?.error) {
-        message.error(`${response.error}`);
-      }
-      console.log("response: ", response);
-    } else {
-      message.error("Survey name is required");
-    }
   };
 
   // Handle delete surveys
@@ -214,8 +112,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
     // Reset selection after deletion
     setSelectedSurveys(new Set());
   };
-
-  // Toolbar component for actions
 
   // Delete Confirmation detail
   const [open, setOpen] = useState(false);
@@ -254,25 +150,30 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
 
   // Edit selected servey functionality
 
-  const handleAddSurveyClick = (option: any) => {
+  const handleAddSurveyClick = (option: any, event?: any) => {
+    if (event) {
+      event.stopPropagation();
+    }
     if (option === "add") {
-      setEditingId(null);
-      setSecretPhrase(generateSecretPhrase());
-      setOpenSurveyModal(true);
+      onAddSurvey({
+        companyId: company?.id,
+        editingId: null,
+        secretePhrase: generateSecretPhrase(),
+      });
     } else if (option === "edit") {
       const editingId = Array.from(selectedRowKeys)[0];
-      //console.log("surveys: ", surveys);
+
       const editingSurvey = surveys.find(
         (servey: any) => servey.id === editingId
       );
-      //console.log("editingSurvey:", editingSurvey);
-      setSurveyName(editingSurvey?.name);
-      setSecretPhrase(editingSurvey?.secretePhrase || generateSecretPhrase());
-      setEditingId(editingId as any);
-      setOpenSurveyModal(true);
-    }
 
-    // console.log("surveyName: ", surveyName);
+      onAddSurvey({
+        companyId: company?.id,
+        editingId: editingId,
+        surveyName: editingSurvey?.name,
+        secretePhrase: editingSurvey?.secretePhrase || generateSecretPhrase(),
+      });
+    }
   };
 
   //////// Ant Design Table
@@ -298,7 +199,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
     },
     {
       title: "Date Created",
-      dataIndex: "createdAt", // Use the correct dataIndex to access createdAt
+      dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt: string) => (
         <span>{new Date(createdAt).toLocaleDateString()}</span>
@@ -313,7 +214,7 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
             type="link"
             onClick={(e) => {
               e.stopPropagation();
-              onDetailClick(record.id); // Make sure onDetailClick is defined
+              onDetailClick(record.id);
             }}
           >
             Detail
@@ -324,7 +225,6 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
   ];
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    // console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -363,7 +263,15 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
           <Title level={5}>
             You have to register your company before proceeding to other tasks.
           </Title>
-          <Button onClick={() => setOpenCompanyModal(true)}>Let's Start</Button>
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+
+              onAddCompany(managerId);
+            }}
+          >
+            Let's Start
+          </Button>
         </Paper>
       ) : (
         <>
@@ -377,18 +285,16 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
                 <Button
                   type="primary"
                   disabled={!hasSelected}
-                  onClick={() => handleAddSurveyClick("edit")}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleAddSurveyClick("edit");
+                  }}
                 >
                   Edit
                 </Button>
               ) : null}
               {selectedRowKeys.length >= 1 ? (
-                <Button
-                  type="primary"
-                  //disabled={!hasSelected}
-                  danger
-                  onClick={handleClickOpen}
-                >
+                <Button type="primary" danger onClick={handleClickOpen}>
                   Delete
                 </Button>
               ) : null}
@@ -400,141 +306,11 @@ const Published: React.FC<onClickType> = ({ onDetailClick }) => {
               dataSource={surveyList}
               rowKey="id"
               pagination={{ pageSize: 10 }}
+              scroll={{ x: "max-content" }}
             />
           </Flex>
         </>
       )}
-
-      <Modal open={openCompanyModal} onClose={handleCancelCompanyModal}>
-        <Paper
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 500 },
-            maxHeight: "90vh",
-            overflowY: "auto",
-            p: 4,
-            boxShadow: 24,
-          }}
-        >
-          <Title level={5}>Register Company</Title>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Company Name"
-                name="name"
-                variant="outlined"
-                value={companyData.name}
-                onChange={(event) =>
-                  setCompanyData({ ...companyData, name: event.target.value })
-                }
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Title level={5}>Upload Logo</Title>
-              <Input type="file" fullWidth onChange={handleFileChange} />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Background Color"
-                type="color"
-                name="backGroundColor"
-                value={companyData.backGroundColor}
-                onChange={(event) =>
-                  setCompanyData({
-                    ...companyData,
-                    backGroundColor: event.target.value,
-                  })
-                }
-                fullWidth
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Text Color"
-                type="color"
-                name="textColor"
-                value={companyData.textColor}
-                onChange={(event) =>
-                  setCompanyData({
-                    ...companyData,
-                    textColor: event.target.value,
-                  })
-                }
-                fullWidth
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              sx={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <Button
-                // variant="contained"
-                //color="primary"
-                onClick={handleSaveCompany}
-              >
-                Save
-              </Button>
-              <Button variant="outlined" onClick={handleCancelCompanyModal}>
-                Cancel
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Modal>
-
-      {/* Modal for Adding New Survey */}
-      <Modal open={openSurveyModal} onClose={handleCancelSurveyModal}>
-        <Paper
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 500 },
-            p: 4,
-            boxShadow: 24,
-          }}
-        >
-          <Title level={5}>
-            {!editingId ? "Add New Survey" : "Updating Survey"}
-          </Title>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Survey Name"
-                value={surveyName}
-                onChange={(e) => setSurveyName(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Secret Phrase"
-                value={secretPhrase}
-                onChange={(e) => setSecretPhrase(e.target.value)}
-                helperText="This is a unique secret phrase that we sugest, you can change"
-              />
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
-            >
-              <Button onClick={handlePublish}>Publish</Button>
-              <Button onClick={handleSaveAsDraft}>Save as Draft</Button>
-              <Button onClick={handleCancelSurveyModal}>Cancel</Button>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Modal>
 
       {confirmDialog}
     </Box>

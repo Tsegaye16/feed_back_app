@@ -17,6 +17,7 @@ import {
   DELETE_QUESTION_BY_ID,
   UPDATE_QUESTION,
   GET_FULL_SURVEY,
+  UPDATE_COMPANY,
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
@@ -35,12 +36,33 @@ export const addCompanyInfo = (companyData: any) => async (dispatch: any) => {
   }
 };
 
+export const updateCompany =
+  (id: any, companyData: any) => async (dispatch: any) => {
+    try {
+      console.log("Company Data: ", companyData);
+      const response = await api.updateCompany(id, companyData);
+      const data = await dispatch({
+        type: UPDATE_COMPANY,
+        payload: response.data,
+      });
+      return data;
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message || "Something went wrong";
+      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      return { error: errorMessage };
+    }
+  };
+
 export const getCompanyById = (managerId: any) => async (dispatch: any) => {
   try {
     const response = await api.getCompanyByManagerId(managerId);
     dispatch({ type: GATE_COMPANY_BY_MANAGER_ID, payload: response.data });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    //console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    return { error: errorMessage };
   }
 };
 
@@ -104,18 +126,6 @@ export const addChoiceQuestion =
       console.error(err);
     }
   };
-
-export const submitAnswer = (answerData: any) => async (dispatch: any) => {
-  try {
-    const response = await api.submitAnswer(answerData);
-    dispatch({
-      type: SUBMIT_ANSWER,
-      payload: response.data,
-    });
-  } catch (err) {
-    console.error(err);
-  }
-};
 
 export const addServey = (serveyInfo: any) => async (dispatch: any) => {
   try {

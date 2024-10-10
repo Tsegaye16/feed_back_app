@@ -13,11 +13,11 @@ import {
   Form,
   message,
   Progress,
-  Alert,
 } from "antd";
 
 import "antd/dist/reset.css";
 import { getPreviewData } from "../../redux/action/company";
+import { submitAnswer } from "../../redux/action/answer";
 
 const { Title } = Typography;
 
@@ -40,7 +40,7 @@ const Customer = () => {
   const previewData = useSelector((state: any) => state.preview?.previewData);
   const questions = previewData?.questions || [];
   const companyInfo = previewData?.CompanyInfo;
-
+  console.log("questions: ", questions);
   // Handler to collect responses
   const handleResponseChange = (questionId: any, value: any) => {
     setResponses((prev: any) => ({ ...prev, [questionId]: value }));
@@ -61,10 +61,24 @@ const Customer = () => {
   };
 
   // Submit handler
-  const handleSubmit = () => {
-    console.log("User Responses:", responses);
-    message.success("Thank you for your feedback!");
-    setIsSubmitted(true);
+  const handleSubmit = async () => {
+    const formattedResponses = Object.entries(responses).map(
+      ([questionId, answer]) => ({
+        id: questionId,
+        surveyId: surveyId,
+        answer,
+      })
+    );
+
+    const response = await dispatch(submitAnswer(formattedResponses));
+    if (response?.payload?.message) {
+      message.success(`${response?.payload?.message}`);
+      setIsSubmitted(true);
+    } else if (response?.error) {
+      message.error(`${response.error}`);
+    } else {
+      message.error("Error submitting feedBack");
+    }
   };
 
   // Calculate progress percentage
@@ -110,7 +124,7 @@ const Customer = () => {
             size={65}
             style={{ marginRight: "16px", objectFit: "cover" }}
           />
-          <Title level={3} style={{ margin: 0 }}>
+          <Title level={3} style={{ margin: 0, color: companyInfo.textColor }}>
             {companyInfo.name}
           </Title>
         </div>

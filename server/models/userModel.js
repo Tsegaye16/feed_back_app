@@ -15,6 +15,7 @@ const User = sequelize.define("User", {
       notEmpty: { msg: "Please tell us your name!" },
     },
   },
+
   email: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -31,6 +32,10 @@ const User = sequelize.define("User", {
       notEmpty: { msg: "Please provide a password" },
     },
   },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
 
 // Before saving, hash the password and remove passwordConfirm
@@ -39,5 +44,9 @@ User.beforeCreate(async (user) => {
     user.password = await bcrypt.hash(user.password, 12);
   }
 });
+
+User.prototype.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 export default User;

@@ -8,7 +8,6 @@ import {
   Typography,
   notification,
   Button,
-  Watermark,
 } from "antd";
 import {
   MenuFoldOutlined,
@@ -29,8 +28,15 @@ import { getUserById } from "../../../redux/action/user";
 import Draft from "../serveys/draft";
 import Published from "../serveys/published";
 import Detail from "../serveys/detail";
-import Sample from "../serveys/addQuestion";
+
 import EditQuestion from "../serveys/editQuestion";
+import AddQuestion from "../serveys/addQuestion";
+import AddCompany from "../serveys/addCompany";
+import Profile from "../serveys/profile";
+import DetailDashboard from "./detailDashboard";
+import { getCompanyById } from "../../../redux/action/company";
+import AddSurvey from "../serveys/addSurvey";
+import FeedBack from "../feebBack/feedBack";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -39,9 +45,11 @@ const Dashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelectedItem] = useState("Dashboard");
   const [isServeysOpen, setIsServeysOpen] = useState(false);
-  const [selectedDetail, setSelectedDetail] = useState<any>(null);
-  const [selectedAddQuestion, setSelectedAddQuestion] = useState<any>(null);
-  const [selectedEditQuestion, setSelectedEditQuestion] = useState<any>(null);
+  const [selectedAddSurvey, setSelectedAddSurvey] = useState(null);
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const [selectedAddCompany, setSelectedAddCompany] = useState(null);
+  const [selectedAddQuestion, setSelectedAddQuestion] = useState(null);
+  const [selectedEditQuestion, setSelectedEditQuestion] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -57,6 +65,11 @@ const Dashboard = () => {
     navigate("/");
   };
 
+  const user = useSelector((state: any) => state.user?.user?.newUser);
+  const company = useSelector(
+    (state: any) => state.company?.companyData?.result
+  );
+
   useEffect(() => {
     if (!token) {
       navigate("/");
@@ -68,21 +81,35 @@ const Dashboard = () => {
         handleLogout();
       }
       dispatch(getUserById(decodedToken.id) as any);
+      dispatch(getCompanyById(user?.id) as any);
     }
   }, [dispatch, navigate, token]);
-
-  const user = useSelector((state: any) => state.user?.user?.newUser);
-
+  const onUpdate = async () => {
+    if (token) {
+      const decodedToken: any = jwtDecode(token);
+      const data = await dispatch(getUserById(decodedToken.id) as any);
+      return data;
+    }
+    return;
+  };
+  // console.log("user111: ", user);
   const handleMenuItemClick = (item: string) => {
     setSelectedItem(item);
     setSelectedDetail(null);
+    setSelectedAddCompany(null);
+    setSelectedAddQuestion(null);
+    setSelectedEditQuestion(null);
+    setSelectedAddSurvey(null);
   };
 
   const handleServeysClick = () => {
     setIsServeysOpen(!isServeysOpen);
   };
 
-  const handleDetailClick = (id: number) => {
+  const handleAddSurvey = (id: any) => {
+    setSelectedAddSurvey(id);
+  };
+  const handleDetailClick = (id: any) => {
     setSelectedDetail(id);
   };
 
@@ -94,19 +121,25 @@ const Dashboard = () => {
     setSelectedAddQuestion(id);
   };
 
+  const handleAddCompany = (id: any) => {
+    setSelectedAddCompany(id);
+  };
+
   const handleSaveQuestion = () => {
     setSelectedAddQuestion(null);
     setSelectedEditQuestion(null);
+    setSelectedAddSurvey(null);
+    setSelectedAddCompany(null);
   };
 
   const menu = (
-    <Menu>
-      <Menu.Item key="1" icon={<UserOutlined />}>
+    <Menu onClick={({ key }) => handleMenuItemClick(key)}>
+      <Menu.Item key="profile" icon={<UserOutlined />}>
         Profile
       </Menu.Item>
-      <Menu.Item key="2" icon={<SettingOutlined />}>
+      {/* <Menu.Item key="setting" icon={<SettingOutlined />}>
         Settings
-      </Menu.Item>
+      </Menu.Item> */}
       <Menu.Item key="3" icon={<LogoutOutlined />} onClick={handleLogout}>
         Logout
       </Menu.Item>
@@ -114,112 +147,159 @@ const Dashboard = () => {
   );
 
   return (
-    <Watermark content="sample">
-      <Layout style={{ minHeight: "100vh" }}>
-        <Sider
-          collapsible
-          collapsed={collapsed}
-          onCollapse={toggleCollapsed}
-          theme="light"
-        >
+    <Layout style={{ minHeight: "100vh" }}>
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={toggleCollapsed}
+        theme="light"
+        style={{ position: "fixed", height: "100vh", left: 0, top: 0 }}
+      >
+        {company === null ? (
+          ""
+        ) : (
           <div
             className="logo"
             style={{ padding: "16px", textAlign: "center" }}
           >
-            <Avatar src="/avatar.png" />
-            <Title level={5}>{user?.name}</Title>
+            <Avatar src={`http://localhost:4000/${company?.logo}`} />
+            <Title level={5}>{company?.name}</Title>
           </div>
+        )}
 
-          <Menu
-            theme="light"
-            defaultSelectedKeys={["Dashboard"]}
-            mode="inline"
-            onClick={({ key }) => handleMenuItemClick(key)}
+        <Menu
+          //theme="light"
+          defaultSelectedKeys={["Dashboard"]}
+          mode="inline"
+          onClick={({ key }) => handleMenuItemClick(key)}
+        >
+          <Menu.Item key="Dashboard" icon={<DashboardOutlined />}>
+            Dashboard
+          </Menu.Item>
+
+          <Menu.SubMenu
+            key="Serveys"
+            title="Serveys"
+            icon={<UnorderedListOutlined />}
+            onTitleClick={handleServeysClick}
           >
-            <Menu.Item key="Dashboard" icon={<DashboardOutlined />}>
-              Dashboard
+            <Menu.Item key="Published" icon={<FileDoneOutlined />}>
+              Published
             </Menu.Item>
+            <Menu.Item key="Draft" icon={<InboxOutlined />}>
+              Draft
+            </Menu.Item>
+          </Menu.SubMenu>
 
-            <Menu.SubMenu
-              key="Serveys"
-              title="Serveys"
-              icon={<UnorderedListOutlined />}
-              onTitleClick={handleServeysClick}
+          <Menu.Item key="FeedBacks" icon={<NotificationOutlined />}>
+            Feedbacks
+          </Menu.Item>
+        </Menu>
+      </Sider>
+
+      <Layout
+        className="site-layout"
+        style={{
+          marginLeft: collapsed ? 80 : 200,
+          transition: "margin-left 0.2s",
+          backgroundColor: "#ebeff3",
+        }}
+      >
+        <Header
+          style={{
+            backgroundColor: "white",
+            padding: 0,
+            top: 0,
+            position: "sticky",
+            zIndex: 999,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={toggleCollapsed}
+              style={{ fontSize: "16px", width: 64, height: 64 }}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "1rem",
+                paddingRight: "20px",
+              }}
             >
-              <Menu.Item key="Published" icon={<FileDoneOutlined />}>
-                Published
-              </Menu.Item>
-              <Menu.Item key="Draft" icon={<InboxOutlined />}>
-                Draft
-              </Menu.Item>
-            </Menu.SubMenu>
+              <Badge count={4}>
+                <NotificationOutlined style={{ fontSize: "24px" }} />
+              </Badge>
 
-            <Menu.Item key="FeedBacks" icon={<NotificationOutlined />}>
-              Feedbacks
-            </Menu.Item>
-          </Menu>
-        </Sider>
-
-        <Layout className="site-layout">
-          <Header style={{ backgroundColor: "#fff", padding: 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <Button
-                type="text"
-                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={toggleCollapsed}
-                style={{ fontSize: "16px", width: 64, height: 64 }}
-              />
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                  paddingRight: "20px",
-                }}
-              >
-                <Badge count={4}>
-                  <NotificationOutlined style={{ fontSize: "24px" }} />
-                </Badge>
-
-                <Dropdown overlay={menu} trigger={["click"]}>
-                  <Avatar src="/avatar.png" style={{ cursor: "pointer" }} />
-                </Dropdown>
-                <Title level={5}>{user?.name}</Title>
-              </div>
+              <Dropdown overlay={menu} trigger={["click"]}>
+                <Avatar
+                  src={`http://localhost:4000/${user?.image}`}
+                  style={{ cursor: "pointer" }}
+                />
+              </Dropdown>
+              <Title level={5}>{user?.name}</Title>
             </div>
-          </Header>
+          </div>
+        </Header>
 
-          <Content style={{ margin: "16px" }}>
-            {selectedEditQuestion ? (
-              <EditQuestion
-                record={selectedEditQuestion}
-                onSave={handleSaveQuestion}
-              />
-            ) : selectedAddQuestion ? (
-              <Sample id={selectedDetail} onSave={handleSaveQuestion} />
-            ) : selectedDetail ? (
-              <Detail
-                id={selectedDetail}
-                onClickAddQuestion={handleAddQuestionSelection}
-                onClickEditQuestion={handleEditClick}
-              />
-            ) : (
-              <>
-                {selectedItem === "Dashboard" && <div>Dashboard Content</div>}
-                {selectedItem === "Published" && (
-                  <Published onDetailClick={handleDetailClick} />
-                )}
-                {selectedItem === "Draft" && (
-                  <Draft onDetailClick={handleDetailClick} />
-                )}
-                {selectedItem === "FeedBacks" && <div>Feedbacks Content</div>}
-              </>
-            )}
-          </Content>
-        </Layout>
+        <Content style={{ margin: "16px" }}>
+          {selectedEditQuestion ? (
+            <EditQuestion
+              record={selectedEditQuestion}
+              onSave={handleSaveQuestion}
+            />
+          ) : selectedAddQuestion ? (
+            <AddQuestion id={selectedDetail} onSave={handleSaveQuestion} />
+          ) : selectedDetail ? (
+            <Detail
+              id={selectedDetail}
+              onClickAddQuestion={handleAddQuestionSelection}
+              onClickEditQuestion={handleEditClick}
+            />
+          ) : selectedAddSurvey ? (
+            <AddSurvey info={selectedAddSurvey} onSave={handleSaveQuestion} />
+          ) : selectedAddCompany ? (
+            <AddCompany
+              onSave={handleSaveQuestion}
+              managerId={selectedAddCompany}
+            />
+          ) : (
+            <>
+              {selectedItem === "Dashboard" && <DetailDashboard />}
+              {selectedItem === "Published" && (
+                <Published
+                  onDetailClick={handleDetailClick}
+                  onAddCompany={handleAddCompany}
+                  onAddSurvey={handleAddSurvey}
+                />
+              )}
+              {selectedItem === "Draft" && (
+                <Draft
+                  onDetailClick={handleDetailClick}
+                  onAddCompany={handleAddCompany}
+                  onAddSurvey={handleAddSurvey}
+                />
+              )}
+              {selectedItem === "FeedBacks" && (
+                <FeedBack compmanyId={company?.id} />
+              )}
+              {selectedItem === "setting" && (
+                <AddCompany
+                  onSave={handleSaveQuestion}
+                  managerId={selectedAddCompany}
+                />
+              )}
+              {selectedItem === "profile" && (
+                <Profile user={user} onUpdate={onUpdate} company={company} />
+              )}
+            </>
+          )}
+        </Content>
       </Layout>
-    </Watermark>
+    </Layout>
   );
 };
 

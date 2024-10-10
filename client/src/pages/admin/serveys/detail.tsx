@@ -242,6 +242,7 @@ const Detail: React.FC<DetailProps> = ({
           dataSource={questions}
           rowKey="id"
           pagination={{ pageSize: 10 }}
+          scroll={{ x: "max-content" }}
         />
         {confirmModal}
       </Flex>

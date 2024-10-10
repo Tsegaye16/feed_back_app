@@ -12,8 +12,17 @@ export const signUp = async (formData: AuthFormData) =>
 export const getUserById = async (userId: string) =>
   API.get(`/getuser/${userId}`);
 
+export const updateProfile = async (id: any, data: any) =>
+  API.put(`/updateprofile/${id}`, data);
+
+export const changePassword = async (password: any) =>
+  API.put("/changepassword", password);
+
 export const addCompanyInfo = async (companyData: any) =>
   API.post("/addCompany", companyData);
+
+export const updateCompany = async (id: any, companyData: any) =>
+  API.put(`/updateCompany/${id}`, companyData);
 
 export const getCompanyByManagerId = async (managerId: any) =>
   API.get(`/company/${managerId}`);
@@ -62,3 +71,6 @@ export const deleteQuestionById = async (id: any) =>
 // get full servey for client
 export const getFullSurvey = async (secretePhrase: any) =>
   API.get(`/getFullSurvey/${secretePhrase}`);
+
+export const getFeedback = async (companyId: any) =>
+  API.get(`/getFeedback/${companyId}`);

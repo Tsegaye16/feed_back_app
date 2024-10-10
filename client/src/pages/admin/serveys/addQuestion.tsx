@@ -15,7 +15,7 @@ interface DetailProps {
   onSave: any;
 }
 
-const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
+const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
   const [questionText, setQuestionText] = useState("");
   const [questionType, setQuestionType] = useState("");
   const [additionalOption, setAdditionalOption] = useState("");
@@ -187,4 +187,4 @@ const Sample: React.FC<DetailProps> = ({ id, onSave }) => {
   );
 };
 
-export default Sample;
+export default AddQuestion;

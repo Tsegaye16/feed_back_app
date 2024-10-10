@@ -1,24 +1,22 @@
 import Company from "../models/companyModel.js";
 import Question from "../models/questionModel.js";
 import Servey from "../models/serveyModel.js";
+import Answer from "../models/answerModel.js";
 import { Op } from "sequelize";
 
 export const addOrUpdateCompanyInfo = async (req, res) => {
   try {
     console.log("managerIdd: ", req.body);
-    const { name, backGroundColor, textColor, managerId } = req.body;
-    const logo = req.file?.filename; // Extract the filename for the logo
-    // const id = managerId; // Parse managerId to an integer
-    // console.log("managerId: ", managerId);
+    console.log("Image: ", req.file);
+    const { name, backgroundColor, textColor, managerId } = req.body;
+    const logo = req.file?.filename;
 
-    // Check if a company with this managerId already exists
     let company = await Company.findOne({ where: { managerId: managerId } });
 
     if (company) {
-      // Company with this managerId exists, update the information
       company.name = name;
       company.logo = logo || company.logo; // Update logo if provided, otherwise keep the existing one
-      company.backGroundColor = backGroundColor;
+      company.backGroundColor = backgroundColor;
       company.textColor = textColor;
 
       await company.save(); // Save the updated company information
@@ -32,7 +30,7 @@ export const addOrUpdateCompanyInfo = async (req, res) => {
       const newCompany = await Company.create({
         name,
         logo,
-        backGroundColor,
+        backGroundColor: backgroundColor,
         textColor,
         managerId: managerId,
       });
@@ -44,7 +42,31 @@ export const addOrUpdateCompanyInfo = async (req, res) => {
     }
   } catch (error) {
     console.error("Error adding or updating company info:", error);
-    res.status(500).json({ message: "Internal Server Error", Error: error });
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const updateCompany = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { name, backGroundColor, textColor } = req.body;
+    console.log("Req.Body: ", req.body);
+    const logo = req.file?.filename;
+    const company = await Company.findOne({ where: { id: id } });
+    if (company) {
+      company.name = name || company.name;
+      company.logo = logo || company.logo; // Update logo if provided, otherwise keep the existing one
+      company.backGroundColor = backGroundColor || company.backGroundColor;
+      company.textColor = textColor || company.textColor;
+      await company.save(); // Save the updated company information
+      return res.status(200).json({
+        message: "Company info updated successfully",
+        result: company,
+      });
+    }
+  } catch (error) {
+    console.error("Error updating company info:", error);
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -58,7 +80,7 @@ export const getCompanyById = async (req, res) => {
     return res.status(200).json({ message: "Company found", result: company });
   } catch (error) {
     //console.error("Error getting company by id:", error);
-    res.status(500).json({ message: "Internal Server Error", Error: error });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -225,17 +247,6 @@ export const deleteServey = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
-// export const submitAnswer = async(req, res) => {
-//   try {
-//     const { questionId, answer, companyId } = req.body;
-//     const question = await Question.findById(questionId);
-//     if (!question) {
-//       return res.status(404).json({ message: "Question not found" });
-//       }
-
-//     }
-// }
 
 export const addQuestion = async (req, res) => {
   try {
@@ -437,5 +448,102 @@ export const getFullSurvey = async (req, res) => {
     res.status(200).json({ message: "success", companyData, questionData });
   } catch (error) {
     console.error("Error getting full survey:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Submit Answer
+
+export const submitAnswer = async (req, res) => {
+  try {
+    const answers = req.body;
+
+    if (!answers || !Array.isArray(answers)) {
+      return res.status(400).json({ message: "Invalid request body format" });
+    }
+
+    // Iterate over the answers array and insert each into the Answer table
+    const insertPromises = answers.map(async (item) => {
+      const { id, surveyId, answer } = item; // Assuming 'id' is the questionId
+
+      // Create or insert into the Answer table
+      return await Answer.create({
+        questionId: id, // Assuming id refers to the question
+        surveyId: surveyId,
+        answer: typeof answer === "string" ? answer : JSON.stringify(answer), // Store multi-select as JSON
+      });
+    });
+
+    // Wait for all inserts to finish
+    const result = await Promise.all(insertPromises);
+
+    res
+      .status(200)
+      .json({ message: "Answers submitted successfully", answer: result });
+  } catch (error) {
+    console.error("Error submitting answer:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getFeedback = async (req, res) => {
+  try {
+    const id = req.params.id; // Get companyId from the request parameters
+
+    // 1. Fetch surveys based on companyId
+    const surveys = await Servey.findAll({ where: { companyId: id } });
+
+    if (!surveys.length) {
+      return res
+        .status(404)
+        .json({ message: "No surveys found for this company." });
+    }
+
+    // 2. Fetch questions based on fetched surveys
+    const surveyIds = surveys.map((survey) => survey._id);
+    const questions = await Question.findAll({ serveyId: { $in: surveyIds } });
+
+    if (!questions.length) {
+      return res
+        .status(404)
+        .json({ message: "No questions found for these surveys." });
+    }
+
+    // 3. Fetch answers based on fetched questions
+    const questionIds = questions.map((question) => question.id);
+    const answers = await Answer.findAll({ questionId: { $in: questionIds } });
+    console.log("answers: ", answers);
+    // 4. Format the data into an easy-to-read format
+    const feedbackData = surveys.map((survey) => {
+      const surveyQuestions = questions.filter((q) => q.serveyId === survey.id);
+      return {
+        survey: {
+          id: survey.id,
+          name: survey.name,
+        },
+        questions: surveyQuestions.map((question) => {
+          const questionAnswers = answers.filter(
+            (a) => a.questionId === question.id
+          );
+          return {
+            id: question.id,
+            text: question.text,
+            type: question.type,
+            answers: questionAnswers.map((answer) => ({
+              id: answer.id,
+              text: answer.answer,
+            })),
+          };
+        }),
+      };
+    });
+
+    // 5. Send the formatted data back to the client
+    res.status(200).json({ feedback: feedbackData });
+  } catch (error) {
+    console.error("Error getting feedback:", error);
+    {
+      message: error.message;
+    }
   }
 };

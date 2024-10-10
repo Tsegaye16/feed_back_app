@@ -11,6 +11,9 @@ const Company = sequelize.define("Company", {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      notEmpty: { msg: "Please insert your company name" },
+    },
   },
   logo: {
     type: DataTypes.STRING,

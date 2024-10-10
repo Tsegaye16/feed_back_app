@@ -1,5 +1,11 @@
 import express from "express";
-import { signup, signin, getUserById } from "../controllers/authController.js";
+import {
+  signup,
+  signin,
+  getUserById,
+  edditProfile,
+  changePassword,
+} from "../controllers/authController.js";
 import upload from "../config/multerConfig.js";
 import {
   addOrUpdateCompanyInfo,
@@ -19,6 +25,9 @@ import {
   deleteQuestionById,
   updateQuestion,
   getFullSurvey,
+  updateCompany,
+  submitAnswer,
+  getFeedback,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -42,4 +51,10 @@ router.route("/getQuestionBySurveyId/:surveyId").get(getQuestionBySurveyId);
 router.route("/deleteQuestionById").delete(deleteQuestionById);
 router.route("/updateQuestion/:id").put(updateQuestion);
 router.route("/getFullSurvey/:secretePhrase").get(getFullSurvey);
+router.route("/updateProfile/:id").put(upload.single("image"), edditProfile);
+router.route("/updateCompany/:id").put(upload.single("logo"), updateCompany);
+router.route("/submitAnswer").post(submitAnswer);
+router.route("/changepassword").put(changePassword);
+router.route("/getFeedback/:id").get(getFeedback);
+
 export default router;

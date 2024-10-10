@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import {
   getAllQuestion,
   getCompanyById,
-  submitAnswer,
+  //submitAnswer,
   // submitAnswers,
 } from "../../redux/action/company";
 import {
@@ -99,7 +99,7 @@ const Questionaire = () => {
         answer,
       })),
     };
-    dispatch(submitAnswer(payload) as any);
+    //   dispatch(submitAnswer(payload) as any);
     setIsSubmitted(true); // Set submission status to true
     setOpenDialog(false); // Close the dialog
     console.log("payload:", payload);
