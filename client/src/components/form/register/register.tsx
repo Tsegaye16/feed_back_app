@@ -11,8 +11,6 @@ import {
 import { LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 //import "./../form.css";
 import { signup } from "../../../redux/action/auth";

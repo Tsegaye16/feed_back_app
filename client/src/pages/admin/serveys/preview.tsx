@@ -62,7 +62,7 @@ const Preview: React.FC = () => {
     return <div>something was wrong...</div>;
   }
   return (
-    <div style={{ backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
+    <div style={{ minHeight: "100vh" }}>
       {/* Company Header */}
       {companyInfo && (
         <div

@@ -7,6 +7,7 @@ import questionReducer from "./question";
 import answerReducer from "./answer";
 import serveyReducer from "./servey";
 import previewReducer from "./preview";
+import statReducer from "./stat";
 
 export default combineReducers({
   auth: authReducer,
@@ -16,4 +17,5 @@ export default combineReducers({
   answer: answerReducer,
   survey: serveyReducer,
   preview: previewReducer,
+  stat: statReducer,
 });

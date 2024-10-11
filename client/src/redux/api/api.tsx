@@ -74,3 +74,6 @@ export const getFullSurvey = async (secretePhrase: any) =>
 
 export const getFeedback = async (companyId: any) =>
   API.get(`/getFeedback/${companyId}`);
+
+export const getStatData = async (companyId: any) =>
+  API.get(`/getStatData/${companyId}`);

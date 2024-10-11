@@ -3,6 +3,7 @@ import Question from "../models/questionModel.js";
 import Servey from "../models/serveyModel.js";
 import Answer from "../models/answerModel.js";
 import { Op } from "sequelize";
+import moment from "moment";
 
 export const addOrUpdateCompanyInfo = async (req, res) => {
   try {
@@ -406,12 +407,17 @@ export const getFullSurvey = async (req, res) => {
       where: {
         secretePhrase: secretePhrase,
       },
-      attributes: ["id", "companyId"],
+      attributes: ["id", "companyId", "isPublished"],
     });
+    console.log("DDAATTAA: ", data);
     if (!data) {
       return res
         .status(404)
         .json({ message: "Survey not found on this secrete phrase" });
+    }
+    const isPublished = data.dataValues.isPublished;
+    if (!isPublished) {
+      return res.status(404).json({ message: "Survey is not published" });
     }
     const companyId = data.dataValues.companyId;
     const surveyId = data.dataValues.id;
@@ -545,5 +551,95 @@ export const getFeedback = async (req, res) => {
     {
       message: error.message;
     }
+  }
+};
+
+export const getStatData = async (req, res) => {
+  try {
+    const id = req.params.id;
+    // 1. extract total number of published surveys from Servey table where comnayId = id
+    const publishedSurveys = await Servey.count({
+      where: { companyId: id, isPublished: true },
+    });
+    // 1. extract total number of drafted surveys from Servey table where comnayId = id
+
+    const draftedSurvey = await Servey.count({
+      where: { companyId: id, isPublished: false },
+    });
+    // 3. get all survey id from Servey where companyId = id
+    const result = await Servey.findAll({
+      attributes: ["id"],
+      where: { companyId: id },
+    });
+    const surveyIds = result.map((survey) => survey.id);
+    // 4. get total number of question on each survey based on the surveyIds list
+    const totalQuestions = await Question.count({
+      where: {
+        serveyId: {
+          [Op.in]: surveyIds, // Match surveyIds from the list
+        },
+      },
+    });
+
+    // 5. Get total number of answers based on surveyIds
+    const totalAnswers = await Answer.count({
+      where: {
+        surveyId: {
+          [Op.in]: surveyIds, // Match surveyIds from the list
+        },
+      },
+    });
+    // 6. Get total this week's answers (including today)
+    const startOfThisWeek = moment().startOf("isoWeek").toDate(); // Start of this week (Monday)
+    const endOfToday = moment().endOf("day").toDate(); // End of today
+
+    const thisWeekAnswers = await Answer.count({
+      where: {
+        surveyId: {
+          [Op.in]: surveyIds,
+        },
+        createdAt: {
+          [Op.between]: [startOfThisWeek, endOfToday], // Answers between start of this week and end of today
+        },
+      },
+    });
+
+    // 7. Get total answers for each day of this week (including today)
+    const dailyAnswersThisWeek = await Promise.all(
+      Array.from({ length: 7 }).map(async (_, index) => {
+        const dayStart = moment()
+          .subtract(index, "days") // Subtract index from today to get the day for each iteration
+          .startOf("day")
+          .toDate(); // Start of each day
+        const dayEnd = moment(dayStart).endOf("day").toDate(); // End of each day
+
+        const count = await Answer.count({
+          where: {
+            surveyId: {
+              [Op.in]: surveyIds,
+            },
+            createdAt: {
+              [Op.between]: [dayStart, dayEnd], // Answers for each day
+            },
+          },
+        });
+
+        return { day: moment(dayStart).format("dddd"), count }; // Format day as a readable string (e.g., Monday, Tuesday)
+      })
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        publishedSurveys,
+        draftedSurvey,
+        totalQuestions,
+        totalAnswers,
+        thisWeekAnswers,
+        dailyAnswersThisWeek,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting stat data:", error);
   }
 };

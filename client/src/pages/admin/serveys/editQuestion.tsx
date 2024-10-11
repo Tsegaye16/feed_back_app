@@ -14,7 +14,7 @@ import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 
 import { Editor } from "primereact/editor";
-import { toast } from "react-toastify";
+
 import { updateQuestion } from "../../../redux/action/company"; // Assuming you're using this action for both add/edit
 
 const { Option } = Select;
@@ -106,7 +106,7 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
           <Editor
             value={questionText}
             onTextChange={(e: any) => setQuestionText(e.htmlValue)}
-            style={{ height: "320px" }}
+            style={{ height: "320px", backgroundColor: "white" }}
           />
         </Form.Item>
 

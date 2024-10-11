@@ -28,6 +28,7 @@ import {
   updateCompany,
   submitAnswer,
   getFeedback,
+  getStatData,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -56,5 +57,6 @@ router.route("/updateCompany/:id").put(upload.single("logo"), updateCompany);
 router.route("/submitAnswer").post(submitAnswer);
 router.route("/changepassword").put(changePassword);
 router.route("/getFeedback/:id").get(getFeedback);
+router.route("/getStatData/:id").get(getStatData);
 
 export default router;

@@ -1,11 +1,20 @@
 import React, { useState } from "react";
-import { Input, Select, Form, Button, Typography, Row, Col, Space } from "antd";
+import {
+  Input,
+  Select,
+  Form,
+  Button,
+  Typography,
+  Row,
+  Col,
+  Space,
+  message,
+} from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
 
 import { Editor } from "primereact/editor";
 
-import { toast } from "react-toastify";
 import { addQuestion } from "../../../redux/action/company";
 
 const { TextArea } = Input;
@@ -69,10 +78,10 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
     );
     console.log("response: ", response.error);
     if (response?.payload?.message) {
-      toast.success(`${response?.payload?.message}`);
+      message.success(`${response?.payload?.message}`);
       onSave();
     } else if (response?.error) {
-      toast.error(`${response.error}`);
+      message.error(`${response.error}`);
     }
   };
 
@@ -91,11 +100,11 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
           <Editor
             value={questionText}
             onTextChange={(e: any) => setQuestionText(e.htmlValue)}
-            style={{ height: "320px" }}
+            style={{ height: "320px", backgroundColor: "white" }}
           />
         </Form.Item>
 
-        <Form.Item label="Question Type" required>
+        <Form.Item label="Question Type" required style={{ width: "50%" }}>
           <Select
             value={questionType}
             onChange={(value) => setQuestionType(value)}
@@ -109,7 +118,11 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
         </Form.Item>
 
         {questionType === "True/False" && (
-          <Form.Item label="True/False Option" required>
+          <Form.Item
+            label="True/False Option"
+            required
+            style={{ width: "50%" }}
+          >
             <Select
               value={additionalOption}
               onChange={(value: any) => setAdditionalOption(value)}
@@ -124,7 +137,7 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
 
         {questionType === "Choice" && (
           <>
-            <Form.Item label="Choice Option" required>
+            <Form.Item label="Choice Option" required style={{ width: "50%" }}>
               <Select
                 value={additionalOption}
                 onChange={(value: any) => setAdditionalOption(value)}
@@ -142,10 +155,11 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
                 key={index}
                 gutter={16}
                 align="middle"
-                style={{ marginBottom: 8 }}
+                style={{ marginBottom: 8, width: "50%" }}
               >
-                <Col span={20}>
+                <Col span={20} style={{ width: "50%" }}>
                   <Input
+                    // style={{ width: "50%" }}
                     value={choice}
                     onChange={(e) => handleChoiceChange(index, e.target.value)}
                     placeholder={`Choice ${index + 1}`}
@@ -165,7 +179,7 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
               type="dashed"
               onClick={handleAddChoice}
               icon={<PlusOutlined />}
-              style={{ width: "100%" }}
+              style={{ width: "50%" }}
             >
               Add Choice
             </Button>

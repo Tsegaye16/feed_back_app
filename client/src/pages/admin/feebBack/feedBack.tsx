@@ -37,9 +37,15 @@ const FeedBack: React.FC<PropType> = ({ compmanyId }) => {
         survey: item.survey.name,
         question: question.text,
         type: question.type,
-        answer: answer.text,
-        isPositive: answer.text === "Agree" ? "Yes" : "No",
-        isNegative: answer.text === "Disagree" ? "Yes" : "No",
+        answer: Array.isArray(answer.text)
+          ? answer.text.join(", ") // Convert list of answers to a comma-separated string
+          : answer.text.replace(/['"\[\]]/g, ""),
+        isPositive: ["Agree", "Yes", "True"].includes(answer.text)
+          ? "Yes"
+          : "No",
+        isNegative: ["Disagree", "No", "False"].includes(answer.text)
+          ? "Yes"
+          : "No",
         isNeutral: answer.text === "Neutral" ? "Yes" : "No",
         // Row spans
         surveyRowSpan:

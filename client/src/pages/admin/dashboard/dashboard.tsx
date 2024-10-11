@@ -81,9 +81,14 @@ const Dashboard = () => {
         handleLogout();
       }
       dispatch(getUserById(decodedToken.id) as any);
-      dispatch(getCompanyById(user?.id) as any);
     }
   }, [dispatch, navigate, token]);
+
+  useEffect(() => {
+    if (user) {
+      dispatch(getCompanyById(user?.id) as any);
+    }
+  }, [dispatch, user]);
   const onUpdate = async () => {
     if (token) {
       const decodedToken: any = jwtDecode(token);
@@ -202,7 +207,7 @@ const Dashboard = () => {
         style={{
           marginLeft: collapsed ? 80 : 200,
           transition: "margin-left 0.2s",
-          backgroundColor: "#ebeff3",
+          backgroundColor: "#FAF9F6",
         }}
       >
         <Header
@@ -268,7 +273,9 @@ const Dashboard = () => {
             />
           ) : (
             <>
-              {selectedItem === "Dashboard" && <DetailDashboard />}
+              {selectedItem === "Dashboard" && (
+                <DetailDashboard companyId={company?.id} />
+              )}
               {selectedItem === "Published" && (
                 <Published
                   onDetailClick={handleDetailClick}

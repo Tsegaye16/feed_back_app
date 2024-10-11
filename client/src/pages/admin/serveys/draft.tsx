@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode, JwtPayload } from "jwt-decode";
-import { Button, message, Table, Typography, Space, Flex } from "antd";
+import { Button, message, Table, Typography, Space, Flex, Modal } from "antd";
 import { getUserById } from "../../../redux/action/user";
 import {
   getCompanyById,
@@ -122,9 +122,17 @@ const Draft: React.FC<onClickType> = ({
 
     // Send array of selected IDs to backend
     const response = await dispatch(deleteServey(selectedIds) as any);
-    if (response) {
-      message.success("Survey deleted successfully!");
+    if (response?.error) {
+      message.error(`${response.error}`);
+    } else if (response?.payload?.message) {
+      message.success(response.payload.message);
+      // message.success("Survey deleted successfully!");
       setSelectedRowKeys(new Set() as any);
+      setConfirmLoading(true);
+      setTimeout(() => {
+        setOpen(false);
+        setConfirmLoading(false);
+      }, 1000);
       setOpen(false);
     }
     dispatch(getAllServey(company.id) as any);
@@ -132,29 +140,39 @@ const Draft: React.FC<onClickType> = ({
     // Reset selection after deletion
     setSelectedSurveys(new Set());
   };
-
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const confirmDialog = (
-    <Dialog
+    <Modal
+      title="Be care full"
       open={open}
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
+      onOk={() => handleDeleteSurveys(selectedRowKeys)}
+      // onClick={() => handleDelete(record.id)}
+      confirmLoading={confirmLoading}
+      onCancel={handleClose}
     >
-      <DialogTitle id="alert-dialog-title">
-        {"You are deleting survey"}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          Are you sure?
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>No</Button>
-        <Button onClick={() => handleDeleteSurveys(selectedRowKeys)} autoFocus>
-          Yes
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <p>You are deleting a survey</p>
+    </Modal>
+    // <Dialog
+    //   open={open}
+    //   onClose={handleClose}
+    //   aria-labelledby="alert-dialog-title"
+    //   aria-describedby="alert-dialog-description"
+    // >
+    //   <DialogTitle id="alert-dialog-title">
+    //     {"You are deleting survey"}
+    //   </DialogTitle>
+    //   <DialogContent>
+    //     <DialogContentText id="alert-dialog-description">
+    //       Are you sure?
+    //     </DialogContentText>
+    //   </DialogContent>
+    //   <DialogActions>
+    //     <Button onClick={handleClose}>No</Button>
+    //     <Button onClick={() => handleDeleteSurveys(selectedRowKeys)} autoFocus>
+    //       Yes
+    //     </Button>
+    //   </DialogActions>
+    // </Dialog>
   );
 
   const handleAddSurveyClick = (option: any, event?: any) => {
@@ -186,11 +204,6 @@ const Draft: React.FC<onClickType> = ({
   //////// Ant Design Table
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const columns = [
-    {
-      title: "Survey ID",
-      dataIndex: "id",
-      key: "id",
-    },
     {
       title: "Survey Name",
       dataIndex: "name",
@@ -283,12 +296,12 @@ const Draft: React.FC<onClickType> = ({
         </Paper>
       ) : (
         <Flex gap="middle" vertical>
-          <Flex align="center" gap="middle" justify="space-between">
+          <Flex align="center" gap="middle">
             {hasSelected ? `Selected ${selectedRowKeys.length} items` : null}
 
             {selectedRowKeys.length === 1 ? (
               <Button
-                type="primary"
+                // type="primary"
                 disabled={!hasSelected}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -300,7 +313,7 @@ const Draft: React.FC<onClickType> = ({
             ) : null}
             {selectedRowKeys.length >= 1 ? (
               <Button
-                type="primary"
+                // type="primary"
                 //disabled={!hasSelected}
                 danger
                 onClick={handleClickOpen}

@@ -12,7 +12,7 @@ import {
   Modal,
 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
+
 import "antd/dist/reset.css";
 import { TableRowSelection } from "antd/es/table/interface";
 import { deleteQuestionById } from "../../../redux/action/company";
@@ -58,16 +58,11 @@ const Detail: React.FC<DetailProps> = ({
       const previewUrl = `${window.location.origin}/${companyName}/surveys/preview/${surveyId}`;
       window.open(previewUrl, "_blank");
     } else {
-      toast.error("Preview data is missing.");
+      message.error("Preview data is missing.");
     }
   };
 
   const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-    },
     {
       title: "Question Text",
       dataIndex: "text",
@@ -152,7 +147,7 @@ const Detail: React.FC<DetailProps> = ({
   };
   const confirmModal = (
     <Modal
-      title="Title"
+      title="Be care full"
       open={open}
       onOk={handleDelete}
       // onClick={() => handleDelete(record.id)}
@@ -164,7 +159,7 @@ const Detail: React.FC<DetailProps> = ({
   );
 
   return (
-    <div style={{ padding: "20px", backgroundColor: "#f5f5f5" }}>
+    <div style={{ padding: "20px", backgroundColor: "white" }}>
       <Title level={5} style={{ marginBottom: "20px" }}>
         Survey Detail
       </Title>
@@ -178,7 +173,10 @@ const Detail: React.FC<DetailProps> = ({
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card bordered={false} style={{ textAlign: "center" }}>
+          <Card
+            bordered={false}
+            style={{ textAlign: "center", backgroundColor: "#FDFDFD" }}
+          >
             <Title level={5}>Total Feedback</Title>
             <Text>{100}</Text>
           </Card>
