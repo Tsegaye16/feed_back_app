@@ -15,8 +15,6 @@ const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
   const [surveyName, setSurveyName] = useState(info.surveyName || "");
   const [secretPhrase, setSecretPhrase] = useState(info.secretePhrase || "");
 
-  console.log("Info: ", info);
-
   const dispatch = useDispatch();
   const handlePublish = async () => {
     if (surveyName) {

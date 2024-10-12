@@ -62,7 +62,12 @@ const Preview: React.FC = () => {
     return <div>something was wrong...</div>;
   }
   return (
-    <div style={{ minHeight: "100vh" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: companyInfo.backGroundColor || "#fff",
+      }}
+    >
       {/* Company Header */}
       {companyInfo && (
         <div
@@ -71,22 +76,28 @@ const Preview: React.FC = () => {
             color: companyInfo.textColor || "#000",
             display: "flex",
             alignItems: "center",
-            padding: "16px",
+            padding: "18px",
             position: "fixed",
             top: 0,
             left: 0,
             right: 0,
             zIndex: 1000,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+            boxShadow: "0 1px 4px rgba(117, 114, 114, 0.6)",
           }}
         >
           <Avatar
             src={`http://localhost:4000/${companyInfo.logo}`}
             alt={companyInfo.name}
             size={65}
-            style={{ marginRight: "16px", objectFit: "cover" }}
+            style={{
+              marginRight: "16px",
+              objectFit: "cover",
+            }}
           />
-          <Title level={3} style={{ margin: 0 }}>
+          <Title
+            level={3}
+            style={{ margin: 0, color: companyInfo.textColor || "#000" }}
+          >
             {companyInfo.name}
           </Title>
         </div>
@@ -100,6 +111,8 @@ const Preview: React.FC = () => {
           maxWidth: "800px",
           marginLeft: "auto",
           marginRight: "auto",
+          backgroundColor: companyInfo.backGroundColor || "#fff",
+          color: companyInfo.textColor || "#000",
         }}
       >
         <Form layout="vertical" onFinish={handleSubmit}>
@@ -328,6 +341,7 @@ const QuestionOpen: React.FC<QuestionProps> = ({
 const cardStyle = {
   marginBottom: "16px",
   backgroundColor: "#fff",
+
   borderRadius: "8px",
   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
 };

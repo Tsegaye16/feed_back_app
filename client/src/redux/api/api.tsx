@@ -77,3 +77,12 @@ export const getFeedback = async (companyId: any) =>
 
 export const getStatData = async (companyId: any) =>
   API.get(`/getStatData/${companyId}`);
+
+export const getFeedbackDetail = async (surveyId: string) =>
+  API.get(`/getFeedbackDetail/${surveyId}`);
+
+export const getRecentFeedback = async (companyId: any) =>
+  API.get(`/getRecentFeedback/${companyId}`);
+
+export const publishSurvey = async (surveyId: string) =>
+  API.put(`/publishSurvey/${surveyId}`);

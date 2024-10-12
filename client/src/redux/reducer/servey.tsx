@@ -3,6 +3,7 @@ import {
   ADD_SERVEY,
   DELETE_SERVEY,
   GET_FULL_SURVEY,
+  PUBLISH_SURVEY,
 } from "../../constants/types/actionType";
 
 const serveyState = {
@@ -18,6 +19,8 @@ const serveyReducer = (state = serveyState, action: any) => {
     case DELETE_SERVEY:
       return { ...state, servey: action.payload };
     case GET_FULL_SURVEY:
+      return { ...state, survey: action.payload };
+    case PUBLISH_SURVEY:
       return { ...state, survey: action.payload };
     default:
       return state;

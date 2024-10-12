@@ -5,20 +5,12 @@ import { Button, message, Table, Typography, Space, Flex, Modal } from "antd";
 import { getUserById } from "../../../redux/action/user";
 import {
   getCompanyById,
-  addServey,
   deleteServey,
+  publishSurvey,
   // saveSurveyAsDraft,
 } from "../../../redux/action/company";
 import { getAllServey } from "../../../redux/action/company";
-import {
-  Box,
-  Paper,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
+import { Box, Paper } from "@mui/material";
 
 // import {  } from "@mui/icons-material";
 
@@ -152,27 +144,6 @@ const Draft: React.FC<onClickType> = ({
     >
       <p>You are deleting a survey</p>
     </Modal>
-    // <Dialog
-    //   open={open}
-    //   onClose={handleClose}
-    //   aria-labelledby="alert-dialog-title"
-    //   aria-describedby="alert-dialog-description"
-    // >
-    //   <DialogTitle id="alert-dialog-title">
-    //     {"You are deleting survey"}
-    //   </DialogTitle>
-    //   <DialogContent>
-    //     <DialogContentText id="alert-dialog-description">
-    //       Are you sure?
-    //     </DialogContentText>
-    //   </DialogContent>
-    //   <DialogActions>
-    //     <Button onClick={handleClose}>No</Button>
-    //     <Button onClick={() => handleDeleteSurveys(selectedRowKeys)} autoFocus>
-    //       Yes
-    //     </Button>
-    //   </DialogActions>
-    // </Dialog>
   );
 
   const handleAddSurveyClick = (option: any, event?: any) => {
@@ -239,6 +210,9 @@ const Draft: React.FC<onClickType> = ({
           >
             Detail
           </Button>
+          <Button type="link" onClick={() => openPyblishDialog(record.id)}>
+            Publish
+          </Button>
         </Space>
       ),
     },
@@ -253,14 +227,59 @@ const Draft: React.FC<onClickType> = ({
     selectedRowKeys,
     onChange: onSelectChange,
   };
-
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [publishingId, setPublishingId] = useState("");
   const hasSelected = selectedRowKeys.length > 0;
+  const handlePublish = async (surveyId: any) => {
+    const response = await dispatch(publishSurvey(surveyId) as any);
+    console.log("response: ", response);
+    if (response?.error) {
+      message.error(`${response.error}`);
+    } else if (response?.payload?.message) {
+      setSelectedRowKeys(new Set() as any);
+      message.success(`${response.payload.message}`);
+      dispatch(getAllServey(company.id) as any);
+      setPublishOpen(false);
+    }
+  };
+
+  const openPyblishDialog = (publishingId: string) => {
+    setPublishOpen(true);
+    setPublishingId(publishingId);
+  };
+
+  const publishConfirmDialog = (
+    <Modal
+      title="Be care full"
+      open={publishOpen}
+      onOk={() => handlePublish(publishingId)}
+      // onClick={() => handleDelete(record.id)}
+      confirmLoading={confirmLoading}
+      onCancel={handleClose}
+    >
+      <p>You are publishing a survey</p>
+    </Modal>
+  );
   return (
-    <Box component="section" sx={{ p: 3, width: "100%" }}>
+    <Box
+      component="section"
+      sx={{ p: 3, width: "100%", backgroundColor: "white" }}
+    >
       {/* Page Heading */}
-      <Title level={5} style={{ marginBottom: "20px" }}>
-        Drafted Survey
-      </Title>
+      <Flex
+        align="center"
+        gap="middle"
+        justify="space-between"
+        style={{
+          borderBottom: "1px #FAF9F6 solid",
+          width: "100%",
+          marginBottom: "10px",
+        }}
+      >
+        <Title level={5} style={{ marginBottom: "20px" }}>
+          Drafted Surveys
+        </Title>
+      </Flex>
 
       {/* Add New Survey Button */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
@@ -333,7 +352,7 @@ const Draft: React.FC<onClickType> = ({
           />
         </Flex>
       )}
-
+      {publishConfirmDialog}
       {confirmDialog}
     </Box>
   );

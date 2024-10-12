@@ -4,6 +4,7 @@ import Servey from "../models/serveyModel.js";
 import Answer from "../models/answerModel.js";
 import { Op } from "sequelize";
 import moment from "moment";
+import { sequelize } from "../db.js";
 
 export const addOrUpdateCompanyInfo = async (req, res) => {
   try {
@@ -214,6 +215,23 @@ export const addServey = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const publishSurvey = async (req, res) => {
+  try {
+    const surveyId = req.params.surveyId;
+    console.log("surveyIddd: ", surveyId);
+    // 1. update the servey column and make isPublished is true when surveyId = surveyId
+    const updatedSurvey = await Servey.update(
+      { isPublished: true },
+      { where: { id: surveyId } }
+    );
+    res
+      .status(200)
+      .json({ message: "succussfully published", data: updatedSurvey });
+  } catch (error) {
+    console.log(error);
   }
 };
 export const getAllServey = async (req, res) => {
@@ -505,74 +523,70 @@ export const getFeedback = async (req, res) => {
         .json({ message: "No surveys found for this company." });
     }
 
-    // 2. Fetch questions based on fetched surveys
-    const surveyIds = surveys.map((survey) => survey._id);
-    const questions = await Question.findAll({ serveyId: { $in: surveyIds } });
+    // 2. Fetch survey IDs and names
+    const surveyData = surveys.map((survey) => ({
+      id: survey.id,
+      name: survey.name,
+    }));
+    const surveyIds = surveyData.map((survey) => survey.id);
 
-    if (!questions.length) {
-      return res
-        .status(404)
-        .json({ message: "No questions found for these surveys." });
-    }
+    // 3. Fetch answers based on the surveyIds, group them by 'surveyId' and 'createdAt'
+    const answers = await Answer.findAll({
+      where: { surveyId: { [Op.in]: surveyIds } },
+      attributes: [
+        "surveyId",
+        "createdAt",
+        [sequelize.fn("COUNT", sequelize.col("id")), "answerCount"],
+      ],
+      group: ["surveyId", "createdAt"],
+    });
 
-    // 3. Fetch answers based on fetched questions
-    const questionIds = questions.map((question) => question.id);
-    const answers = await Answer.findAll({ questionId: { $in: questionIds } });
-    console.log("answers: ", answers);
-    // 4. Format the data into an easy-to-read format
-    const feedbackData = surveys.map((survey) => {
-      const surveyQuestions = questions.filter((q) => q.serveyId === survey.id);
+    // 4. Aggregate the grouped answers by survey
+    const feedback = surveyData.map((survey) => {
+      // Filter answers for the current survey
+      const surveyAnswers = answers.filter(
+        (answer) => answer.surveyId === survey.id
+      );
+
+      // Group by 'createdAt' and count unique 'createdAt' groups
+      const answerCount = surveyAnswers.length;
+
       return {
-        survey: {
-          id: survey.id,
-          name: survey.name,
-        },
-        questions: surveyQuestions.map((question) => {
-          const questionAnswers = answers.filter(
-            (a) => a.questionId === question.id
-          );
-          return {
-            id: question.id,
-            text: question.text,
-            type: question.type,
-            answers: questionAnswers.map((answer) => ({
-              id: answer.id,
-              text: answer.answer,
-            })),
-          };
-        }),
+        surveyId: survey.id,
+        surveyName: survey.name,
+        answerCount: answerCount, // Count of unique 'createdAt' entries for the survey
       };
     });
 
-    // 5. Send the formatted data back to the client
-    res.status(200).json({ feedback: feedbackData });
+    return res.status(200).json({ message: "success", feedback: feedback });
   } catch (error) {
-    console.error("Error getting feedback:", error);
-    {
-      message: error.message;
-    }
+    //console.error("Error fetching feedback:", error);
+    res.status(400).json({ message: error.message });
   }
 };
 
 export const getStatData = async (req, res) => {
   try {
     const id = req.params.id;
-    // 1. extract total number of published surveys from Servey table where comnayId = id
+
+    // 1. Extract total number of published surveys from Servey table where companyId = id
     const publishedSurveys = await Servey.count({
       where: { companyId: id, isPublished: true },
     });
-    // 1. extract total number of drafted surveys from Servey table where comnayId = id
 
+    // 2. Extract total number of drafted surveys from Servey table where companyId = id
     const draftedSurvey = await Servey.count({
       where: { companyId: id, isPublished: false },
     });
-    // 3. get all survey id from Servey where companyId = id
+
+    // 3. Get all survey IDs from Servey where companyId = id
     const result = await Servey.findAll({
       attributes: ["id"],
       where: { companyId: id },
     });
     const surveyIds = result.map((survey) => survey.id);
-    // 4. get total number of question on each survey based on the surveyIds list
+
+    // 4. Get total number of questions for each survey based on the surveyIds list
     const totalQuestions = await Question.count({
       where: {
         serveyId: {
@@ -581,15 +595,17 @@ export const getStatData = async (req, res) => {
       },
     });
 
-    // 5. Get total number of answers based on surveyIds
+    // 5. Get total number of distinct answers grouped by createdAt based on surveyIds
     const totalAnswers = await Answer.count({
       where: {
         surveyId: {
           [Op.in]: surveyIds, // Match surveyIds from the list
         },
       },
+      group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
     });
-    // 6. Get total this week's answers (including today)
+
+    // 6. Get total distinct answers for this week (grouped by createdAt)
     const startOfThisWeek = moment().startOf("isoWeek").toDate(); // Start of this week (Monday)
     const endOfToday = moment().endOf("day").toDate(); // End of today
 
@@ -602,9 +618,10 @@ export const getStatData = async (req, res) => {
           [Op.between]: [startOfThisWeek, endOfToday], // Answers between start of this week and end of today
         },
       },
+      group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
     });
 
-    // 7. Get total answers for each day of this week (including today)
+    // 7. Get total distinct answers for each day of this week (grouped by createdAt)
     const dailyAnswersThisWeek = await Promise.all(
       Array.from({ length: 7 }).map(async (_, index) => {
         const dayStart = moment()
@@ -622,9 +639,14 @@ export const getStatData = async (req, res) => {
               [Op.between]: [dayStart, dayEnd], // Answers for each day
             },
           },
+          group: sequelize.fn(
+            "date_trunc",
+            "minute",
+            sequelize.col("createdAt")
+          ), // Group by createdAt truncated to the minute
         });
 
-        return { day: moment(dayStart).format("dddd"), count }; // Format day as a readable string (e.g., Monday, Tuesday)
+        return { day: moment(dayStart).format("dddd"), count: count.length }; // Format day as a readable string (e.g., Monday, Tuesday), and count distinct entries
       })
     );
 
@@ -634,12 +656,199 @@ export const getStatData = async (req, res) => {
         publishedSurveys,
         draftedSurvey,
         totalQuestions,
-        totalAnswers,
-        thisWeekAnswers,
+        totalAnswers: totalAnswers.length, // Length of distinct entries
+        thisWeekAnswers: thisWeekAnswers.length, // Length of distinct entries
         dailyAnswersThisWeek,
       },
     });
   } catch (error) {
-    console.error("Error getting stat data:", error);
+    // console.error("Error getting stat data:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getFeedbackDetail = async (req, res) => {
+  try {
+    const surveyId = req.params.surveyId;
+
+    // 1. Fetch all answers based on the surveyId
+    const answers = await Answer.findAll({
+      where: {
+        surveyId: surveyId,
+      },
+      raw: true, // Fetch data as raw objects
+    });
+
+    if (!answers || answers.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No answers found for the given survey ID.",
+      });
+    }
+
+    // 2. Group the fetched answers by createdAt (including hour, minute, second, millisecond)
+    const groupedAnswers = answers.reduce((acc, answer) => {
+      const createdAtFull = moment(answer.createdAt).format(
+        "YYYY-MM-DD HH:mm:ss.SSS"
+      ); // Full timestamp including milliseconds
+
+      if (!acc[createdAtFull]) {
+        acc[createdAtFull] = [];
+      }
+      acc[createdAtFull].push(answer);
+      return acc;
+    }, {});
+
+    // 3. Fetch the questions related to the grouped answers (question.id = answer.questionId)
+    const questionIds = [
+      ...new Set(answers.map((answer) => answer.questionId)),
+    ]; // Get unique question IDs
+
+    const questions = await Question.findAll({
+      where: {
+        id: {
+          [Op.in]: questionIds,
+        },
+      },
+      raw: true,
+    });
+
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No questions found for the related answers.",
+      });
+    }
+
+    // 4. Send the grouped question with answer to the client-side
+    const response = Object.keys(groupedAnswers).map((timestamp) => {
+      const answersForTimestamp = groupedAnswers[timestamp];
+
+      const questionsWithAnswers = answersForTimestamp.map((answer) => {
+        const question = questions.find((q) => q.id === answer.questionId);
+        return {
+          question: question ? question.text : "Question not found", // You can adjust to return full question details if needed
+          answer: answer.answer, // Assuming your Answer model has an 'answerText' field
+        };
+      });
+
+      return {
+        timestamp, // Full timestamp (YYYY-MM-DD HH:mm:ss.SSS)
+        questionsWithAnswers,
+      };
+    });
+
+    return res.status(200).json({
+      status: "success",
+      data: response,
+    });
+  } catch (error) {
+    // console.error("Error fetching feedback details:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getRecentFeedback = async (req, res) => {
+  try {
+    const companyId = req.params.companyId;
+
+    // 1. Get all surveys from Survey table where companyId = companyId
+    const surveys = await Servey.findAll({
+      where: {
+        companyId,
+      },
+      attributes: ["id"], // Only fetching the survey ids
+    });
+
+    if (!surveys || surveys.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No surveys found for this company." });
+    }
+
+    // Extract survey IDs
+    const surveyIds = surveys.map((survey) => survey.id);
+
+    const todayStart = moment().startOf("day").toDate(); // Start of today
+    const todayEnd = moment().endOf("day").toDate(); // End of today
+
+    // 2. Fetch all answers based on the surveyIds and within today's date range
+    const answers = await Answer.findAll({
+      where: {
+        surveyId: {
+          [Op.in]: surveyIds, // Fetch answers for the surveys from the given companies
+        },
+        createdAt: {
+          [Op.between]: [todayStart, todayEnd], // Fetch only today's answers
+        },
+      },
+      raw: true, // Fetch data as raw objects
+    });
+
+    if (!answers || answers.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No answers found for today for the given survey IDs.",
+      });
+    }
+
+    // 3. Group the fetched answers by createdAt (including hour, minute, second, millisecond)
+    const groupedAnswers = answers.reduce((acc, answer) => {
+      const createdAtFull = moment(answer.createdAt).format(
+        "YYYY-MM-DD HH:mm:ss.SSS"
+      ); // Full timestamp including milliseconds
+
+      if (!acc[createdAtFull]) {
+        acc[createdAtFull] = [];
+      }
+      acc[createdAtFull].push(answer);
+      return acc;
+    }, {});
+
+    // 4. Fetch the questions related to the grouped answers (question.id = answer.questionId)
+    const questionIds = [
+      ...new Set(answers.map((answer) => answer.questionId)),
+    ]; // Get unique question IDs
+
+    const questions = await Question.findAll({
+      where: {
+        id: {
+          [Op.in]: questionIds,
+        },
+      },
+      raw: true,
+    });
+
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "No questions found for the related answers.",
+      });
+    }
+
+    // 5. Send the grouped questions with answers to the client-side
+    const response = Object.keys(groupedAnswers).map((timestamp) => {
+      const answersForTimestamp = groupedAnswers[timestamp];
+
+      const questionsWithAnswers = answersForTimestamp.map((answer) => {
+        const question = questions.find((q) => q.id === answer.questionId);
+        return {
+          question: question ? question.text : "Question not found", // Return question text or default
+          answer: answer.answer, // Assuming your Answer model has an 'answer' field
+        };
+      });
+
+      return {
+        timestamp, // Full timestamp (YYYY-MM-DD HH:mm:ss.SSS)
+        questionsWithAnswers,
+      };
+    });
+    return res.status(200).json({
+      status: "success",
+      data: response,
+    });
+  } catch (error) {
+    console.error("Error fetching feedback: ", error);
+    res.status(400).json({ message: error.message });
   }
 };

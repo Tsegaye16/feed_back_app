@@ -29,6 +29,9 @@ import {
   submitAnswer,
   getFeedback,
   getStatData,
+  getFeedbackDetail,
+  getRecentFeedback,
+  publishSurvey,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -43,6 +46,7 @@ router.route("/updateTrueFalse/:id").put(updateTrueFalse);
 router.route("/deleteTrueFalse/:id").delete(deleteTrueFalse);
 router.route("/addChoiceQuestion").post(addChoiceQuestion);
 router.route("/addServey").post(addServey);
+router.route("/publishSurvey/:surveyId").put(publishSurvey);
 router.route("/getAllServey/:companyId").get(getAllServey);
 router.route("/deleteServey").delete(deleteServey);
 router.route("/addQuestion").post(addQuestion);
@@ -58,5 +62,7 @@ router.route("/submitAnswer").post(submitAnswer);
 router.route("/changepassword").put(changePassword);
 router.route("/getFeedback/:id").get(getFeedback);
 router.route("/getStatData/:id").get(getStatData);
+router.route("/getFeedbackDetail/:surveyId").get(getFeedbackDetail);
+router.route("/getRecentFeedback/:companyId").get(getRecentFeedback);
 
 export default router;

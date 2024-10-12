@@ -15,6 +15,14 @@
       {
         "aria-required-parent": "off"
       }
+    ],
+    "compat-api/css": [
+      "default",
+      {
+        "ignore": [
+          "user-select"
+        ]
+      }
     ]
   }
 }

@@ -1,7 +1,7 @@
 import { GET_STAT_DATA } from "../../constants/types/actionType";
 
 const statState = {
-  user: null,
+  statData: null,
 };
 
 const statReducer = (state = statState, action: any) => {

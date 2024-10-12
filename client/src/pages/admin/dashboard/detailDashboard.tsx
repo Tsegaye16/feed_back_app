@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Row, Col, Card, Statistic } from "antd";
+import { Row, Col, Card, Statistic, Timeline, Divider, Typography } from "antd";
 import {
   PieChart,
   Pie,
@@ -16,7 +16,9 @@ import {
   Label,
 } from "recharts";
 import { getStatData } from "../../../redux/action/stat";
-
+import { getRecentFeedback } from "../../../redux/action/feedback";
+import moment from "moment";
+const { Title, Text } = Typography;
 // Sample data
 const feedbackData = {
   averageRate: 4.2,
@@ -60,19 +62,113 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
   useEffect(() => {
     if (companyId) {
       dispatch(getStatData(companyId) as any);
+      dispatch(getRecentFeedback(companyId) as any);
     }
   }, [companyId, dispatch]);
 
   const statData = useSelector((state: any) => state.stat?.statData?.data);
-  console.log("statData: ", statData?.dailyAnswersThisWeek);
+  const todayData = useSelector(
+    (state: any) => state.feedback?.feedbackData?.data
+  );
+  console.log("todayData: ", todayData);
   const barData = statData?.dailyAnswersThisWeek;
   return (
     <div style={{ padding: "20px" }}>
+      <Timeline style={{ padding: "10px 0" }}>
+        <Title>Todays feed back</Title>
+        {todayData && todayData.length > 0 ? (
+          todayData.map((feedback: any, index: number) => (
+            <Timeline.Item
+              key={index}
+              dot={
+                <span style={{ fontSize: "14px", color: "#1890ff" }}>⬤</span>
+              }
+              style={{ paddingBottom: "20px" }}
+            >
+              <Card
+                title={
+                  <Text style={{ color: "#1890ff" }}>
+                    Feedback Received:{" "}
+                    {moment(feedback.timestamp).format("h:mm:ss a")}
+                  </Text>
+                }
+                bordered={false}
+                bodyStyle={{ padding: "20px" }}
+                style={{
+                  marginBottom: "20px",
+                  borderRadius: "10px",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Divider>Feedback Details</Divider>
+                {feedback.questionsWithAnswers.map(
+                  (questionWithAnswer: any, qIndex: number) => (
+                    <div key={qIndex} style={{ marginBottom: "25px" }}>
+                      <Text
+                        strong
+                        style={{
+                          fontSize: "16px",
+                          color: "#595959",
+                          display: "block",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Question {qIndex + 1}:
+                      </Text>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: questionWithAnswer.question,
+                        }}
+                        style={{
+                          paddingLeft: "10px",
+                          marginBottom: "10px",
+                          fontStyle: "italic",
+                          color: "#3d3d3d",
+                        }}
+                      />
+                      <Text
+                        strong
+                        style={{
+                          fontSize: "15px",
+                          color: "#595959",
+                          marginTop: "10px",
+                        }}
+                      >
+                        Feed Back:
+                      </Text>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: questionWithAnswer.answer,
+                        }}
+                        style={{
+                          paddingLeft: "10px",
+                          marginTop: "5px",
+                          color: "#1DA57A", // Make answer more prominent with green color
+                          fontSize: "14px",
+                        }}
+                      />
+                    </div>
+                  )
+                )}
+              </Card>
+            </Timeline.Item>
+          ))
+        ) : (
+          <Text>No feedback available.</Text>
+        )}
+      </Timeline>
       {/* First Section: Overview */}
       <Row gutter={[16, 16]}>
         {/* Average Rate */}
         <Col xs={24} sm={12} md={6}>
-          <Card>
+          <Card
+            style={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <Statistic
               title="Average Rate"
               value={feedbackData.averageRate}
@@ -82,16 +178,32 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
         </Col>
         {/* Total Surveys */}
         <Col xs={24} sm={12} md={6}>
-          <Card>
+          <Card
+            style={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <Statistic
               title="Total Surveys"
-              value={statData?.publishedSurveys + statData?.draftedSurvey}
+              value={
+                statData?.publishedSurveys ?? 0 + statData?.draftedSurvey ?? 0
+              }
             />
           </Card>
         </Col>
         {/* Total Feedback */}
         <Col xs={24} sm={12} md={6}>
-          <Card>
+          <Card
+            style={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <Statistic title="Total Feedback" value={statData?.totalAnswers} />
             <div
               style={{
@@ -108,7 +220,14 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
         </Col>
         {/* Weekly Feedback */}
         <Col xs={24} sm={12} md={6}>
-          <Card>
+          <Card
+            style={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <Statistic
               title="Weekly Feedback"
               value={statData?.thisWeekAnswers}

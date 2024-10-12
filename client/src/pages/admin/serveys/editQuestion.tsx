@@ -110,7 +110,7 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
           />
         </Form.Item>
 
-        <Form.Item label="Question Type" required>
+        <Form.Item label="Question Type" required style={{ width: "50%" }}>
           <Select
             value={questionType}
             onChange={(value) => setQuestionType(value)}
@@ -124,7 +124,11 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
         </Form.Item>
 
         {questionType === "True/False" && (
-          <Form.Item label="True/False Option" required>
+          <Form.Item
+            label="True/False Option"
+            required
+            style={{ width: "50%" }}
+          >
             <Select
               value={additionalOption}
               onChange={(value: any) => setAdditionalOption(value)}
@@ -139,7 +143,7 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
 
         {questionType === "Choice" && (
           <>
-            <Form.Item label="Choice Option" required>
+            <Form.Item label="Choice Option" required style={{ width: "50%" }}>
               <Select
                 value={additionalOption}
                 onChange={(value: any) => setAdditionalOption(value)}
@@ -157,7 +161,7 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
                 key={index}
                 gutter={16}
                 align="middle"
-                style={{ marginBottom: 8 }}
+                style={{ marginBottom: 8, width: "50%" }}
               >
                 <Col span={20}>
                   <Input
@@ -180,14 +184,14 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
               type="dashed"
               onClick={handleAddChoice}
               icon={<PlusOutlined />}
-              style={{ width: "100%" }}
+              style={{ width: "45%" }}
             >
               Add Choice
             </Button>
           </>
         )}
 
-        <Form.Item>
+        <Form.Item style={{ marginTop: "10px" }}>
           <Space>
             <Button type="primary" htmlType="submit">
               Save

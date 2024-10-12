@@ -6,7 +6,6 @@ import {
   DELETE_TRUE_FALSE_QUESTION,
   UPDATE_TRUE_FALSE_QUESTION,
   ADD_CHOICE_QUESTION,
-  SUBMIT_ANSWER,
   ADD_SERVEY,
   GET_ALL_SERVEY,
   DELETE_SERVEY,
@@ -18,6 +17,7 @@ import {
   UPDATE_QUESTION,
   GET_FULL_SURVEY,
   UPDATE_COMPANY,
+  PUBLISH_SURVEY,
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
@@ -131,6 +131,21 @@ export const addServey = (serveyInfo: any) => async (dispatch: any) => {
   try {
     const response = await api.addServey(serveyInfo);
     const data = await dispatch({ type: ADD_SERVEY, payload: response.data });
+    return data;
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || "Something went wrong";
+    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    return { error: errorMessage };
+  }
+};
+
+export const publishSurvey = (surveyId: string) => async (dispatch: any) => {
+  try {
+    const response = await api.publishSurvey(surveyId);
+    const data = await dispatch({
+      type: PUBLISH_SURVEY,
+      payload: response.data,
+    });
     return data;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";

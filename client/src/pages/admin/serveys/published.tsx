@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Button, message, Table, Typography, Space, Flex, Modal } from "antd";
+import {
+  Button,
+  message,
+  Table,
+  Typography,
+  Space,
+  Flex,
+  Modal,
+  Tooltip,
+} from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
@@ -9,15 +18,7 @@ import {
   getAllServey,
   deleteServey,
 } from "../../../redux/action/company";
-import {
-  Box,
-  Paper,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
+import { Box, Paper } from "@mui/material";
 
 import { TableRowSelection } from "antd/es/table/interface";
 const { Title } = Typography;
@@ -30,12 +31,14 @@ interface onClickType {
   onDetailClick: (surveyId: any) => void; // Update type to string
   onAddCompany: any;
   onAddSurvey: any;
+  onSave: any;
 }
 
 const Published: React.FC<onClickType> = ({
   onDetailClick,
   onAddCompany,
   onAddSurvey,
+  onSave,
 }) => {
   const dispatch = useDispatch();
 
@@ -251,11 +254,25 @@ const Published: React.FC<onClickType> = ({
   const hasSelected = selectedRowKeys.length > 0;
 
   return (
-    <Box component="section" sx={{ p: 3, width: "100%" }}>
+    <Box
+      component="section"
+      sx={{ p: 3, width: "100%", backgroundColor: "white" }}
+    >
       {/* Page Heading */}
-      <Title level={5} style={{ marginBottom: "20px" }}>
-        Published Survey
-      </Title>
+      <Flex
+        align="center"
+        gap="middle"
+        justify="space-between"
+        style={{
+          borderBottom: "1px #FAF9F6 solid",
+          width: "100%",
+          marginBottom: "10px",
+        }}
+      >
+        <Title level={5} style={{ marginBottom: "20px" }}>
+          Published Survey
+        </Title>
+      </Flex>
 
       {/* Add New Survey Button */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>

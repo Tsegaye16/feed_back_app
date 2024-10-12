@@ -39,89 +39,85 @@ const Registration = () => {
   };
 
   return (
-    <Watermark content="sample">
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        background: "linear-gradient(135deg, #e2e2e2, #c9d6ff)",
+      }}
+    >
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          background: "linear-gradient(135deg, #e2e2e2, #c9d6ff)",
+          width: "400px",
+          padding: "40px",
+          background: "#fff",
+          borderRadius: "8px",
+          boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <div
-          style={{
-            width: "400px",
-            padding: "40px",
-            background: "#fff",
-            borderRadius: "8px",
-            boxShadow: "0px 8px 16px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <div style={{ textAlign: "center", marginBottom: "20px" }}>
-            <Avatar
-              style={{ backgroundColor: "#1890ff", marginBottom: "10px" }}
-              icon={<LockOutlined />}
-            />
-            <Title level={3}> Sign Up</Title>
-          </div>
-          <Form
-            name="registration"
-            layout="vertical"
-            initialValues={formData}
-            onFinish={onFinish}
-            autoComplete="off"
-          >
-            <Form.Item
-              label="Full Name"
-              name="name"
-              rules={[
-                { required: true, message: "Please enter your full name" },
-              ]}
-            >
-              <Input placeholder="Full Name" />
-            </Form.Item>
-
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[
-                { required: true, message: "Please enter your email" },
-                { type: "email", message: "Please enter a valid email" },
-              ]}
-            >
-              <Input placeholder="Email" />
-            </Form.Item>
-
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[
-                { required: true, message: "Please enter your password" },
-                {
-                  min: 6,
-                  message: "Password must be at least 6 characters long",
-                },
-              ]}
-            >
-              <Input.Password placeholder="Password" />
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Sign Up
-              </Button>
-            </Form.Item>
-
-            <Form.Item>
-              <Typography.Text>
-                Already have an account? <Link href="/login">Sign in</Link>
-              </Typography.Text>
-            </Form.Item>
-          </Form>
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <Avatar
+            style={{ backgroundColor: "#1890ff", marginBottom: "10px" }}
+            icon={<LockOutlined />}
+          />
+          <Title level={3}> Sign Up</Title>
         </div>
+        <Form
+          name="registration"
+          layout="vertical"
+          initialValues={formData}
+          onFinish={onFinish}
+          autoComplete="off"
+        >
+          <Form.Item
+            label="Full Name"
+            name="name"
+            rules={[{ required: true, message: "Please enter your full name" }]}
+          >
+            <Input placeholder="Full Name" />
+          </Form.Item>
+
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: "Please enter your email" },
+              { type: "email", message: "Please enter a valid email" },
+            ]}
+          >
+            <Input placeholder="Email" />
+          </Form.Item>
+
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[
+              { required: true, message: "Please enter your password" },
+              {
+                min: 6,
+                message: "Password must be at least 6 characters long",
+              },
+            ]}
+          >
+            <Input.Password placeholder="Password" />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Sign Up
+            </Button>
+          </Form.Item>
+
+          <Form.Item>
+            <Typography.Text>
+              Already have an account? <Link href="/login">Sign in</Link>
+            </Typography.Text>
+          </Form.Item>
+        </Form>
       </div>
-    </Watermark>
+    </div>
   );
 };
 

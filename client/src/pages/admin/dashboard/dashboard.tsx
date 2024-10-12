@@ -37,6 +37,7 @@ import DetailDashboard from "./detailDashboard";
 import { getCompanyById } from "../../../redux/action/company";
 import AddSurvey from "../serveys/addSurvey";
 import FeedBack from "../feebBack/feedBack";
+import FeedbackDetail from "../feebBack/feedbackDetail";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -50,6 +51,7 @@ const Dashboard = () => {
   const [selectedAddCompany, setSelectedAddCompany] = useState(null);
   const [selectedAddQuestion, setSelectedAddQuestion] = useState(null);
   const [selectedEditQuestion, setSelectedEditQuestion] = useState(null);
+  const [feedbackDetail, setFeedbackDetail] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -105,6 +107,7 @@ const Dashboard = () => {
     setSelectedAddQuestion(null);
     setSelectedEditQuestion(null);
     setSelectedAddSurvey(null);
+    setFeedbackDetail(null);
   };
 
   const handleServeysClick = () => {
@@ -130,11 +133,20 @@ const Dashboard = () => {
     setSelectedAddCompany(id);
   };
 
+  const handleFeedbackDetailClick = (id: any) => {
+    setFeedbackDetail(id);
+  };
+
   const handleSaveQuestion = () => {
     setSelectedAddQuestion(null);
     setSelectedEditQuestion(null);
     setSelectedAddSurvey(null);
     setSelectedAddCompany(null);
+  };
+
+  const handleBack = () => {
+    setSelectedDetail(null);
+    setFeedbackDetail(null);
   };
 
   const menu = (
@@ -188,7 +200,11 @@ const Dashboard = () => {
             icon={<UnorderedListOutlined />}
             onTitleClick={handleServeysClick}
           >
-            <Menu.Item key="Published" icon={<FileDoneOutlined />}>
+            <Menu.Item
+              key="Published"
+              icon={<FileDoneOutlined />}
+              style={{ userSelect: "none" }}
+            >
               Published
             </Menu.Item>
             <Menu.Item key="Draft" icon={<InboxOutlined />}>
@@ -258,11 +274,17 @@ const Dashboard = () => {
             />
           ) : selectedAddQuestion ? (
             <AddQuestion id={selectedDetail} onSave={handleSaveQuestion} />
+          ) : feedbackDetail ? (
+            <FeedbackDetail
+              feedbackDetail={feedbackDetail}
+              onSave={handleBack}
+            />
           ) : selectedDetail ? (
             <Detail
               id={selectedDetail}
               onClickAddQuestion={handleAddQuestionSelection}
               onClickEditQuestion={handleEditClick}
+              onSave={handleBack}
             />
           ) : selectedAddSurvey ? (
             <AddSurvey info={selectedAddSurvey} onSave={handleSaveQuestion} />
@@ -281,6 +303,7 @@ const Dashboard = () => {
                   onDetailClick={handleDetailClick}
                   onAddCompany={handleAddCompany}
                   onAddSurvey={handleAddSurvey}
+                  onSave={handleSaveQuestion}
                 />
               )}
               {selectedItem === "Draft" && (
@@ -291,7 +314,10 @@ const Dashboard = () => {
                 />
               )}
               {selectedItem === "FeedBacks" && (
-                <FeedBack compmanyId={company?.id} />
+                <FeedBack
+                  companyId={company?.id}
+                  handleFeedbackDetailClick={handleFeedbackDetailClick}
+                />
               )}
               {selectedItem === "setting" && (
                 <AddCompany
