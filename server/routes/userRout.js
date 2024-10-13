@@ -32,6 +32,7 @@ import {
   getFeedbackDetail,
   getRecentFeedback,
   publishSurvey,
+  checkSecretePhrase,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -64,5 +65,6 @@ router.route("/getFeedback/:id").get(getFeedback);
 router.route("/getStatData/:id").get(getStatData);
 router.route("/getFeedbackDetail/:surveyId").get(getFeedbackDetail);
 router.route("/getRecentFeedback/:companyId").get(getRecentFeedback);
+router.route("/checkSecretePhrase").post(checkSecretePhrase);
 
 export default router;

@@ -7,12 +7,9 @@ import {
   getCompanyById,
   deleteServey,
   publishSurvey,
-  // saveSurveyAsDraft,
 } from "../../../redux/action/company";
 import { getAllServey } from "../../../redux/action/company";
 import { Box, Paper } from "@mui/material";
-
-// import {  } from "@mui/icons-material";
 
 import { TableRowSelection } from "antd/es/table/interface";
 
@@ -60,12 +57,10 @@ const Draft: React.FC<onClickType> = ({
   );
 
   const surveys = useSelector((state: any) => state.survey?.servey?.servey);
-  console.log("Serveys: ", surveys);
-  ///////////////
+
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === false)
     : [];
-  ///////////////
 
   useEffect(() => {
     if (user) {
@@ -91,8 +86,7 @@ const Draft: React.FC<onClickType> = ({
   };
 
   const generateSecretPhrase = () => {
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let result = "";
     for (let i = 0; i < 6; i++) {
       result += characters.charAt(
@@ -112,13 +106,12 @@ const Draft: React.FC<onClickType> = ({
 
     if (selectedIds.length === 0) return; // Ensure there's something to delete
 
-    // Send array of selected IDs to backend
     const response = await dispatch(deleteServey(selectedIds) as any);
     if (response?.error) {
       message.error(`${response.error}`);
     } else if (response?.payload?.message) {
       message.success(response.payload.message);
-      // message.success("Survey deleted successfully!");
+
       setSelectedRowKeys(new Set() as any);
       setConfirmLoading(true);
       setTimeout(() => {
@@ -129,7 +122,6 @@ const Draft: React.FC<onClickType> = ({
     }
     dispatch(getAllServey(company.id) as any);
 
-    // Reset selection after deletion
     setSelectedSurveys(new Set());
   };
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -138,7 +130,6 @@ const Draft: React.FC<onClickType> = ({
       title="Be care full"
       open={open}
       onOk={() => handleDeleteSurveys(selectedRowKeys)}
-      // onClick={() => handleDelete(record.id)}
       confirmLoading={confirmLoading}
       onCancel={handleClose}
     >
@@ -219,7 +210,6 @@ const Draft: React.FC<onClickType> = ({
   ];
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    // console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -253,7 +243,6 @@ const Draft: React.FC<onClickType> = ({
       title="Be care full"
       open={publishOpen}
       onOk={() => handlePublish(publishingId)}
-      // onClick={() => handleDelete(record.id)}
       confirmLoading={confirmLoading}
       onCancel={handleClose}
     >
@@ -296,14 +285,12 @@ const Draft: React.FC<onClickType> = ({
         </Button>
       </Box>
 
-      {/* Company Check */}
       {!company ? (
         <Paper sx={{ p: 3, mb: 3, textAlign: "start" }}>
           <Title level={5}>
             You have to register your company before proceeding to other tasks.
           </Title>
           <Button
-            // onClick={() => setOpenCompanyModal(true)}
             onClick={(event) => {
               event.stopPropagation();
 
@@ -320,7 +307,6 @@ const Draft: React.FC<onClickType> = ({
 
             {selectedRowKeys.length === 1 ? (
               <Button
-                // type="primary"
                 disabled={!hasSelected}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -331,12 +317,7 @@ const Draft: React.FC<onClickType> = ({
               </Button>
             ) : null}
             {selectedRowKeys.length >= 1 ? (
-              <Button
-                // type="primary"
-                //disabled={!hasSelected}
-                danger
-                onClick={handleClickOpen}
-              >
+              <Button danger onClick={handleClickOpen}>
                 Delete
               </Button>
             ) : null}

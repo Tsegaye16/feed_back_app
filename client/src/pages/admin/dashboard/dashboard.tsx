@@ -38,6 +38,7 @@ import { getCompanyById } from "../../../redux/action/company";
 import AddSurvey from "../serveys/addSurvey";
 import FeedBack from "../feebBack/feedBack";
 import FeedbackDetail from "../feebBack/feedbackDetail";
+import { LOGOUT } from "../../../constants/types/actionType";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -62,6 +63,7 @@ const Dashboard = () => {
   };
 
   const handleLogout = async () => {
+    await dispatch({ type: LOGOUT });
     localStorage.removeItem("user");
     notification.warning({ message: "You are logged out" });
     navigate("/");

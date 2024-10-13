@@ -852,3 +852,25 @@ export const getRecentFeedback = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+export const checkSecretePhrase = async (req, res) => {
+  try {
+    const { phrase } = req.body;
+    //const secretPhrase = Object.keys(phrase)[0];
+    // 1. check the secrete survey is present or not on survey table
+    console.log("secretPhrase: ", phrase);
+    const survey = await Servey.findOne({
+      where: {
+        secretePhrase: phrase,
+      },
+    });
+    if (survey) {
+      res.status(400).json({ message: "currently in use" });
+    } else {
+      res.status(200).json({ message: "available" });
+    }
+  } catch (erro) {
+    console.error("Error fetching feedback: ", erro);
+    res.status(400).json({ message: erro.message });
+  }
+};

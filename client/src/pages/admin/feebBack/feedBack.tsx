@@ -29,7 +29,6 @@ const FeedBack: React.FC<PropType> = ({
   const feedback = useSelector(
     (state: any) => state.answer?.answerDaata?.feedback
   );
-  console.log("feedback: ", feedback);
 
   // Define table columns
   const columns = [
@@ -59,13 +58,6 @@ const FeedBack: React.FC<PropType> = ({
       ),
     },
   ];
-
-  // Handle Detail button click
-  const handleDetailClick = (record: FeedbackType) => {
-    console.log("Detail clicked for:", record);
-    // Perform any action like navigating to a detail page or opening a modal
-    // For example: navigate(`/survey/${record.surveyId}`);
-  };
 
   return (
     <div>

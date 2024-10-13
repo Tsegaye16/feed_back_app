@@ -68,7 +68,7 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
 
   const statData = useSelector((state: any) => state.stat?.statData?.data);
   const todayData = useSelector(
-    (state: any) => state.feedback?.feedbackData?.data
+    (state: any) => state.recentFeedback?.recentFeedbackData?.data
   );
   console.log("todayData: ", todayData);
   const barData = statData?.dailyAnswersThisWeek;

@@ -100,31 +100,42 @@ const Customer = () => {
     );
   }
   return (
-    <div style={{ backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
+    <div
+      style={{
+        backgroundColor: companyInfo.backGroundColor,
+        minHeight: "100vh",
+      }}
+    >
       {/* Company Header */}
       {companyInfo && (
         <div
           style={{
-            backgroundColor: companyInfo.backGroundColor,
-            color: companyInfo.textColor,
+            backgroundColor: companyInfo.backGroundColor || "#fff",
+            color: companyInfo.textColor || "#000",
             display: "flex",
             alignItems: "center",
-            padding: "16px",
+            padding: "18px",
             position: "fixed",
             top: 0,
             left: 0,
             right: 0,
             zIndex: 1000,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+            boxShadow: "0 1px 4px rgba(117, 114, 114, 0.6)",
           }}
         >
           <Avatar
             src={`http://localhost:4000/${companyInfo.logo}`}
             alt={companyInfo.name}
             size={65}
-            style={{ marginRight: "16px", objectFit: "cover" }}
+            style={{
+              marginRight: "16px",
+              objectFit: "cover",
+            }}
           />
-          <Title level={3} style={{ margin: 0, color: companyInfo.textColor }}>
+          <Title
+            level={3}
+            style={{ margin: 0, color: companyInfo.textColor || "#000" }}
+          >
             {companyInfo.name}
           </Title>
         </div>
@@ -157,12 +168,19 @@ const Customer = () => {
           {/* Navigation Buttons */}
           <Form.Item>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <Button onClick={handlePrevious} disabled={currentIndex === 0}>
+              <Button
+                type="primary"
+                onClick={handlePrevious}
+                disabled={currentIndex === 0}
+                style={{ color: companyInfo.textColor }}
+              >
                 Previous
               </Button>
               <Button
+                type="primary"
                 onClick={handleNext}
                 disabled={currentIndex === questions.length - 1}
+                style={{ color: companyInfo.textColor }}
               >
                 Next
               </Button>

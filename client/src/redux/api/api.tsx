@@ -86,3 +86,6 @@ export const getRecentFeedback = async (companyId: any) =>
 
 export const publishSurvey = async (surveyId: string) =>
   API.put(`/publishSurvey/${surveyId}`);
+
+export const checkSecretePhrase = async (phrase: any) =>
+  API.post(`/checkSecretePhrase/`, phrase);

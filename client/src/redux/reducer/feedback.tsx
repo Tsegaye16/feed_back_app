@@ -1,6 +1,6 @@
 import {
   GET_FEEDBACK_DETAIL,
-  GET_RECENT_FEEDBACK,
+  CLEAR_DATA,
 } from "../../constants/types/actionType";
 
 const feedbackState = {
@@ -11,8 +11,8 @@ const feedbackReducer = (state = feedbackState, action: any) => {
   switch (action.type) {
     case GET_FEEDBACK_DETAIL:
       return { ...state, feedbackData: action.payload };
-    case GET_RECENT_FEEDBACK:
-      return { ...state, feedbackData: action.payload };
+    case CLEAR_DATA:
+      return { ...state, feedbackData: null };
     default:
       return state;
   }

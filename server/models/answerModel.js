@@ -17,6 +17,10 @@ const Answer = sequelize.define("Answer", {
     type: UUID,
     allowNull: false,
   },
+  sentiment: {
+    type: DataTypes.ENUM("POSITIVE", "NEGATIVE", "NEUTRAL"),
+    allowNull: false,
+  },
 });
 
 export default Answer;

@@ -12,6 +12,7 @@ import {
 } from "antd";
 import moment from "moment";
 import { getFeedbackDetail } from "../../../redux/action/feedback";
+import { CLEAR_DATA } from "../../../constants/types/actionType";
 
 const { Title, Text } = Typography;
 
@@ -25,10 +26,14 @@ const FeedbackDetail: React.FC<propType> = ({ feedbackDetail, onSave }) => {
 
   useEffect(() => {
     dispatch(getFeedbackDetail(feedbackDetail.surveyId) as any);
+
+    return () => {
+      dispatch({ type: CLEAR_DATA });
+    };
   }, [dispatch, feedbackDetail.surveyId]);
 
   const data = useSelector((state: any) => state.feedback?.feedbackData?.data);
-
+  console.log("data: ", data);
   return (
     <div style={{ padding: "20px" }}>
       <Row
@@ -131,7 +136,10 @@ const FeedbackDetail: React.FC<propType> = ({ feedbackDetail, onSave }) => {
                       </Text>
                       <div
                         dangerouslySetInnerHTML={{
-                          __html: questionWithAnswer.answer,
+                          __html: questionWithAnswer.answer.replace(
+                            /["\[\]]/g,
+                            ""
+                          ),
                         }}
                         style={{
                           paddingLeft: "10px",

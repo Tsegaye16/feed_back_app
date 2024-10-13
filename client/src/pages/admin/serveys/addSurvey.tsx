@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Input, Typography, Button, message } from "antd";
-//import { addServey } from "../../../redux/action/company";
 import { useDispatch } from "react-redux";
 import { addServey } from "../../../redux/action/company";
+import { checkSecretePhrase } from "../../../redux/action/secretePhrase";
 
 const { Title, Text } = Typography;
 
@@ -13,9 +13,58 @@ interface propType {
 
 const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
   const [surveyName, setSurveyName] = useState(info.surveyName || "");
-  const [secretPhrase, setSecretPhrase] = useState(info.secretePhrase || "");
+  const [secretPhrase, setSecretPhrase] = useState("");
+  const [secretPhraseResponse, setSecretPhraseResponse] = useState("");
+  const [responseStatus, setResponseStatus] = useState<
+    "success" | "error" | null
+  >(null);
 
   const dispatch = useDispatch();
+
+  const generateSecretPhrase = () => {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let result = "";
+    for (let i = 0; i < 6; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
+    }
+    return result;
+  };
+
+  useEffect(() => {
+    const phrase = generateSecretPhrase();
+    setSecretPhrase(phrase);
+    validateSecretPhrase(phrase);
+  }, []);
+
+  const validateSecretPhrase = async (phrase: string) => {
+    if (phrase.length === 6) {
+      const response = await dispatch(checkSecretePhrase(phrase) as any);
+      if (response?.error) {
+        setSecretPhraseResponse(response.error);
+        setResponseStatus("error");
+      } else if (response?.payload?.message) {
+        setSecretPhraseResponse(response?.payload?.message);
+        setResponseStatus("success");
+      }
+    }
+  };
+
+  const handleSecretPhraseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value.toUpperCase(); // Convert input to uppercase
+    const filteredInput = input.replace(/[^A-Z]/g, ""); // Allow only uppercase letters A-Z
+
+    setSecretPhrase(filteredInput);
+
+    if (filteredInput.length === 6) {
+      validateSecretPhrase(filteredInput); // Validate when length is exactly 6
+    } else if (filteredInput.length < 6) {
+      setSecretPhraseResponse("Secret phrase must be exactly 6 characters.");
+      setResponseStatus("error");
+    }
+  };
+
   const handlePublish = async () => {
     if (surveyName) {
       const response = await dispatch(
@@ -97,7 +146,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
             size="large"
             style={{ borderRadius: "8px" }}
             value={secretPhrase}
-            onChange={(e) => setSecretPhrase(e.target.value)}
+            onChange={handleSecretPhraseChange}
             addonAfter={
               <Text type="secondary" style={{ fontSize: "12px" }}>
                 Unique phrase, you can modify it
@@ -105,6 +154,18 @@ const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
             }
           />
         </Col>
+
+        {/* Response Message */}
+        {secretPhraseResponse && (
+          <Col span={24} style={{ marginTop: "8px" }}>
+            <Text
+              type={responseStatus === "success" ? "success" : "danger"}
+              style={{ fontSize: "14px" }}
+            >
+              {secretPhraseResponse}
+            </Text>
+          </Col>
+        )}
 
         {/* Action Buttons */}
         <Col span={24} style={{ textAlign: "right", marginTop: "16px" }}>
