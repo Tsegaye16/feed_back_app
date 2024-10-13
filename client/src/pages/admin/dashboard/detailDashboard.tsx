@@ -40,19 +40,14 @@ const feedbackData = {
 const COLORS = ["#FF4D4F", "#52C41A", "#FAAD14"];
 
 // Pie chart data (feedback distribution)
-const pieData = [
-  { name: "Negative", value: 1 },
-  { name: "Positive", value: 5 },
-  { name: "Neutral", value: 3 },
-];
 
 // Bar chart data (weekly feedback)
-const barData = Object.entries(feedbackData.weeklyFeedback).map(
-  ([day, value]) => ({
-    day,
-    feedback: value,
-  })
-);
+// const barData = Object.entries(feedbackData.weeklyFeedback).map(
+//   ([day, value]) => ({
+//     day,
+//     feedback: value,
+//   })
+// );
 
 interface propType {
   companyId: any;
@@ -70,8 +65,13 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
   const todayData = useSelector(
     (state: any) => state.recentFeedback?.recentFeedbackData?.data
   );
-  console.log("todayData: ", todayData);
+
   const barData = statData?.dailyAnswersThisWeek;
+  const pieData = [
+    { name: "Negative", value: statData?.averageSentiment?.NEGATIVE },
+    { name: "Positive", value: statData?.averageSentiment?.POSITIVE },
+    { name: "Neutral", value: statData?.averageSentiment?.NEUTRAL },
+  ];
   return (
     <div style={{ padding: "20px" }}>
       <Timeline style={{ padding: "10px 0" }}>
@@ -171,7 +171,7 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
           >
             <Statistic
               title="Average Rate"
-              value={feedbackData.averageRate}
+              value={statData?.averageRate}
               precision={1}
             />
           </Card>
@@ -192,6 +192,19 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
                 statData?.publishedSurveys ?? 0 + statData?.draftedSurvey ?? 0
               }
             />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginTop: "10px",
+              }}
+            >
+              <Statistic
+                title="Published"
+                value={statData?.publishedSurveys ?? 0}
+              />
+              <Statistic title="Drafted" value={statData?.draftedSurvey ?? 0} />
+            </div>
           </Card>
         </Col>
         {/* Total Feedback */}
@@ -212,9 +225,18 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
                 marginTop: "10px",
               }}
             >
-              <Statistic title="Positive" value={5} />
-              <Statistic title="Neutral" value={3} />
-              <Statistic title="Negative" value={1} />
+              <Statistic
+                title="Positive"
+                value={`${statData?.averageSentiment?.POSITIVE}%`}
+              />
+              <Statistic
+                title="Neutral"
+                value={`${statData?.averageSentiment?.NEUTRAL}%`}
+              />
+              <Statistic
+                title="Negative"
+                value={`${statData?.averageSentiment?.NEGATIVE}%`}
+              />
             </div>
           </Card>
         </Col>

@@ -477,6 +477,11 @@ export const getFullSurvey = async (req, res) => {
 };
 
 // Submit Answer
+import { pipeline } from "@xenova/transformers";
+let pip;
+(async () => {
+  pip = await pipeline("sentiment-analysis");
+})();
 
 export const submitAnswer = async (req, res) => {
   try {
@@ -486,15 +491,29 @@ export const submitAnswer = async (req, res) => {
       return res.status(400).json({ message: "Invalid request body format" });
     }
 
-    // Iterate over the answers array and insert each into the Answer table
+    // Iterate over the answers array and analyze sentiment for each answer before inserting
     const insertPromises = answers.map(async (item) => {
       const { id, surveyId, answer } = item; // Assuming 'id' is the questionId
 
-      // Create or insert into the Answer table
+      let sentiment = "NEUTRAL"; // Default sentiment for non-string answers (e.g., number)
+
+      // If answer is a string, analyze its sentiment
+      if (typeof answer === "string") {
+        try {
+          // Analyze sentiment using the loaded pipeline
+          const sentimentAnalysisResult = await pip(answer);
+          sentiment = sentimentAnalysisResult[0]?.label || "NEUTRAL"; // Default to "NEUTRAL" if no result
+        } catch (error) {
+          console.error("Error analyzing sentiment:", error);
+        }
+      }
+
+      // Create or insert into the Answer table with the sentiment
       return await Answer.create({
         questionId: id, // Assuming id refers to the question
         surveyId: surveyId,
-        answer: typeof answer === "string" ? answer : JSON.stringify(answer), // Store multi-select as JSON
+        answer: typeof answer === "string" ? answer : JSON.stringify(answer), // Store multi-select as JSON or keep string
+        sentiment: sentiment, // Store the sentiment result or "NEUTRAL" for non-string answers
       });
     });
 
@@ -573,7 +592,7 @@ export const getStatData = async (req, res) => {
     const publishedSurveys = await Servey.count({
       where: { companyId: id, isPublished: true },
     });
-
+    console.log("publishedSurveys: ", publishedSurveys);
     // 2. Extract total number of drafted surveys from Servey table where companyId = id
     const draftedSurvey = await Servey.count({
       where: { companyId: id, isPublished: false },
@@ -587,6 +606,7 @@ export const getStatData = async (req, res) => {
     const surveyIds = result.map((survey) => survey.id);
 
     // 4. Get total number of questions for each survey based on the surveyIds list
+
     const totalQuestions = await Question.count({
       where: {
         serveyId: {
@@ -595,7 +615,27 @@ export const getStatData = async (req, res) => {
       },
     });
 
-    // 5. Get total number of distinct answers grouped by createdAt based on surveyIds
+    // 5. Get all answers for the given surveys
+    const allAnswers = await Answer.findAll({
+      where: {
+        surveyId: {
+          [Op.in]: surveyIds, // Match surveyIds from the list
+        },
+      },
+    });
+
+    // 6. Filter numeric answers (those representing rates) and calculate the average rate
+    const numericAnswers = allAnswers
+      .map((answer) => parseFloat(answer.answer))
+      .filter((value) => !isNaN(value)); // Filter only valid numeric values
+
+    const averageRate =
+      numericAnswers.length > 0
+        ? numericAnswers.reduce((sum, value) => sum + value, 0) /
+          numericAnswers.length
+        : 0; // Calculate average, default to 0 if no numeric answers
+
+    // 7. Get total number of distinct answers grouped by createdAt based on surveyIds
     const totalAnswers = await Answer.count({
       where: {
         surveyId: {
@@ -605,7 +645,7 @@ export const getStatData = async (req, res) => {
       group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
     });
 
-    // 6. Get total distinct answers for this week (grouped by createdAt)
+    // 8. Get total distinct answers for this week (grouped by createdAt)
     const startOfThisWeek = moment().startOf("isoWeek").toDate(); // Start of this week (Monday)
     const endOfToday = moment().endOf("day").toDate(); // End of today
 
@@ -621,7 +661,7 @@ export const getStatData = async (req, res) => {
       group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
     });
 
-    // 7. Get total distinct answers for each day of this week (grouped by createdAt)
+    // 9. Get total distinct answers for each day of this week (grouped by createdAt)
     const dailyAnswersThisWeek = await Promise.all(
       Array.from({ length: 7 }).map(async (_, index) => {
         const dayStart = moment()
@@ -650,6 +690,39 @@ export const getStatData = async (req, res) => {
       })
     );
 
+    // 10. Calculate sentiment breakdown (positive, negative, neutral)
+    const sentimentCounts = {
+      POSITIVE: 0,
+      NEGATIVE: 0,
+      NEUTRAL: 0,
+    };
+
+    allAnswers.forEach((answer) => {
+      const sentiment = answer.sentiment;
+      if (sentimentCounts[sentiment] !== undefined) {
+        sentimentCounts[sentiment]++;
+      }
+    });
+
+    const totalSentiments =
+      sentimentCounts.POSITIVE +
+      sentimentCounts.NEGATIVE +
+      sentimentCounts.NEUTRAL;
+    const averageSentiment = {
+      POSITIVE:
+        totalSentiments > 0
+          ? Math.round((sentimentCounts.POSITIVE / totalSentiments) * 100)
+          : 0,
+      NEGATIVE:
+        totalSentiments > 0
+          ? Math.round((sentimentCounts.NEGATIVE / totalSentiments) * 100)
+          : 0,
+      NEUTRAL:
+        totalSentiments > 0
+          ? Math.round((sentimentCounts.NEUTRAL / totalSentiments) * 100)
+          : 0,
+    };
+
     res.status(200).json({
       status: "success",
       data: {
@@ -659,6 +732,8 @@ export const getStatData = async (req, res) => {
         totalAnswers: totalAnswers.length, // Length of distinct entries
         thisWeekAnswers: thisWeekAnswers.length, // Length of distinct entries
         dailyAnswersThisWeek,
+        averageRate,
+        averageSentiment,
       },
     });
   } catch (error) {
@@ -689,7 +764,7 @@ export const getFeedbackDetail = async (req, res) => {
     // 2. Group the fetched answers by createdAt (including hour, minute, second, millisecond)
     const groupedAnswers = answers.reduce((acc, answer) => {
       const createdAtFull = moment(answer.createdAt).format(
-        "YYYY-MM-DD HH:mm:ss.SSS"
+        "YYYY-MM-DD HH:mm:ss"
       ); // Full timestamp including milliseconds
 
       if (!acc[createdAtFull]) {
@@ -795,7 +870,7 @@ export const getRecentFeedback = async (req, res) => {
     // 3. Group the fetched answers by createdAt (including hour, minute, second, millisecond)
     const groupedAnswers = answers.reduce((acc, answer) => {
       const createdAtFull = moment(answer.createdAt).format(
-        "YYYY-MM-DD HH:mm:ss.SSS"
+        "YYYY-MM-DD HH:mm:ss"
       ); // Full timestamp including milliseconds
 
       if (!acc[createdAtFull]) {
