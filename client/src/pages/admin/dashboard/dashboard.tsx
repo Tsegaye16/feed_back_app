@@ -6,7 +6,7 @@ import {
   Badge,
   Dropdown,
   Typography,
-  notification,
+  // notification,
   Button,
 } from "antd";
 import {
@@ -14,7 +14,7 @@ import {
   MenuUnfoldOutlined,
   DashboardOutlined,
   NotificationOutlined,
-  SettingOutlined,
+  //  SettingOutlined,
   LogoutOutlined,
   FileDoneOutlined,
   InboxOutlined,
@@ -65,7 +65,7 @@ const Dashboard = () => {
   const handleLogout = async () => {
     await dispatch({ type: LOGOUT });
     localStorage.removeItem("user");
-    notification.warning({ message: "You are logged out" });
+    //notification.warning({ message: "You are logged out" });
     navigate("/");
   };
 
@@ -101,7 +101,7 @@ const Dashboard = () => {
     }
     return;
   };
-  // console.log("user111: ", user);
+
   const handleMenuItemClick = (item: string) => {
     setSelectedItem(item);
     setSelectedDetail(null);
@@ -289,7 +289,11 @@ const Dashboard = () => {
               onSave={handleBack}
             />
           ) : selectedAddSurvey ? (
-            <AddSurvey info={selectedAddSurvey} onSave={handleSaveQuestion} />
+            <AddSurvey
+              info={selectedAddSurvey}
+              onSave={handleSaveQuestion}
+              companyName={company?.name}
+            />
           ) : selectedAddCompany ? (
             <AddCompany
               onSave={handleSaveQuestion}

@@ -4,9 +4,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Home from "./components/home";
 
-//import Dashboard from "./pages/admin/dashboard/dashboard";
-import { useSelector } from "react-redux";
-import Servey from "./pages/admin/servey/servey";
 import Dashboard from "./pages/admin/dashboard/dashboard";
 import Questionaire from "./pages/customers/questionaire";
 import Login from "./components/form/login/login";
@@ -14,7 +11,7 @@ import Registration from "./components/form/register/register";
 import { ToastContainer } from "react-toastify";
 import Preview from "./pages/admin/serveys/preview";
 import Customer from "./pages/customers/customer";
-//import Dashboard from "./pages/dashboard/dashboard";
+import EmailConfirm from "./components/form/emailConfirm";
 
 const App: React.FC = () => {
   return (
@@ -33,9 +30,10 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Registration />} />
-        <Route path="/manager/servey" element={<Servey />} />
+
         <Route path="/" element={<Home />} />
         <Route path="/client" element={<Questionaire />} />
+        <Route path="/confirm-email" element={<EmailConfirm />} />
         <Route
           path={"/:companyName/surveys/preview/:surveyId"}
           element={<Preview />}

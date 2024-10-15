@@ -5,6 +5,7 @@ import {
   getUserById,
   edditProfile,
   changePassword,
+  confirmEmail,
 } from "../controllers/authController.js";
 import upload from "../config/multerConfig.js";
 import {
@@ -66,5 +67,6 @@ router.route("/getStatData/:id").get(getStatData);
 router.route("/getFeedbackDetail/:surveyId").get(getFeedbackDetail);
 router.route("/getRecentFeedback/:companyId").get(getRecentFeedback);
 router.route("/checkSecretePhrase").post(checkSecretePhrase);
+router.route("/confirm-email/:token").get(confirmEmail);
 
 export default router;

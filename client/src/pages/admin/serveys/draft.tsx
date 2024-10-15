@@ -222,7 +222,7 @@ const Draft: React.FC<onClickType> = ({
   const hasSelected = selectedRowKeys.length > 0;
   const handlePublish = async (surveyId: any) => {
     const response = await dispatch(publishSurvey(surveyId) as any);
-    console.log("response: ", response);
+
     if (response?.error) {
       message.error(`${response.error}`);
     } else if (response?.payload?.message) {

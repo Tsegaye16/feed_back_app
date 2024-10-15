@@ -189,7 +189,8 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
             <Statistic
               title="Total Surveys"
               value={
-                statData?.publishedSurveys ?? 0 + statData?.draftedSurvey ?? 0
+                (statData?.publishedSurveys ?? 0) +
+                (statData?.draftedSurvey ?? 0)
               }
             />
             <div
@@ -227,15 +228,15 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
             >
               <Statistic
                 title="Positive"
-                value={`${statData?.averageSentiment?.POSITIVE}%`}
+                value={`${statData?.averageSentiment?.POSITIVE ?? 0}%`}
               />
               <Statistic
                 title="Neutral"
-                value={`${statData?.averageSentiment?.NEUTRAL}%`}
+                value={`${statData?.averageSentiment?.NEUTRAL ?? 0}%`}
               />
               <Statistic
                 title="Negative"
-                value={`${statData?.averageSentiment?.NEGATIVE}%`}
+                value={`${statData?.averageSentiment?.NEGATIVE ?? 0}%`}
               />
             </div>
           </Card>

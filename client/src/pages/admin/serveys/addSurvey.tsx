@@ -3,15 +3,19 @@ import { Card, Row, Col, Input, Typography, Button, message } from "antd";
 import { useDispatch } from "react-redux";
 import { addServey } from "../../../redux/action/company";
 import { checkSecretePhrase } from "../../../redux/action/secretePhrase";
+import { QRCodeCanvas } from "qrcode.react"; // For generating QR Code
+import jsPDF from "jspdf"; // For generating PDF
+import html2canvas from "html2canvas"; // For converting QR Code to image
 
 const { Title, Text } = Typography;
 
 interface propType {
   info: any;
   onSave: any;
+  companyName: any;
 }
 
-const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
+const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
   const [surveyName, setSurveyName] = useState(info.surveyName || "");
   const [secretPhrase, setSecretPhrase] = useState("");
   const [secretPhraseResponse, setSecretPhraseResponse] = useState("");
@@ -113,6 +117,53 @@ const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
     onSave();
   };
 
+  const generateStyledPdf = async () => {
+    const doc = new jsPDF("portrait", "pt", "A4");
+
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text("Company Name: " + companyName, 40, 60);
+
+    // Draw a separator line
+    doc.setLineWidth(0.5);
+    doc.line(40, 70, 550, 70);
+
+    // Add survey name with some styles
+    doc.setFontSize(16);
+    doc.setTextColor(0, 51, 153);
+    doc.text("Get  " + `wwww.feedback.et`, 40, 100);
+
+    // Add secret phrase
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Secret Phrase: " + secretPhrase, 40, 130);
+
+    // QR Code - rendered in the HTML and captured as an image
+    const qrCodeCanvas = document.getElementById(
+      "qr-code"
+    ) as HTMLCanvasElement;
+    const qrCodeDataURL = qrCodeCanvas.toDataURL("image/png");
+
+    // Add QR code to the PDF
+    doc.addImage(qrCodeDataURL, "PNG", 40, 160, 128, 128);
+
+    // Add a label under the QR code
+    doc.setFontSize(12);
+    doc.text("Scan this QR code to access the survey.", 40, 300);
+
+    // Add footer with page number
+    doc.setFontSize(10);
+    doc.setTextColor(150);
+    doc.text(
+      "Page 1",
+      doc.internal.pageSize.width - 50,
+      doc.internal.pageSize.height - 30
+    );
+
+    // Save or display the PDF
+    doc.save("survey_details.pdf");
+  };
+
   return (
     <Card
       style={{
@@ -167,6 +218,25 @@ const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
           </Col>
         )}
 
+        {/* QR Code and URL Generator */}
+        {surveyName ? (
+          <Col span={24} style={{ textAlign: "center", marginTop: "16px" }}>
+            <QRCodeCanvas
+              id="qr-code"
+              value={`http://localhost:3000/${companyName}/surveys/${info.editingId}`}
+              size={128}
+            />
+            <Button
+              // type="primary"
+              size="large"
+              style={{ marginTop: "16px", borderRadius: "8px" }}
+              onClick={generateStyledPdf}
+            >
+              Generate QR Code & PDF
+            </Button>
+          </Col>
+        ) : null}
+
         {/* Action Buttons */}
         <Col span={24} style={{ textAlign: "right", marginTop: "16px" }}>
           <Button
@@ -175,8 +245,6 @@ const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
             style={{
               marginRight: "8px",
               borderRadius: "8px",
-              backgroundColor: "#1890ff",
-              float: "inline-start",
             }}
             onClick={handlePublish}
           >
@@ -184,18 +252,14 @@ const AddSurvey: React.FC<propType> = ({ info, onSave }) => {
           </Button>
           <Button
             size="large"
-            style={{
-              marginRight: "8px",
-              borderRadius: "8px",
-              float: "-moz-initial",
-            }}
+            style={{ marginRight: "8px", borderRadius: "8px" }}
             onClick={handleSaveAsDraft}
           >
             Save as Draft
           </Button>
           <Button
             size="large"
-            style={{ borderRadius: "8px", float: "inline-end" }}
+            style={{ borderRadius: "8px" }}
             onClick={handleCancelSurveyModal}
           >
             Cancel

@@ -40,7 +40,7 @@ const Customer = () => {
   const previewData = useSelector((state: any) => state.preview?.previewData);
   const questions = previewData?.questions || [];
   const companyInfo = previewData?.CompanyInfo;
-  console.log("questions: ", questions);
+
   // Handler to collect responses
   const handleResponseChange = (questionId: any, value: any) => {
     setResponses((prev: any) => ({ ...prev, [questionId]: value }));

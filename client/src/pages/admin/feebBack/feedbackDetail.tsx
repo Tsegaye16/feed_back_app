@@ -33,7 +33,7 @@ const FeedbackDetail: React.FC<propType> = ({ feedbackDetail, onSave }) => {
   }, [dispatch, feedbackDetail.surveyId]);
 
   const data = useSelector((state: any) => state.feedback?.feedbackData?.data);
-  console.log("data: ", data);
+
   return (
     <div style={{ padding: "20px" }}>
       <Row
@@ -85,9 +85,7 @@ const FeedbackDetail: React.FC<propType> = ({ feedbackDetail, onSave }) => {
                 title={
                   <Text style={{ color: "#1890ff" }}>
                     Feedback Received:{" "}
-                    {moment(feedback.timestamp).format(
-                      "MMMM Do YYYY, h:mm:ss a"
-                    )}
+                    {moment(feedback.timestamp).format("MMMM Do YYYY, h:mm:ss")}
                   </Text>
                 }
                 bordered={false}

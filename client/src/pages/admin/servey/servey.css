@@ -1,9 +1,0 @@
-/* 
-1. a company has a name, manager,logo, backGroundColor, textColor, question
-2. a manager comes from user
-3. a company's question also has a type
-3.1. if a question type is true/false anly the question text has
-3.2. if a question type is multiple choice, the question text has a list of options with two type (single select and multiple select)
-3.3. if a question type essay only the question text has
-3.4. if a question type has rate the question text has a 5 stars to rate
- */

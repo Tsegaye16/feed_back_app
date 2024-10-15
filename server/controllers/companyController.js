@@ -8,8 +8,6 @@ import { sequelize } from "../db.js";
 
 export const addOrUpdateCompanyInfo = async (req, res) => {
   try {
-    console.log("managerIdd: ", req.body);
-    console.log("Image: ", req.file);
     const { name, backgroundColor, textColor, managerId } = req.body;
     const logo = req.file?.filename;
 
@@ -52,7 +50,7 @@ export const updateCompany = async (req, res) => {
   try {
     const id = req.params.id;
     const { name, backGroundColor, textColor } = req.body;
-    console.log("Req.Body: ", req.body);
+
     const logo = req.file?.filename;
     const company = await Company.findOne({ where: { id: id } });
     if (company) {
@@ -141,7 +139,6 @@ export const deleteTrueFalse = async (req, res) => {
 
 export const addChoiceQuestion = async (req, res) => {
   try {
-    // console.log("updatedQuestion:", req.body);
     const { text, options, type, singleSelect, companyId } = req.body;
 
     // Validate request body
@@ -186,7 +183,6 @@ export const addChoiceQuestion = async (req, res) => {
 
 export const addServey = async (req, res) => {
   try {
-    console.log("updatedQuestion:", req.body);
     const { surveyName, secretPhrase, isPublished, companyId, id } = req.body;
     if (!id) {
       const newQuestion = await Servey.create({
@@ -221,7 +217,7 @@ export const addServey = async (req, res) => {
 export const publishSurvey = async (req, res) => {
   try {
     const surveyId = req.params.surveyId;
-    console.log("surveyIddd: ", surveyId);
+
     // 1. update the servey column and make isPublished is true when surveyId = surveyId
     const updatedSurvey = await Servey.update(
       { isPublished: true },
@@ -231,7 +227,7 @@ export const publishSurvey = async (req, res) => {
       .status(200)
       .json({ message: "succussfully published", data: updatedSurvey });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ message: error.message });
   }
 };
 export const getAllServey = async (req, res) => {
@@ -259,7 +255,7 @@ export const deleteServey = async (req, res) => {
         },
       },
     });
-    //console.log("result: ", result);
+
     res.status(200).json({ message: "success", result });
   } catch (error) {
     //console.error("Error deleting servey:", err);
@@ -269,7 +265,6 @@ export const deleteServey = async (req, res) => {
 
 export const addQuestion = async (req, res) => {
   try {
-    // console.log("Req.Body: ", req.body);
     const newQuestion = await Question.create(req.body);
     res
       .status(201)
@@ -321,12 +316,10 @@ export const getPreviewData = async (req, res) => {
     });
 
     if (!CompanyInfo) {
-      // console.log(`Company ${companyName} was not found`);
       return res.status(404).json({ message: "Company not found" });
     }
 
     const companyId = CompanyInfo.id;
-    // console.log("companyId: ", companyId);
 
     // 2. Check whether surveyId exists in Serveys table with the correct companyId
     const SurveyInfo = await Servey.findOne({
@@ -337,13 +330,8 @@ export const getPreviewData = async (req, res) => {
     });
 
     if (!SurveyInfo) {
-      // console.log(
-      //   `Survey with id ${surveyId} was not found for company ${companyId}`
-      // );
       return res.status(404).json({ message: "Survey not found" });
     }
-
-    // console.log("SurveyInfo: ", SurveyInfo);
 
     // 3. Fetch all questions from the Questions table where surveyId matches
     const QuestionInfo = await Question.findAll({
@@ -371,11 +359,9 @@ export const getQuestionBySurveyId = async (req, res) => {
         serveyId: id,
       },
     });
-    console.log("question: ", question);
 
     res.status(200).json({ question });
   } catch (error) {
-    console.error("Error getting question by survey id:", error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -383,7 +369,7 @@ export const getQuestionBySurveyId = async (req, res) => {
 export const deleteQuestionById = async (req, res) => {
   try {
     const id = req.body;
-    console.log("ID's: ", id);
+
     // delete all rows from surver based on the list of id
     const result = await Question.destroy({
       where: {
@@ -427,7 +413,7 @@ export const getFullSurvey = async (req, res) => {
       },
       attributes: ["id", "companyId", "isPublished"],
     });
-    console.log("DDAATTAA: ", data);
+
     if (!data) {
       return res
         .status(404)
@@ -439,7 +425,7 @@ export const getFullSurvey = async (req, res) => {
     }
     const companyId = data.dataValues.companyId;
     const surveyId = data.dataValues.id;
-    console.log("surveyId: ", surveyId);
+
     // 2. get entire question data from question table where surveyId = surveyId
 
     const questionData = await Question.findOne({
@@ -592,7 +578,7 @@ export const getStatData = async (req, res) => {
     const publishedSurveys = await Servey.count({
       where: { companyId: id, isPublished: true },
     });
-    console.log("publishedSurveys: ", publishedSurveys);
+
     // 2. Extract total number of drafted surveys from Servey table where companyId = id
     const draftedSurvey = await Servey.count({
       where: { companyId: id, isPublished: false },
@@ -933,7 +919,7 @@ export const checkSecretePhrase = async (req, res) => {
     const { phrase } = req.body;
     //const secretPhrase = Object.keys(phrase)[0];
     // 1. check the secrete survey is present or not on survey table
-    console.log("secretPhrase: ", phrase);
+
     const survey = await Servey.findOne({
       where: {
         secretePhrase: phrase,

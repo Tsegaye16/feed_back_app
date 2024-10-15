@@ -14,7 +14,7 @@ export const submitAnswer = (answerData: any) => async (dispatch: any) => {
     return data;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+
     return { error: errorMessage };
   }
 };
@@ -29,7 +29,7 @@ export const getFeedback = (companyId: any) => async (dispatch: any) => {
     return data;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+
     return { error: errorMessage };
   }
 };

@@ -27,19 +27,8 @@ export const updateCompany = async (id: any, companyData: any) =>
 export const getCompanyByManagerId = async (managerId: any) =>
   API.get(`/company/${managerId}`);
 
-export const addTrueFalseQuestion = async (questionData: any) =>
-  API.post("/addTrueFalse", questionData);
-
 export const getAllQuestions = async (companyId: any) =>
   API.get(`/getAllQuestions/${companyId}`);
-
-export const updateTrueFalse = async (id: any, questionData: any) =>
-  API.put(`/updateTrueFalse/${id}`, questionData);
-
-export const deleteTrueFalse = async (id: any) =>
-  API.delete(`/deleteTrueFalse/${id}`);
-export const addChoiceQuestion = async (questionData: any) =>
-  API.post("/addChoiceQuestion", questionData);
 
 export const submitAnswer = async (answerData: any) =>
   API.post("/submitAnswer", answerData);
@@ -89,3 +78,6 @@ export const publishSurvey = async (surveyId: string) =>
 
 export const checkSecretePhrase = async (phrase: any) =>
   API.post(`/checkSecretePhrase/`, phrase);
+
+export const emailConfirmation = async (token: any) =>
+  API.get(`/confirm-email/${token}`);

@@ -337,23 +337,27 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, company }) => {
               </Form.Item>
 
               <Form.Item>
-                <Button
-                  type="primary"
-                  // onClick={handleEditProfile}
-                  //disabled={!isUserChanged}
-                  icon={<EditOutlined />}
-                  style={{ marginRight: 8 }}
-                  onClick={handleChangePassword}
-                >
-                  Save
-                </Button>
-                <Button
-                  type="default"
-                  style={{ float: "right" }}
-                  onClick={() => setShowChangePassword(false)}
-                >
-                  cancel
-                </Button>
+                <Row gutter={[8, 8]}>
+                  <Col>
+                    <Button
+                      type="primary"
+                      // onClick={handleEditProfile}
+                      //disabled={!isUserChanged}
+                      icon={<EditOutlined />}
+                      style={{ marginRight: 8 }}
+                      onClick={handleChangePassword}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      type="default"
+                      style={{ float: "right" }}
+                      onClick={() => setShowChangePassword(false)}
+                    >
+                      cancel
+                    </Button>
+                  </Col>
+                </Row>
               </Form.Item>
             </Form>
           ) : null}

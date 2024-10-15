@@ -25,6 +25,10 @@ const User = sequelize.define("User", {
       isEmail: { msg: "Please provide a valid email" },
     },
   },
+  isConfirmed: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false, // By default, the user is not confirmed
+  },
   password: {
     type: DataTypes.STRING,
     allowNull: false,

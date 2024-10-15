@@ -32,8 +32,6 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
 
   const dispatch = useDispatch();
 
-  console.log("ID or Records", id);
-
   const handleAddChoice = () => {
     setChoices([...choices, ""]);
   };
@@ -76,7 +74,7 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
         options: questionType === "Choice" ? choices : undefined,
       }) as any
     );
-    console.log("response: ", response.error);
+
     if (response?.payload?.message) {
       message.success(`${response?.payload?.message}`);
       onSave();

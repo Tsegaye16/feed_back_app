@@ -39,7 +39,6 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
   const handleFileChange = (info: any) => {
     const file = info.file.originFileObj; // Directly get the file object
     if (file) {
-      console.log("Selected file:", file); // Log the selected file for debugging
       setCompanyData((prevData: any) => ({
         ...prevData,
         logo: file, // Store the file object
@@ -69,15 +68,12 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
 
   // Handle theme change
   const handleThemeChange = (selectedTheme: Theme) => {
-    console.log("selectedTheme: ", selectedTheme);
-
     setCompanyData({
       ...companyData,
       backgroundColor: themes[selectedTheme].backgroundColor,
       textColor: themes[selectedTheme].textColor,
       theme: selectedTheme,
     });
-    console.log("companyData: ", companyData);
   };
 
   // Handle saving company info
@@ -93,7 +89,6 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
 
     try {
       const response = await dispatch(addCompanyInfo(formData) as any);
-      console.log("Response from server:", response); // Log the server response
 
       if (response?.payload?.message) {
         message.success(`${response?.payload?.message}`);
@@ -102,10 +97,8 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
         message.error(`${response.error}`);
       }
     } catch (error) {
-      console.error("Error saving company info:", error);
       message.error("Failed to save company info. Please try again.");
     }
-    console.log("formData: ", companyData);
   };
 
   const handleCancelCompany = () => {
@@ -142,49 +135,32 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
         </Form.Item>
 
         <Form.Item label="Select Theme">
-          <Row gutter={16}>
+          <Row gutter={[10, 16]} justify="start">
             {Object.keys(themes).map((themeKey) => {
               const theme = themeKey as Theme;
               return (
-                <Col span={8} key={theme}>
-                  <Card
-                    hoverable
+                <Col
+                  xs={8} // For mobile responsiveness (8 spans per button in small screens)
+                  sm={6} // For slightly larger screens (6 spans per button)
+                  md={4} // For medium screens (4 spans per button)
+                  lg={3} // For large screens (3 spans per button)
+                  key={theme}
+                >
+                  <Button
                     style={{
-                      backgroundColor: themes[theme].backgroundColor, // Correctly apply background color
-                      color: themes[theme].textColor, // Correctly apply text color
-                      textAlign: "center",
-                      cursor: "pointer",
+                      backgroundColor: themes[theme].backgroundColor,
+                      color: themes[theme].textColor,
                       border:
                         companyData.theme === theme
-                          ? "2px solid #1890ff"
+                          ? "4px solid #1890ff"
                           : "1px solid #f0f0f0",
+                      width: "100%", // Ensure the button takes full width of the column
+                      height: 40,
                     }}
                     onClick={() => handleThemeChange(theme)}
                   >
-                    <Meta
-                      title={
-                        <span
-                          style={{
-                            color: themes[theme].textColor, // Correctly apply text color here as well
-                          }}
-                        >
-                          {`${
-                            theme.charAt(0).toUpperCase() + theme.slice(1)
-                          }{" "}
-                          Theme`}
-                        </span>
-                      }
-                      description={
-                        <span
-                          style={{
-                            color: themes[theme].textColor, // Correctly apply text color here as well
-                          }}
-                        >
-                          Click to select
-                        </span>
-                      }
-                    />
-                  </Card>
+                    {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                  </Button>
                 </Col>
               );
             })}

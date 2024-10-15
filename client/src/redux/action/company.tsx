@@ -1,11 +1,7 @@
 import {
   SAVE_COMPANY_DATA,
   GATE_COMPANY_BY_MANAGER_ID,
-  ADD_TRUE_FALSE_QUESTION,
   GET_ALL_QUESTIONS,
-  DELETE_TRUE_FALSE_QUESTION,
-  UPDATE_TRUE_FALSE_QUESTION,
-  ADD_CHOICE_QUESTION,
   ADD_SERVEY,
   GET_ALL_SERVEY,
   DELETE_SERVEY,
@@ -31,7 +27,7 @@ export const addCompanyInfo = (companyData: any) => async (dispatch: any) => {
     return data;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+
     return { error: errorMessage };
   }
 };
@@ -39,7 +35,6 @@ export const addCompanyInfo = (companyData: any) => async (dispatch: any) => {
 export const updateCompany =
   (id: any, companyData: any) => async (dispatch: any) => {
     try {
-      console.log("Company Data: ", companyData);
       const response = await api.updateCompany(id, companyData);
       const data = await dispatch({
         type: UPDATE_COMPANY,
@@ -49,7 +44,7 @@ export const updateCompany =
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Something went wrong";
-      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      // Log error for debugging
       return { error: errorMessage };
     }
   };
@@ -61,20 +56,10 @@ export const getCompanyById = (managerId: any) => async (dispatch: any) => {
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || "Something went wrong";
-    //console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    //// Log error for debugging
     return { error: errorMessage };
   }
 };
-
-export const addTrueFalseQuestion =
-  (questionData: any) => async (dispatch: any) => {
-    try {
-      const response = await api.addTrueFalseQuestion(questionData);
-      dispatch({ type: ADD_TRUE_FALSE_QUESTION, payload: response.data });
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
 export const getAllQuestion = (companyId: any) => async (dispatch: any) => {
   try {
@@ -86,47 +71,6 @@ export const getAllQuestion = (companyId: any) => async (dispatch: any) => {
   }
 };
 
-export const updateTrueFalseQuestion =
-  (id: any, questionData: any) => async (dispatch: any) => {
-    try {
-      const response = await api.updateTrueFalse(id, questionData);
-      dispatch({
-        type: UPDATE_TRUE_FALSE_QUESTION,
-        payload: response.data,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-// Add this action for deleting a question
-export const deleteTrueFalseQuestion = (id: any) => async (dispatch: any) => {
-  try {
-    const response = await api.deleteTrueFalse(id);
-    dispatch({
-      type: DELETE_TRUE_FALSE_QUESTION,
-      payload: response.data,
-    });
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-export const addChoiceQuestion =
-  (questionData: any) => async (dispatch: any) => {
-    try {
-      const response = await api.addChoiceQuestion(questionData);
-
-      const data = await dispatch({
-        type: ADD_CHOICE_QUESTION,
-        payload: response.data,
-      });
-      return data;
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
 export const addServey = (serveyInfo: any) => async (dispatch: any) => {
   try {
     const response = await api.addServey(serveyInfo);
@@ -134,7 +78,7 @@ export const addServey = (serveyInfo: any) => async (dispatch: any) => {
     return data;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    // Log error for debugging
     return { error: errorMessage };
   }
 };
@@ -149,7 +93,7 @@ export const publishSurvey = (surveyId: string) => async (dispatch: any) => {
     return data;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    // Log error for debugging
     return { error: errorMessage };
   }
 };
@@ -161,7 +105,7 @@ export const getAllServey = (companyId: any) => async (dispatch: any) => {
       type: GET_ALL_SERVEY,
       payload: response.data,
     });
-    console.log("data:", data);
+
     return data;
   } catch (error) {
     console.error(error);
@@ -179,7 +123,7 @@ export const deleteServey = (id: any) => async (dispatch: any) => {
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    // Log error for debugging
     return { error: errorMessage };
   }
 };
@@ -192,7 +136,7 @@ export const addQuestion = (questionInfo: any) => async (dispatch: any) => {
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    // Log error for debugging
     return { error: errorMessage };
   }
 };
@@ -207,7 +151,7 @@ export const getPreviewParams = (serveyId: any) => async (dispatch: any) => {
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    // Log error for debugging
     return { error: errorMessage };
   }
 };
@@ -224,7 +168,7 @@ export const getPreviewData =
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Something went wrong";
-      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      // Log error for debugging
       return { error: errorMessage };
     }
   };
@@ -240,7 +184,7 @@ export const getQuestionBySurveyId = (id: any) => async (dispatch: any) => {
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    // Log error for debugging
     return { error: errorMessage };
   }
 };
@@ -256,7 +200,7 @@ export const deleteQuestionById = (id: any) => async (dispatch: any) => {
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    // Log error for debugging
     return { error: errorMessage };
   }
 };
@@ -274,7 +218,7 @@ export const updateQuestion =
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Something went wrong";
-      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      // Log error for debugging
       return { error: errorMessage };
     }
   };
@@ -291,7 +235,7 @@ export const getFullSurvey = (secretePhrase: any) => async (dispatch: any) => {
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage); // Log error for debugging
+    // Log error for debugging
     return { error: errorMessage };
   }
 };

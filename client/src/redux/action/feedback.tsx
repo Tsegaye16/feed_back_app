@@ -16,7 +16,7 @@ export const getFeedbackDetail =
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Something went wrong";
-      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      // Log error for debugging
       return { error: errorMessage };
     }
   };
@@ -33,7 +33,7 @@ export const getRecentFeedback =
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Something went wrong";
-      console.log("Error Message from Server:", errorMessage); // Log error for debugging
+      // Log error for debugging
       return { error: errorMessage };
     }
   };

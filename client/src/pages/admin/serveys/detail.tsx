@@ -49,7 +49,6 @@ const Detail: React.FC<DetailProps> = ({
   const questions = useSelector(
     (state: any) => state.question?.questionDaata?.question
   );
-  // console.log("questions: ", questions);
 
   const handlePreview = async (event: any) => {
     event.preventDefault();
@@ -105,7 +104,6 @@ const Detail: React.FC<DetailProps> = ({
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    // console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -121,7 +119,7 @@ const Detail: React.FC<DetailProps> = ({
     const idsToDelete = Array.isArray(deletingId) ? deletingId : [deletingId];
     if (idsToDelete.length === 0) return;
     const response = await dispatch(deleteQuestionById(idsToDelete) as any);
-    console.log("response: ", response);
+
     if (response?.error) {
       message.error(`${response.error}`);
     } else if (response?.payload?.message) {
@@ -145,7 +143,6 @@ const Detail: React.FC<DetailProps> = ({
   };
 
   const handleCancel = () => {
-    console.log("Clicked cancel button");
     setOpen(false);
   };
   const confirmModal = (

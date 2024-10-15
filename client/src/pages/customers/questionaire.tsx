@@ -102,7 +102,6 @@ const Questionaire = () => {
     //   dispatch(submitAnswer(payload) as any);
     setIsSubmitted(true); // Set submission status to true
     setOpenDialog(false); // Close the dialog
-    console.log("payload:", payload);
   };
 
   const renderOptions = () => {

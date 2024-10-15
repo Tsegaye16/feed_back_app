@@ -9,7 +9,7 @@ export const getStatData = (companyId: any) => async (dispatch: any) => {
   } catch (error: any) {
     const errorMessage =
       error.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage);
+
     return { error: errorMessage };
   }
 };

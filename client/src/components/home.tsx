@@ -15,14 +15,13 @@ const Home: React.FC = () => {
   const handleSearch = async () => {
     try {
       const response = await dispatch(getFullSurvey(secretePhrase) as any);
-      console.log(response);
+
       if (response?.error) {
         message.error(response.error);
       } else if (response?.payload) {
         const surveyId = response.payload?.questionData?.serveyId;
         const companyName = response.payload?.companyData?.name;
-        console.log("response: ", response);
-        //const companyName =
+
         if (surveyId) {
           // Append query string directly to the URL
           navigate(`/${companyName}/surveys/${surveyId}`);

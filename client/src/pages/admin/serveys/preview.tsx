@@ -46,8 +46,7 @@ const Preview: React.FC = () => {
 
   // Submit handler
   const handleSubmit = () => {
-    // Here you would typically dispatch an action to submit the responses
-    console.log("User Responses:", responses);
+    
     message.success("Thank you for your feedback!");
   };
 

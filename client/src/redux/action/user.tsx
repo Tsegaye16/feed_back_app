@@ -18,14 +18,13 @@ export const getUserById = (userId: string) => async (dispatch: any) => {
     return data;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage);
+
     return { error: errorMessage };
   }
 };
 
 export const updateProfile = (id: any, data: any) => async (dispatch: any) => {
   try {
-    console.log("DData:", data);
     const response = await api.updateProfile(id, data);
     const result = await dispatch({
       type: UPDATE_PROFILE,
@@ -34,7 +33,7 @@ export const updateProfile = (id: any, data: any) => async (dispatch: any) => {
     return result;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage);
+
     return { error: errorMessage };
   }
 };
@@ -49,7 +48,7 @@ export const changePassword = (password: any) => async (dispatch: any) => {
     return result;
   } catch (err: any) {
     const errorMessage = err.response?.data?.message || "Something went wrong";
-    console.log("Error Message from Server:", errorMessage);
+
     return { error: errorMessage };
   }
 };
