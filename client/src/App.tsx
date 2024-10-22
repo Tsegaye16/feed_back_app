@@ -5,7 +5,6 @@ import "./App.css";
 import Home from "./components/home";
 
 import Dashboard from "./pages/admin/dashboard/dashboard";
-import Questionaire from "./pages/customers/questionaire";
 import Login from "./components/form/login/login";
 import Registration from "./components/form/register/register";
 import { ToastContainer } from "react-toastify";
@@ -32,7 +31,7 @@ const App: React.FC = () => {
         <Route path="/register" element={<Registration />} />
 
         <Route path="/" element={<Home />} />
-        <Route path="/client" element={<Questionaire />} />
+
         <Route path="/confirm-email" element={<EmailConfirm />} />
         <Route
           path={"/:companyName/surveys/preview/:surveyId"}
