@@ -131,11 +131,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
     // Add survey name with some styles
     doc.setFontSize(16);
     doc.setTextColor(0, 51, 153);
-    doc.text(
-      "Get  " + `https://customer-feedback-collector.netlify.app/`,
-      40,
-      100
-    );
+    doc.text("Get  https://customer-feedback-collector.netlify.app/", 40, 100);
 
     // Add secret phrase
     doc.setFontSize(14);
