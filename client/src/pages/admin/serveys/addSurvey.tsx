@@ -17,7 +17,7 @@ interface propType {
 
 const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
   const [surveyName, setSurveyName] = useState(info.surveyName || "");
-  const [secretPhrase, setSecretPhrase] = useState("");
+  const [secretPhrase, setSecretPhrase] = useState(info.secretePhrase || "");
   const [secretPhraseResponse, setSecretPhraseResponse] = useState("");
   const [responseStatus, setResponseStatus] = useState<
     "success" | "error" | null
@@ -38,7 +38,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
 
   useEffect(() => {
     const phrase = generateSecretPhrase();
-    setSecretPhrase(phrase);
+    setSecretPhrase(secretPhrase || phrase);
     validateSecretPhrase(phrase);
   }, []);
 
@@ -131,7 +131,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
     // Add survey name with some styles
     doc.setFontSize(16);
     doc.setTextColor(0, 51, 153);
-    doc.text("Get  " + `wwww.feedback.et`, 40, 100);
+    doc.text("Get  " + `http://localhost:3000/`, 40, 100);
 
     // Add secret phrase
     doc.setFontSize(14);
@@ -219,7 +219,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
         )}
 
         {/* QR Code and URL Generator */}
-        {surveyName ? (
+        {surveyName && responseStatus === "success" ? (
           <Col span={24} style={{ textAlign: "center", marginTop: "16px" }}>
             <QRCodeCanvas
               id="qr-code"
