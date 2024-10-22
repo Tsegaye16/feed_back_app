@@ -1,8 +1,13 @@
-import { Sequelize, DataTypes } from "sequelize";
+import { Sequelize, DataTypes, UUID, UUIDV4 } from "sequelize";
 import bcrypt from "bcryptjs";
 import { sequelize } from "../db.js";
 
 const User = sequelize.define("User", {
+  id: {
+    type: UUID,
+    defaultValue: UUIDV4,
+    primaryKey: true,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -10,6 +15,7 @@ const User = sequelize.define("User", {
       notEmpty: { msg: "Please tell us your name!" },
     },
   },
+
   email: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -19,9 +25,20 @@ const User = sequelize.define("User", {
       isEmail: { msg: "Please provide a valid email" },
     },
   },
+  isConfirmed: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false, // By default, the user is not confirmed
+  },
   password: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      notEmpty: { msg: "Please provide a password" },
+    },
+  },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
 });
 
@@ -31,5 +48,9 @@ User.beforeCreate(async (user) => {
     user.password = await bcrypt.hash(user.password, 12);
   }
 });
+
+User.prototype.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 export default User;

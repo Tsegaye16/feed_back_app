@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import {
   getAllQuestion,
   getCompanyById,
-  submitAnswer,
+  //submitAnswer,
   // submitAnswers,
 } from "../../redux/action/company";
 import {
@@ -30,7 +30,7 @@ import {
 
 const Questionaire = () => {
   const dispatch = useDispatch();
-  const token = useSelector((state: any) => state.auth?.authData);
+  const token = localStorage.getItem("user") as any;
   const decodedToken: any = jwtDecode(token);
   const managerId = decodedToken.id;
 
@@ -99,14 +99,13 @@ const Questionaire = () => {
         answer,
       })),
     };
-    dispatch(submitAnswer(payload) as any);
+    //   dispatch(submitAnswer(payload) as any);
     setIsSubmitted(true); // Set submission status to true
     setOpenDialog(false); // Close the dialog
-    console.log("payload:", payload);
   };
 
   const renderOptions = () => {
-    if (currentQuestion?.type === "true_false") {
+    if (currentQuestion?.type === "True/False") {
       return (
         <RadioGroup
           name={`question_${currentQuestion.id}`}
@@ -121,7 +120,7 @@ const Questionaire = () => {
       );
     }
 
-    if (currentQuestion?.type === "multiple_choice") {
+    if (currentQuestion?.type === "Choice") {
       return currentQuestion.options.map((option: string, index: number) => (
         <FormControlLabel
           key={index}
@@ -156,7 +155,7 @@ const Questionaire = () => {
       ));
     }
 
-    if (currentQuestion?.type === "rate") {
+    if (currentQuestion?.type === "Rate") {
       return (
         <Rating
           name={`question_${currentQuestion.id}`}
@@ -170,7 +169,7 @@ const Questionaire = () => {
       );
     }
 
-    if (currentQuestion?.type === "essay") {
+    if (currentQuestion?.type === "Open") {
       return (
         <TextField
           label="Essay"

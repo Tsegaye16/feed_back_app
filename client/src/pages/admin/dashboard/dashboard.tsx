@@ -1,242 +1,344 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Avatar,
+  Layout,
   Menu,
-  MenuItem,
-  List,
-  ListItemIcon,
-  ListItemText,
-  Drawer,
-  Divider,
-  Typography,
+  Avatar,
   Badge,
-  Box,
-  ListItemButton,
-  Collapse,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-//import InboxIcon from "@mui/icons-material/Inbox";
-import SettingsIcon from "@mui/icons-material/Settings";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import DraftsIcon from "@mui/icons-material/Drafts";
-import PublishedWithChangesIcon from "@mui/icons-material/PublishedWithChanges";
-import PollIcon from "@mui/icons-material/Poll"; // For Survey
-import FeedbackIcon from "@mui/icons-material/Feedback"; // For Feedback
+  Dropdown,
+  Typography,
+  // notification,
+  Button,
+} from "antd";
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  DashboardOutlined,
+  NotificationOutlined,
+  //  SettingOutlined,
+  LogoutOutlined,
+  FileDoneOutlined,
+  InboxOutlined,
+  UnorderedListOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import { getUserById } from "../../../redux/action/user";
+import Draft from "../serveys/draft";
+import Published from "../serveys/published";
+import Detail from "../serveys/detail";
+
+import EditQuestion from "../serveys/editQuestion";
+import AddQuestion from "../serveys/addQuestion";
+import AddCompany from "../serveys/addCompany";
+import Profile from "../serveys/profile";
+import DetailDashboard from "./detailDashboard";
+import { getCompanyById } from "../../../redux/action/company";
+import AddSurvey from "../serveys/addSurvey";
+import FeedBack from "../feebBack/feedBack";
+import FeedbackDetail from "../feebBack/feedbackDetail";
+import { LOGOUT } from "../../../constants/types/actionType";
+
+const { Header, Sider, Content } = Layout;
+const { Title } = Typography;
 
 const Dashboard = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
   const [selectedItem, setSelectedItem] = useState("Dashboard");
   const [isServeysOpen, setIsServeysOpen] = useState(false);
+  const [selectedAddSurvey, setSelectedAddSurvey] = useState(null);
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const [selectedAddCompany, setSelectedAddCompany] = useState(null);
+  const [selectedAddQuestion, setSelectedAddQuestion] = useState(null);
+  const [selectedEditQuestion, setSelectedEditQuestion] = useState(null);
+  const [feedbackDetail, setFeedbackDetail] = useState(null);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const token = localStorage.getItem("user");
+
+  const toggleCollapsed = () => {
+    setCollapsed(!collapsed);
   };
 
-  const handleAvatarClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleLogout = async () => {
+    await dispatch({ type: LOGOUT });
+    localStorage.removeItem("user");
+    //notification.warning({ message: "You are logged out" });
+    navigate("/");
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const user = useSelector((state: any) => state.user?.user?.newUser);
+  const company = useSelector(
+    (state: any) => state.company?.companyData?.result
+  );
+
+  useEffect(() => {
+    if (!token) {
+      navigate("/");
+    }
+    if (token) {
+      const decodedToken: any = jwtDecode(token);
+
+      if (decodedToken.exp * 1000 < new Date().getTime()) {
+        handleLogout();
+      }
+      dispatch(getUserById(decodedToken.id) as any);
+    }
+  }, [dispatch, navigate, token]);
+
+  useEffect(() => {
+    if (user) {
+      dispatch(getCompanyById(user?.id) as any);
+    }
+  }, [dispatch, user]);
+  const onUpdate = async () => {
+    if (token) {
+      const decodedToken: any = jwtDecode(token);
+      const data = await dispatch(getUserById(decodedToken.id) as any);
+      return data;
+    }
+    return;
   };
 
   const handleMenuItemClick = (item: string) => {
     setSelectedItem(item);
+    setSelectedDetail(null);
+    setSelectedAddCompany(null);
+    setSelectedAddQuestion(null);
+    setSelectedEditQuestion(null);
+    setSelectedAddSurvey(null);
+    setFeedbackDetail(null);
   };
 
   const handleServeysClick = () => {
     setIsServeysOpen(!isServeysOpen);
   };
 
+  const handleAddSurvey = (id: any) => {
+    setSelectedAddSurvey(id);
+  };
+  const handleDetailClick = (id: any) => {
+    setSelectedDetail(id);
+  };
+
+  const handleEditClick = (record: any) => {
+    setSelectedEditQuestion(record);
+  };
+
+  const handleAddQuestionSelection = (id: any) => {
+    setSelectedAddQuestion(id);
+  };
+
+  const handleAddCompany = (id: any) => {
+    setSelectedAddCompany(id);
+  };
+
+  const handleFeedbackDetailClick = (id: any) => {
+    setFeedbackDetail(id);
+  };
+
+  const handleSaveQuestion = () => {
+    setSelectedAddQuestion(null);
+    setSelectedEditQuestion(null);
+    setSelectedAddSurvey(null);
+    setSelectedAddCompany(null);
+  };
+
+  const handleBack = () => {
+    setSelectedDetail(null);
+    setFeedbackDetail(null);
+  };
+
+  const menu = (
+    <Menu onClick={({ key }) => handleMenuItemClick(key)}>
+      <Menu.Item key="profile" icon={<UserOutlined />}>
+        Profile
+      </Menu.Item>
+      {/* <Menu.Item key="setting" icon={<SettingOutlined />}>
+        Settings
+      </Menu.Item> */}
+      <Menu.Item key="3" icon={<LogoutOutlined />} onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
-    <Box sx={{ display: "flex" }}>
-      {/* AppBar/Navbar */}
-      <AppBar
-        position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: "aliceblue",
-          color: "black",
+    <Layout style={{ minHeight: "100vh" }}>
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={toggleCollapsed}
+        theme="light"
+        style={{ position: "fixed", height: "100vh", left: 0, top: 0 }}
+      >
+        {company === null ? (
+          ""
+        ) : (
+          <div
+            className="logo"
+            style={{ padding: "16px", textAlign: "center" }}
+          >
+            <Avatar src={`http://localhost:4000/${company?.logo}`} />
+            <Title level={5}>{company?.name}</Title>
+          </div>
+        )}
+
+        <Menu
+          //theme="light"
+          defaultSelectedKeys={["Dashboard"]}
+          mode="inline"
+          onClick={({ key }) => handleMenuItemClick(key)}
+        >
+          <Menu.Item key="Dashboard" icon={<DashboardOutlined />}>
+            Dashboard
+          </Menu.Item>
+
+          <Menu.SubMenu
+            key="Serveys"
+            title="Serveys"
+            icon={<UnorderedListOutlined />}
+            onTitleClick={handleServeysClick}
+          >
+            <Menu.Item
+              key="Published"
+              icon={<FileDoneOutlined />}
+              style={{ userSelect: "none" }}
+            >
+              Published
+            </Menu.Item>
+            <Menu.Item key="Draft" icon={<InboxOutlined />}>
+              Draft
+            </Menu.Item>
+          </Menu.SubMenu>
+
+          <Menu.Item key="FeedBacks" icon={<NotificationOutlined />}>
+            Feedbacks
+          </Menu.Item>
+        </Menu>
+      </Sider>
+
+      <Layout
+        className="site-layout"
+        style={{
+          marginLeft: collapsed ? 80 : 200,
+          transition: "margin-left 0.2s",
+          backgroundColor: "#FAF9F6",
         }}
       >
-        <Toolbar>
-          <IconButton color="inherit" edge="start" onClick={toggleSidebar}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-            Admin Dashboard
-          </Typography>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-          <IconButton onClick={handleAvatarClick}>
-            <Avatar alt="User Avatar" src="/avatar.png" />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-            keepMounted
-          >
-            <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="Profile" />
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="Settings" />
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              <ListItemIcon>
-                <ExitToAppIcon />
-              </ListItemIcon>
-              <ListItemText primary="Logout" />
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
+        <Header
+          style={{
+            backgroundColor: "white",
+            padding: 0,
+            top: 0,
+            position: "sticky",
+            zIndex: 999,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={toggleCollapsed}
+              style={{ fontSize: "16px", width: 64, height: 64 }}
+            />
 
-      {/* Sidebar/Drawer */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: isSidebarOpen ? 240 : 60,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: isSidebarOpen ? 240 : 60,
-            transition: "width 0.3s",
-          },
-        }}
-      >
-        <Toolbar />
-        <Divider />
-        <List>
-          {/* Dashboard Item */}
-          <ListItemButton
-            selected={selectedItem === "Dashboard"}
-            onClick={() => handleMenuItemClick("Dashboard")}
-            sx={{
-              "&:hover": {
-                backgroundColor: "#f0f0f0",
-              },
-              "&.Mui-selected": {
-                backgroundColor: "#e0e0e0",
-                "&:hover": {
-                  backgroundColor: "#d0d0d0",
-                },
-              },
-            }}
-          >
-            <ListItemIcon>
-              <DashboardIcon />
-            </ListItemIcon>
-            {isSidebarOpen && <ListItemText primary="Dashboard" />}
-          </ListItemButton>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "1rem",
+                paddingRight: "20px",
+              }}
+            >
+              <Badge count={4}>
+                <NotificationOutlined style={{ fontSize: "24px" }} />
+              </Badge>
 
-          {/* Serveys Item with Collapse */}
-          <ListItemButton
-            onClick={handleServeysClick}
-            sx={{
-              "&:hover": {
-                backgroundColor: "#f0f0f0",
-              },
-            }}
-          >
-            <ListItemIcon>
-              <PollIcon />
-            </ListItemIcon>
-            {isSidebarOpen && <ListItemText primary="Serveys" />}
-            {isServeysOpen ? <ExpandLess /> : <ExpandMore />}
-          </ListItemButton>
-          <Collapse in={isServeysOpen} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {/* Published Item */}
-              <ListItemButton
-                sx={{ pl: 4 }}
-                selected={selectedItem === "Published"}
-                onClick={() => handleMenuItemClick("Published")}
-              >
-                <ListItemIcon>
-                  <PublishedWithChangesIcon />
-                </ListItemIcon>
-                <ListItemText primary="Published" />
-              </ListItemButton>
+              <Dropdown overlay={menu} trigger={["click"]}>
+                <Avatar
+                  src={`http://localhost:4000/${user?.image}`}
+                  style={{ cursor: "pointer" }}
+                />
+              </Dropdown>
+              <Title level={5}>{user?.name}</Title>
+            </div>
+          </div>
+        </Header>
 
-              {/* Draft Item */}
-              <ListItemButton
-                sx={{ pl: 4 }}
-                selected={selectedItem === "Draft"}
-                onClick={() => handleMenuItemClick("Draft")}
-              >
-                <ListItemIcon>
-                  <DraftsIcon />
-                </ListItemIcon>
-                <ListItemText primary="Draft" />
-              </ListItemButton>
-            </List>
-          </Collapse>
-
-          {/* FeedBacks */}
-          <ListItemButton
-            selected={selectedItem === "FeedBacks"}
-            onClick={() => handleMenuItemClick("FeedBacks")}
-            sx={{
-              "&:hover": {
-                backgroundColor: "#f0f0f0",
-              },
-              "&.Mui-selected": {
-                backgroundColor: "#e0e0e0",
-                "&:hover": {
-                  backgroundColor: "#d0d0d0",
-                },
-              },
-            }}
-          >
-            <ListItemIcon>
-              <FeedbackIcon />
-            </ListItemIcon>
-            {isSidebarOpen && <ListItemText primary="Feed Backs" />}
-          </ListItemButton>
-        </List>
-      </Drawer>
-
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          marginLeft: isSidebarOpen ? "240px" : "60px",
-          transition: "margin 0.3s",
-        }}
-      >
-        <Toolbar />
-        {selectedItem === "Dashboard" && (
-          <Typography>Dashboard Content</Typography>
-        )}
-        {selectedItem === "Published" && (
-          <Typography>Published Surveys</Typography>
-        )}
-        {selectedItem === "Draft" && <Typography>Draft Surveys</Typography>}
-        {selectedItem === "FeedBacks" && (
-          <Typography>Feedback Content</Typography>
-        )}
-      </Box>
-    </Box>
+        <Content style={{ margin: "16px" }}>
+          {selectedEditQuestion ? (
+            <EditQuestion
+              record={selectedEditQuestion}
+              onSave={handleSaveQuestion}
+            />
+          ) : selectedAddQuestion ? (
+            <AddQuestion id={selectedDetail} onSave={handleSaveQuestion} />
+          ) : feedbackDetail ? (
+            <FeedbackDetail
+              feedbackDetail={feedbackDetail}
+              onSave={handleBack}
+            />
+          ) : selectedDetail ? (
+            <Detail
+              id={selectedDetail}
+              onClickAddQuestion={handleAddQuestionSelection}
+              onClickEditQuestion={handleEditClick}
+              onSave={handleBack}
+            />
+          ) : selectedAddSurvey ? (
+            <AddSurvey
+              info={selectedAddSurvey}
+              onSave={handleSaveQuestion}
+              companyName={company?.name}
+            />
+          ) : selectedAddCompany ? (
+            <AddCompany
+              onSave={handleSaveQuestion}
+              managerId={selectedAddCompany}
+            />
+          ) : (
+            <>
+              {selectedItem === "Dashboard" && (
+                <DetailDashboard companyId={company?.id} />
+              )}
+              {selectedItem === "Published" && (
+                <Published
+                  onDetailClick={handleDetailClick}
+                  onAddCompany={handleAddCompany}
+                  onAddSurvey={handleAddSurvey}
+                  onSave={handleSaveQuestion}
+                />
+              )}
+              {selectedItem === "Draft" && (
+                <Draft
+                  onDetailClick={handleDetailClick}
+                  onAddCompany={handleAddCompany}
+                  onAddSurvey={handleAddSurvey}
+                />
+              )}
+              {selectedItem === "FeedBacks" && (
+                <FeedBack
+                  companyId={company?.id}
+                  handleFeedbackDetailClick={handleFeedbackDetailClick}
+                />
+              )}
+              {selectedItem === "setting" && (
+                <AddCompany
+                  onSave={handleSaveQuestion}
+                  managerId={selectedAddCompany}
+                />
+              )}
+              {selectedItem === "profile" && (
+                <Profile user={user} onUpdate={onUpdate} company={company} />
+              )}
+            </>
+          )}
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 

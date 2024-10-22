@@ -5,13 +5,13 @@ import { Provider } from "react-redux";
 import "./index.css";
 
 import App from "./App";
-import reducers from "./redux/reducer/mainReducer";
+import rootReducer from "./redux/reducer/mainReducer";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 const store = configureStore({
-  reducer: reducers,
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware: any) => getDefaultMiddleware(),
 });
 root.render(
