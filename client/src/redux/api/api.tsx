@@ -1,7 +1,7 @@
 import axios from "axios";
 import { AuthFormData } from "../../constants/types/dataType";
 const API = axios.create({
-  baseURL: "http://localhost:4000/user",
+  baseURL: "https://feed-back-app.onrender.com/user",
 });
 
 export const signIn = async (formData: any) => API.post("/signin", formData);
