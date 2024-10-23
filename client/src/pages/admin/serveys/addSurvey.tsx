@@ -17,7 +17,7 @@ interface propType {
 
 const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
   const [surveyName, setSurveyName] = useState(info.surveyName || "");
-  const [secretPhrase, setSecretPhrase] = useState(info.secretePhrase || "");
+  const [secretPhrase, setSecretPhrase] = useState("");
   const [secretPhraseResponse, setSecretPhraseResponse] = useState("");
   const [responseStatus, setResponseStatus] = useState<
     "success" | "error" | null
@@ -38,7 +38,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
 
   useEffect(() => {
     const phrase = generateSecretPhrase();
-    setSecretPhrase(secretPhrase || phrase);
+    setSecretPhrase(phrase);
     validateSecretPhrase(phrase);
   }, []);
 
