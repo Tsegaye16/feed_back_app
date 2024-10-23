@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
   message,
@@ -8,7 +8,9 @@ import {
   Flex,
   Modal,
   Tooltip,
+  //QRCode,
 } from "antd";
+import { QRCodeCanvas } from "qrcode.react";
 import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
@@ -21,6 +23,7 @@ import {
 import { Box, Paper } from "@mui/material";
 
 import { TableRowSelection } from "antd/es/table/interface";
+import jsPDF from "jspdf";
 const { Title } = Typography;
 
 interface MyJwtPayload extends JwtPayload {
@@ -198,6 +201,48 @@ const Published: React.FC<onClickType> = ({
       });
     }
   };
+  // QR code
+
+  const qrRef = useRef<HTMLCanvasElement>(null);
+
+  const handleGenerateQRCode = (
+    secretePhrase: string,
+    surveyId: string
+  ): void => {
+    console.log("Secret Phrase: ", secretePhrase);
+    console.log("Survey ID: ", surveyId);
+
+    const qrCodeCanvas = qrRef.current;
+
+    if (!qrCodeCanvas) return;
+
+    const surveyLink = `https://customer-feedback-collector.netlify.app/`;
+
+    const pdf = new jsPDF();
+    pdf.setFontSize(16);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Access this link", 10, 20);
+    pdf.setFontSize(14);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(surveyLink, 10, 30); // Link text
+
+    pdf.setFontSize(16);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Insert the secret phrase:", 10, 50);
+    pdf.setFontSize(14);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(secretePhrase, 10, 60); // Secret phrase text
+
+    pdf.setFontSize(16);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Or scan this QR code:", 10, 80);
+
+    // Add QR Code to the PDF (get the canvas and use it as an image)
+    const qrCodeImage = qrCodeCanvas.toDataURL("image/png");
+    pdf.addImage(qrCodeImage, "PNG", 40, 160, 128, 128); // QR Code position and size
+    // Save the PDF
+    pdf.save("SurveyQRCode.pdf");
+  };
 
   //////// Ant Design Table
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -236,6 +281,22 @@ const Published: React.FC<onClickType> = ({
             }}
           >
             Detail
+          </Button>
+          <div style={{ display: "none" }}>
+            <QRCodeCanvas
+              value={`https://customer-feedback-collector.netlify.app/${company?.name}/surveys/${record.id}`}
+              size={200}
+              ref={qrRef} // You can use ref to capture the canvas
+            />
+          </div>
+          <Button
+            type="link"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleGenerateQRCode(record.secretePhrase, record.id); // Pass record.id as surveyId
+            }}
+          >
+            Generate QR code
           </Button>
         </Space>
       ),
@@ -307,8 +368,6 @@ const Published: React.FC<onClickType> = ({
         </Paper>
       ) : (
         <>
-          {/* Surveys Table */}
-
           <Flex gap="middle" vertical>
             <Flex align="center" gap="middle">
               {hasSelected ? `Selected ${selectedRowKeys.length} items` : null}

@@ -13,6 +13,7 @@ import {
   Form,
   message,
   Progress,
+  Alert,
 } from "antd";
 
 import "antd/dist/reset.css";
@@ -89,7 +90,25 @@ const Customer = () => {
 
   // If no preview data, return an error message
   if (!previewData) {
-    return <div>Something went wrong...</div>;
+    return (
+      <Alert
+        message="Error"
+        description="Something went wrong..."
+        type="error"
+        showIcon
+      />
+    );
+  }
+
+  if (!questions) {
+    return (
+      <Alert
+        message="No Questions"
+        description="There are no survey questions."
+        type="info"
+        showIcon
+      />
+    );
   }
   if (isSubmitted) {
     return (
@@ -260,13 +279,6 @@ const QuestionRenderer = ({
       return null;
   }
 };
-
-// QuestionTrueFalse Component
-// interface QuestionProps {
-//   question: any;
-//   index: any;
-//   onChange: (questionId: any, value: any) => void;
-// }
 
 const QuestionTrueFalse: React.FC<QuestionProps> = ({
   question,
