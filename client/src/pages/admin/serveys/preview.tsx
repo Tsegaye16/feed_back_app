@@ -46,7 +46,6 @@ const Preview: React.FC = () => {
 
   // Submit handler
   const handleSubmit = () => {
-    
     message.success("Thank you for your feedback!");
   };
 
@@ -85,7 +84,7 @@ const Preview: React.FC = () => {
           }}
         >
           <Avatar
-            src={`http://localhost:4000/${companyInfo.logo}`}
+            src={`https://feed-back-app.onrender.com/${companyInfo.logo}`}
             alt={companyInfo.name}
             size={65}
             style={{

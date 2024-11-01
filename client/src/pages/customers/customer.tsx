@@ -22,6 +22,7 @@ import { submitAnswer } from "../../redux/action/answer";
 
 const { Title } = Typography;
 
+//localhost
 const Customer = () => {
   const dispatch: any = useDispatch();
   const { companyName, surveyId } = useParams();
@@ -143,7 +144,7 @@ const Customer = () => {
           }}
         >
           <Avatar
-            src={`http://localhost:4000/${companyInfo.logo}`}
+            src={`https://feed-back-app.onrender.com/${companyInfo.logo}`}
             alt={companyInfo.name}
             size={65}
             style={{

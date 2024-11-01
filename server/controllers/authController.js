@@ -43,8 +43,8 @@ export const signup = async (req, res) => {
             expiresIn: tokenExpirationTime, // Token valid for 1 hour
           }
         );
-
-        const confirmationUrl = `http://localhost:3000/confirm-email?token=${token}`;
+        //https://feed-back-app.onrender.com
+        const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
 
         await transporter.sendMail({
           from: process.env.MY_EMAIL,
