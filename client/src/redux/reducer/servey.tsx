@@ -1,3 +1,4 @@
+// Importing action type constants
 import {
   GET_ALL_SERVEY,
   ADD_SERVEY,
@@ -6,22 +7,46 @@ import {
   PUBLISH_SURVEY,
 } from "../../constants/types/actionType";
 
-const serveyState = {
+// Define the shape of a Survey (example, adjust according to your actual data)
+interface Survey {
+  id: string;
+  name: string;
+  secretePhrase: string;
+  isPublished: boolean;
+  // Add other fields as necessary
+}
+
+// Define the shape of the state
+interface SurveyState {
+  survey: Survey | null;
+}
+
+// Define the action types
+interface Action<T = any> {
+  type: string;
+  payload?: T;
+}
+
+// Initial state, with correct type
+const initialState: SurveyState = {
   survey: null,
 };
 
-const serveyReducer = (state = serveyState, action: any) => {
+// Survey reducer with type safety
+const serveyReducer = (
+  state: SurveyState = initialState,
+  action: Action
+): SurveyState => {
   switch (action.type) {
     case ADD_SERVEY:
-      return { ...state, servey: action.payload };
     case GET_ALL_SERVEY:
-      return { ...state, servey: action.payload };
     case DELETE_SERVEY:
-      return { ...state, servey: action.payload };
+      return { ...state, survey: action.payload as Survey };
+
     case GET_FULL_SURVEY:
-      return { ...state, survey: action.payload };
     case PUBLISH_SURVEY:
-      return { ...state, survey: action.payload };
+      return { ...state, survey: action.payload as Survey };
+
     default:
       return state;
   }
