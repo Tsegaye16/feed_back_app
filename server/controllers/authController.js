@@ -44,7 +44,7 @@ export const signup = async (req, res) => {
           }
         );
 
-        const confirmationUrl = `http://localhost:3000/confirm-email?token=${token}`;
+        const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
 
         await transporter.sendMail({
           from: process.env.MY_EMAIL,
