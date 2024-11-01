@@ -1,8 +1,13 @@
-import { SIGNIN, SIGNUP, LOGOUT } from "../../constants/types/actionType";
+import {
+  SIGNIN,
+  SIGNUP,
+  LOGOUT,
+  EMAIL_CONFIRMATION,
+} from "../../constants/types/actionType";
 
 // Define the initial state
 const initialState = {
-  authData: localStorage.getItem("user"),
+  authData: null,
 };
 
 const authReducer = (state = initialState, action: any) => {
@@ -16,6 +21,8 @@ const authReducer = (state = initialState, action: any) => {
     case SIGNUP:
       // localStorage.setItem("user", JSON.stringify({ ...action?.payload }));
 
+      return { ...state, authData: action?.payload };
+    case EMAIL_CONFIRMATION:
       return { ...state, authData: action?.payload };
 
     default:
