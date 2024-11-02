@@ -4,10 +4,21 @@ const API = axios.create({
   baseURL: "https://feed-back-app.onrender.com/user",
 });
 
-export const signIn = async (formData: any) => API.post("/signin", formData);
+export const signIn = async (formData: any) => {
+  try {
+    return await API.post("/login", formData);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const signUp = async (formData: AuthFormData) =>
-  API.post("/signup", formData);
+export const signUp = async (formData: AuthFormData) => {
+  try {
+    return API.post("/signup", formData);
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const getUserById = async (userId: string) =>
   API.get(`/getuser/${userId}`);

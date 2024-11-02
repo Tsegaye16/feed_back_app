@@ -1,4 +1,5 @@
-import { NavigateFunction } from "react-router-dom";
+//import { NavigateFunction } from "react-router-dom";
+import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   EMAIL_CONFIRMATION,
   SIGNIN,
@@ -6,50 +7,49 @@ import {
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
-export const signup =
-  (formData: any, navigate: NavigateFunction) => async (dispatch: any) => {
+export const signup = createAsyncThunk(
+  SIGNUP,
+  async (formData: any, { rejectWithValue, dispatch }) => {
     try {
       const response = await api.signUp(formData);
-
-      const data = await dispatch({ type: SIGNUP, payload: response.data });
-      navigate("/login");
-      return data;
+      return response.data;
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Something went wrong";
-
-      return { error: errorMessage };
+      return rejectWithValue(errorMessage);
     }
-  };
-
-export const emailConfirmation = (token: any) => async (dispatch: any) => {
-  try {
-    const response = await api.emailConfirmation(token);
-    const data = await dispatch({
-      type: EMAIL_CONFIRMATION,
-      payload: response.data,
-    });
-    return data;
-  } catch (error: any) {
-    const errorMessage =
-      error.response?.data?.message || "Something went wrong";
-
-    return { error: errorMessage };
   }
-};
+);
 
-export const signin =
-  (formData: any, navigate: NavigateFunction) => async (dispatch: any) => {
+// Email confirmation action
+export const emailConfirmation = createAsyncThunk(
+  EMAIL_CONFIRMATION,
+  async (token: any, { rejectWithValue }) => {
     try {
-      const response = await api.signIn(formData); // API call to backend
-      const data = await dispatch({ type: SIGNIN, payload: response.data });
-
-      navigate("/manager");
-      return data;
-    } catch (err: any) {
+      const response = await api.emailConfirmation(token);
+      return response.data;
+    } catch (error: any) {
       const errorMessage =
-        err.response?.data?.message || "Something went wrong";
-
-      return { error: errorMessage };
+        error.response?.data?.message || "Something went wrong";
+      return errorMessage;
     }
-  };
+  }
+);
+
+// Sign in action
+export const signin = createAsyncThunk(
+  SIGNIN,
+  async (formData: any, { rejectWithValue }) => {
+    try {
+      const response = await api.signIn(formData);
+      // Store the token in local storage
+      const token = response.data.token; // Adjust based on your API response structure
+      localStorage.setItem("user", token);
+      return response.data; // Return the user data as payload
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Something went wrong";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);

@@ -1,33 +1,54 @@
-import {
-  SIGNIN,
-  SIGNUP,
-  LOGOUT,
-  EMAIL_CONFIRMATION,
-} from "../../constants/types/actionType";
+import { createSlice } from "@reduxjs/toolkit";
+import { emailConfirmation, signin, signup } from "../action/auth";
 
-// Define the initial state
-const initialState = {
-  authData: null,
-};
+interface AuthState {
+  authData: any | null; // Replace `any` with your actual auth data type
+}
 
-const authReducer = (state = initialState, action: any) => {
-  switch (action.type) {
-    case SIGNIN:
-      localStorage.setItem("user", action.payload.token);
+const authSlice = createSlice({
+  name: "auth",
+  initialState: {
+    authData: null,
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(signin.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(signin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.authData = action.payload;
+      })
+      .addCase(signin.rejected, (state: any, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(signup.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(signup.fulfilled, (state, action) => {
+        state.loading = false;
+        state.authData = action.payload;
+      })
+      .addCase(signup.rejected, (state: any, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(emailConfirmation.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(emailConfirmation.fulfilled, (state, action) => {
+        state.loading = false;
+        state.authData = action.payload;
+      })
+      .addCase(emailConfirmation.rejected, (state: any, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
 
-      return { ...state, authData: action?.payload };
-    case LOGOUT:
-      return { ...state, authData: null };
-    case SIGNUP:
-      // localStorage.setItem("user", JSON.stringify({ ...action?.payload }));
-
-      return { ...state, authData: action?.payload };
-    case EMAIL_CONFIRMATION:
-      return { ...state, authData: action?.payload };
-
-    default:
-      return state;
-  }
-};
-
-export default authReducer;
+export default authSlice.reducer;
