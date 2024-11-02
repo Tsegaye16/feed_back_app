@@ -48,7 +48,7 @@ const Login: React.FC = () => {
     const response = await dispatch(signin(values) as any);
     if (response?.payload?.message) {
       message.success(`${response?.payload?.message}`);
-      navigate("/manger");
+      navigate("/manager");
     } else if (response?.error) {
       if (response.payload.includes(":")) {
         message.error(`${response.payload.split(":")[1]?.trim()}`);

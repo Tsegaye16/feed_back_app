@@ -6,7 +6,7 @@ const API = axios.create({
 
 export const signIn = async (formData: any) => {
   try {
-    return await API.post("/login", formData);
+    return await API.post("/signin", formData);
   } catch (error) {
     throw error;
   }
@@ -56,6 +56,9 @@ export const addQuestion = async (questionInfo: any) =>
 
 export const updateQuestion = async (id: any, questionInfo: any) =>
   API.put(`/updateQuestion/${id}`, questionInfo);
+
+//export const sortQuestion = async()
+
 export const getPreviewParams = async (serveyId: any) =>
   API.get(`/getPreviewParams/${serveyId}`);
 

@@ -29,6 +29,7 @@ export const emailConfirmation = createAsyncThunk(
       const response = await api.emailConfirmation(token);
       return response.data;
     } catch (error: any) {
+      console.log("Error: ", error);
       const errorMessage =
         error.response?.data?.message || "Something went wrong";
       return errorMessage;
