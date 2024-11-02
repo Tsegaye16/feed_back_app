@@ -249,7 +249,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, company }) => {
                   <Avatar
                     src={
                       typeof userData.image === "string"
-                        ? `http://localhost:4000/${userData.image}`
+                        ? `https://feed-back-app.onrender.com/${userData.image}`
                         : URL.createObjectURL(userData.image)
                     }
                     size={100}
@@ -380,7 +380,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, company }) => {
                     <Avatar
                       src={
                         typeof companyData.logo === "string"
-                          ? `http://localhost:4000/${companyData.logo}`
+                          ? `https://feed-back-app.onrender.com/${companyData.logo}`
                           : URL.createObjectURL(companyData.logo)
                       }
                       size={100}

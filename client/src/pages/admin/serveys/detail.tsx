@@ -13,6 +13,12 @@ import {
   Tooltip,
 } from "antd";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  SortableContainer,
+  SortableElement,
+  SortableHandle,
+} from "react-sortable-hoc";
+import { arrayMoveImmutable } from "array-move";
 
 import "antd/dist/reset.css";
 import { TableRowSelection } from "antd/es/table/interface";
@@ -21,10 +27,17 @@ import {
   getQuestionBySurveyId,
   getPreviewParams,
 } from "../../../redux/action/company";
-import shadows from "@mui/material/styles/shadows";
+//import shadows from "@mui/material/styles/shadows";
 import Box from "@mui/material/Box";
 
 const { Title, Text } = Typography;
+
+const DragHandle = SortableHandle(() => (
+  <span style={{ cursor: "move" }}>⠿</span>
+));
+
+const SortableItem = SortableElement((props: any) => <tr {...props} />);
+const SortableBody = SortableContainer((props: any) => <tbody {...props} />);
 
 interface DetailProps {
   id: any;
@@ -41,31 +54,29 @@ const Detail: React.FC<DetailProps> = ({
 }) => {
   const dispatch = useDispatch();
   const [deletingId, setDeletingId] = useState<React.Key | React.Key[]>([]);
+  const [questions, setQuestions] = useState([]);
 
   useEffect(() => {
     dispatch(getQuestionBySurveyId(id) as any);
   }, [dispatch, id]);
 
-  const questions = useSelector(
+  const questionsFromState = useSelector(
     (state: any) => state.question?.questionDaata?.question
   );
 
-  const handlePreview = async (event: any) => {
-    event.preventDefault();
-
-    const response = await dispatch(getPreviewParams(id) as any);
-    const companyName = response?.payload?.companyName;
-    const surveyId = response?.payload?.serveyId;
-
-    if (companyName && surveyId) {
-      const previewUrl = `${window.location.origin}/${companyName}/surveys/preview/${surveyId}`;
-      window.open(previewUrl, "_blank");
-    } else {
-      message.error("Preview data is missing.");
-    }
-  };
+  useEffect(() => {
+    setQuestions(questionsFromState);
+  }, [questionsFromState]);
 
   const columns = [
+    {
+      title: "Index",
+      dataIndex: "index",
+      key: "index",
+      render: (_: any, __: any, index: number) => index + 1,
+      width: "5%",
+    },
+
     {
       title: "Question Text",
       dataIndex: "text",
@@ -96,10 +107,57 @@ const Detail: React.FC<DetailProps> = ({
           <Button type="link" danger onClick={() => showModal(record.id)}>
             Delete
           </Button>
+          <Tooltip title="drag">
+            <DragHandle />
+          </Tooltip>
         </Space>
       ),
     },
   ];
+
+  const onSortEnd = ({
+    oldIndex,
+    newIndex,
+  }: {
+    oldIndex: number;
+    newIndex: number;
+  }) => {
+    const newQuestions = arrayMoveImmutable(questions, oldIndex, newIndex);
+    setQuestions(newQuestions);
+    //onSave(newQuestions); // Persist the new order to the backend if needed
+    const updatedQuestions = newQuestions.map((question: any, index: any) => ({
+      ...question,
+      index: index + 1,
+    }));
+
+    console.log("updatedQuestions: ", updatedQuestions);
+  };
+
+  const DraggableBodyRow = ({ className, style, ...restProps }: any) => {
+    const index = questions?.findIndex(
+      (x: any) => x.id === restProps["data-row-key"]
+    );
+    return <SortableItem index={index} {...restProps} />;
+  };
+
+  const DraggableTableBody = (props: any) => (
+    <SortableBody useDragHandle onSortEnd={onSortEnd} {...props} />
+  );
+
+  const handlePreview = async (event: any) => {
+    event.preventDefault();
+
+    const response = await dispatch(getPreviewParams(id) as any);
+    const companyName = response?.payload?.companyName;
+    const surveyId = response?.payload?.serveyId;
+
+    if (companyName && surveyId) {
+      const previewUrl = `${window.location.origin}/${companyName}/surveys/preview/${surveyId}`;
+      window.open(previewUrl, "_blank");
+    } else {
+      message.error("Preview data is missing.");
+    }
+  };
 
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -249,10 +307,16 @@ const Detail: React.FC<DetailProps> = ({
           ) : null}
         </Flex>
         <Table
+          rowKey="id"
           rowSelection={rowSelection}
           columns={columns}
           dataSource={questions}
-          rowKey="id"
+          components={{
+            body: {
+              wrapper: DraggableTableBody,
+              row: DraggableBodyRow,
+            },
+          }}
           pagination={{ pageSize: 10 }}
           scroll={{ x: "max-content" }}
         />

@@ -13,6 +13,7 @@ import {
   Form,
   message,
   Progress,
+  Alert,
 } from "antd";
 
 import "antd/dist/reset.css";
@@ -21,6 +22,7 @@ import { submitAnswer } from "../../redux/action/answer";
 
 const { Title } = Typography;
 
+//localhost
 const Customer = () => {
   const dispatch: any = useDispatch();
   const { companyName, surveyId } = useParams();
@@ -89,7 +91,25 @@ const Customer = () => {
 
   // If no preview data, return an error message
   if (!previewData) {
-    return <div>Something went wrong...</div>;
+    return (
+      <Alert
+        message="Error"
+        description="Something went wrong..."
+        type="error"
+        showIcon
+      />
+    );
+  }
+
+  if (!questions) {
+    return (
+      <Alert
+        message="No Questions"
+        description="There are no survey questions."
+        type="info"
+        showIcon
+      />
+    );
   }
   if (isSubmitted) {
     return (
@@ -124,7 +144,7 @@ const Customer = () => {
           }}
         >
           <Avatar
-            src={`http://localhost:4000/${companyInfo.logo}`}
+            src={`https://feed-back-app.onrender.com/${companyInfo.logo}`}
             alt={companyInfo.name}
             size={65}
             style={{
@@ -260,13 +280,6 @@ const QuestionRenderer = ({
       return null;
   }
 };
-
-// QuestionTrueFalse Component
-// interface QuestionProps {
-//   question: any;
-//   index: any;
-//   onChange: (questionId: any, value: any) => void;
-// }
 
 const QuestionTrueFalse: React.FC<QuestionProps> = ({
   question,

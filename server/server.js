@@ -50,7 +50,7 @@ const syncDatabase = async () => {
 syncDatabase();
 
 // Start the server
-const port = process.env.PORT || 3000; // Default to 3000 if no env variable set
+const port = process.env.PORT || 4000; // Default to 3000 if no env variable set
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

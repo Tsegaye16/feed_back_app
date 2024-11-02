@@ -181,7 +181,9 @@ const Dashboard = () => {
             className="logo"
             style={{ padding: "16px", textAlign: "center" }}
           >
-            <Avatar src={`http://localhost:4000/${company?.logo}`} />
+            <Avatar
+              src={`https://feed-back-app.onrender.com/${company?.logo}`}
+            />
             <Title level={5}>{company?.name}</Title>
           </div>
         )}
@@ -259,7 +261,7 @@ const Dashboard = () => {
 
               <Dropdown overlay={menu} trigger={["click"]}>
                 <Avatar
-                  src={`http://localhost:4000/${user?.image}`}
+                  src={`https://feed-back-app.onrender.com//${user?.image}`}
                   style={{ cursor: "pointer" }}
                 />
               </Dropdown>
