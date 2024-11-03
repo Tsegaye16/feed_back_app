@@ -14,6 +14,7 @@ import {
   GET_FULL_SURVEY,
   UPDATE_COMPANY,
   PUBLISH_SURVEY,
+  SORT_QUESTION,
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
@@ -223,6 +224,21 @@ export const updateQuestion =
     }
   };
 
+export const sortQuestion = (formData: any) => async (dispatch: any) => {
+  try {
+    const response = await api.sortQuestion(formData);
+    const data = await dispatch({
+      type: SORT_QUESTION,
+      payload: response.data,
+    });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    // Log error for debugging
+    return { error: errorMessage };
+  }
+};
 // get full servey for client
 export const getFullSurvey = (secretePhrase: any) => async (dispatch: any) => {
   try {

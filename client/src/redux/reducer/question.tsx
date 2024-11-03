@@ -6,6 +6,7 @@ import {
   GET_QUESTION_BY_SURVEY_ID,
   DELETE_QUESTION_BY_ID,
   UPDATE_QUESTION,
+  SORT_QUESTION,
 } from "../../constants/types/actionType";
 
 const questionState = {
@@ -27,6 +28,8 @@ const questionReducer = (state = questionState, action: any) => {
     case DELETE_QUESTION_BY_ID:
       return { ...state, questionDaata: action.payload };
     case UPDATE_QUESTION:
+      return { ...state, questionDaata: action.payload };
+    case SORT_QUESTION:
       return { ...state, questionDaata: action.payload };
     default:
       return state;

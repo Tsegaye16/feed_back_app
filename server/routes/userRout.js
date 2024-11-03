@@ -34,6 +34,7 @@ import {
   getRecentFeedback,
   publishSurvey,
   checkSecretePhrase,
+  sortQuestion,
 } from "../controllers/companyController.js";
 
 const router = express.Router();
@@ -61,6 +62,7 @@ router.route("/addQuestion").post(addQuestion);
 
 router.route("/updateQuestion/:id").put(updateQuestion);
 router.route("/deleteQuestionById").delete(deleteQuestionById);
+router.route("/sortQuestion").put(sortQuestion);
 
 // 3. preview routes
 router.route("/getPreviewParams/:serveyId").get(getPreviewParams);

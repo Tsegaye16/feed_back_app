@@ -95,3 +95,5 @@ export const checkSecretePhrase = async (phrase: any) =>
 
 export const emailConfirmation = async (token: any) =>
   API.get(`/confirm-email/${token}`);
+
+export const sortQuestion = async (data: any) => API.put("/sortQuestion", data);
