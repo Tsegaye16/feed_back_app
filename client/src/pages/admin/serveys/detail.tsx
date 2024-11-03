@@ -64,6 +64,8 @@ const Detail: React.FC<DetailProps> = ({
     (state: any) => state.question?.questionDaata?.question
   );
 
+  console.log("questionsFromState: ", questionsFromState);
+
   useEffect(() => {
     setQuestions(questionsFromState);
   }, [questionsFromState]);
