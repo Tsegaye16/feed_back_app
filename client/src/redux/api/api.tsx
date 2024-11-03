@@ -1,7 +1,11 @@
 import axios from "axios";
 import { AuthFormData } from "../../constants/types/dataType";
+const isLocal = window.location.hostname === "localhost";
+
 const API = axios.create({
-  baseURL: "https://feed-back-app.onrender.com/user",
+  baseURL: isLocal
+    ? process.env.REACT_APP_LOCAL_API_BASE_URL
+    : process.env.REACT_APP_PROD_API_BASE_URL,
 });
 
 export const signIn = async (formData: any) => {

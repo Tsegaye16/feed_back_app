@@ -412,14 +412,14 @@ export const sortQuestion = async (req, res) => {
       const { id, index } = question;
 
       // Update the question with the corresponding id in the database
-      await Question.update(
+      const result = await Question.update(
         { index: index }, // set the new index value
         { where: { id: id } } // find the question by id
       );
     }
 
     // Send a success response after all updates are done
-    res.status(200).json({ message: "Questions reordered successfully." });
+    res.status(200).json({ message: "Success.", result });
   } catch (error) {
     console.error("Error updating question indices:", error);
     res.status(500).json({ error: "Failed to reorder questions." });
