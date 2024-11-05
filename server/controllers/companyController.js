@@ -390,15 +390,42 @@ export const updateQuestion = async (req, res) => {
   try {
     const id = req.params.id;
     // I need to update the question based on the id
-    const result = await Question.update(req.body, {
+    const [updatedCount, [updatedQuestion]] = await Question.update(req.body, {
       where: {
         id: id,
       },
+      returning: true,
     });
-    res.status(200).json({ message: "success", result });
+    res.status(200).json({ message: "success", updatedQuestion });
   } catch (error) {
     console.error("Error updating question:", error);
     res.status(400).json({ message: error.message });
+  }
+};
+
+export const sortQuestion = async (req, res) => {
+  try {
+    const questionsToUpdate = req.body; // Array of { id, index } objects
+
+    // Execute all updates in parallel for better performance
+    const updatePromises = questionsToUpdate.map(({ id, index }) =>
+      Question.update({ index }, { where: { id } })
+    );
+    await Promise.all(updatePromises);
+
+    // Retrieve the updated questions sorted by their new indices
+    const updatedQuestions = await Question.findAll({
+      where: {
+        id: questionsToUpdate.map((q) => q.id),
+      },
+      order: [["index", "ASC"]],
+    });
+
+    // Send the updated list of questions back in the response
+    res.status(200).json({ message: "Success.", updatedQuestions });
+  } catch (error) {
+    console.error("Error updating question indices:", error);
+    res.status(500).json({ error: "Failed to reorder questions." });
   }
 };
 

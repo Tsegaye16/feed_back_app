@@ -8,6 +8,10 @@ const Question = sequelize.define("Question", {
     defaultValue: UUIDV4,
     primaryKey: true,
   },
+  index: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
   text: {
     type: DataTypes.STRING,
     allowNull: false,

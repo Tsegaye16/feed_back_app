@@ -26,10 +26,8 @@ const FeedBack: React.FC<PropType> = ({
   }, [companyId, dispatch]);
 
   // Fetch feedback data from Redux store
-  const feedback = useSelector(
-    (state: any) => state.answer?.answerDaata?.feedback
-  );
 
+  const feedback = useSelector((state: any) => state.answer?.answers?.feedback);
   // Define table columns
   const columns = [
     {

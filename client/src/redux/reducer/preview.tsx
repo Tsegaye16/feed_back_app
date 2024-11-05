@@ -1,16 +1,18 @@
-import { GET_PREVIEW_DATA } from "../../constants/types/actionType";
+import { createSlice } from "@reduxjs/toolkit";
+import { getPreviewData } from "../action/company";
 
-const previewState = {
-  previewData: null,
-};
+const previewSlice = createSlice({
+  name: "preview",
+  initialState: {
+    preview: [],
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(getPreviewData.fulfilled, (state, action) => {
+      console.log("Preview Data:", action.payload);
+      state.preview = action.payload;
+    });
+  },
+});
 
-const previewReducer = (state = previewState, action: any) => {
-  switch (action.type) {
-    case GET_PREVIEW_DATA:
-      return { ...state, previewData: action.payload };
-    default:
-      return state;
-  }
-};
-
-export default previewReducer;
+export default previewSlice.reducer;

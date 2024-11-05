@@ -22,7 +22,10 @@ import { arrayMoveImmutable } from "array-move";
 
 import "antd/dist/reset.css";
 import { TableRowSelection } from "antd/es/table/interface";
-import { deleteQuestionById } from "../../../redux/action/company";
+import {
+  deleteQuestionById,
+  sortQuestion,
+} from "../../../redux/action/company";
 import {
   getQuestionBySurveyId,
   getPreviewParams,
@@ -61,7 +64,7 @@ const Detail: React.FC<DetailProps> = ({
   }, [dispatch, id]);
 
   const questionsFromState = useSelector(
-    (state: any) => state.question?.questionDaata?.question
+    (state: any) => state.question?.question
   );
 
   useEffect(() => {
@@ -115,7 +118,7 @@ const Detail: React.FC<DetailProps> = ({
     },
   ];
 
-  const onSortEnd = ({
+  const onSortEnd = async ({
     oldIndex,
     newIndex,
   }: {
@@ -130,7 +133,12 @@ const Detail: React.FC<DetailProps> = ({
       index: index + 1,
     }));
 
-    console.log("updatedQuestions: ", updatedQuestions);
+    const idAndIndexArray = updatedQuestions.map((question: any) => ({
+      id: question.id,
+      index: question.index,
+    }));
+    await dispatch(sortQuestion(idAndIndexArray) as any);
+    // await dispatch(getQuestionBySurveyId(id) as any);
   };
 
   const DraggableBodyRow = ({ className, style, ...restProps }: any) => {

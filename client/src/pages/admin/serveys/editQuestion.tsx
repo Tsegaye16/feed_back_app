@@ -85,7 +85,9 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
       options: questionType === "Choice" ? choices : undefined,
     };
 
-    const response = await dispatch(updateQuestion(id, questionData) as any);
+    const response = await dispatch(
+      updateQuestion({ id: id, question: questionData }) as any
+    );
 
     if (response?.payload?.message) {
       message.success(`${response?.payload?.message}`);

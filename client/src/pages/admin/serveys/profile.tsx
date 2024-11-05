@@ -17,7 +17,7 @@ import {
   EyeTwoTone,
   PlusOutlined,
 } from "@ant-design/icons";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { changePassword, updateProfile } from "../../../redux/action/user";
 import { updateCompany } from "../../../redux/action/company"; // Ensure you have updateCompany action
 //import styled from "@emotion/styled"; // Use for custom media queries
@@ -35,12 +35,12 @@ interface UserType {
 interface ProfileProps {
   user: UserType;
   company: any;
-  onUpdate: any;
 }
 
-const Profile: React.FC<ProfileProps> = ({ user, onUpdate, company }) => {
+const Profile: React.FC<ProfileProps> = ({ user, company }) => {
   const dispatch = useDispatch();
 
+  const { loading, error } = useSelector((state: any) => state.company);
   // Define theme options
   const themes: {
     [key: string]: { backGroundColor: string; textColor: string };
@@ -170,7 +170,9 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, company }) => {
       formData.append("image", userData.image);
     }
 
-    const response = await dispatch(updateProfile(user.id, formData) as any);
+    const response = await dispatch(
+      updateProfile({ id: user.id, data: formData }) as any
+    );
 
     if (response?.payload) {
       setUserData({
@@ -180,7 +182,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, company }) => {
       });
       message.success(`${response.payload.message}`);
       setIsUserChanged(false);
-      await onUpdate();
+      // await onUpdate();
     } else if (response?.error) {
       message.error(`${response.error}`);
     } else {
@@ -196,12 +198,14 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, company }) => {
     if (companyData.logo) {
       formData.append("logo", companyData.logo);
     }
-    const response = await dispatch(updateCompany(company.id, formData) as any);
+    const response = await dispatch(
+      updateCompany({ id: company.id, companyData: formData }) as any
+    );
 
     if (response?.payload) {
       message.success(`${response.payload.message}`);
       setIsCompanyChanged(false);
-      if (onUpdate) onUpdate();
+      // if (onUpdate) onUpdate();
     } else if (response?.error) {
       message.error(`${response.error}`);
     } else {
@@ -431,8 +435,9 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, company }) => {
                   disabled={!isCompanyChanged}
                   icon={<EditOutlined />}
                   style={{ marginRight: 8 }}
+                  loading={loading}
                 >
-                  Save
+                  {loading ? "Saving" : "Save"}
                 </Button>
               </Form.Item>
             </Form>

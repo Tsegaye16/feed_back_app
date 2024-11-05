@@ -69,10 +69,8 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  const user = useSelector((state: any) => state.user?.user?.newUser);
-  const company = useSelector(
-    (state: any) => state.company?.companyData?.result
-  );
+  const user = useSelector((state: any) => state.user?.user);
+  const company = useSelector((state: any) => state.company?.company);
 
   useEffect(() => {
     if (!token) {
@@ -93,14 +91,6 @@ const Dashboard = () => {
       dispatch(getCompanyById(user?.id) as any);
     }
   }, [dispatch, user]);
-  const onUpdate = async () => {
-    if (token) {
-      const decodedToken: any = jwtDecode(token);
-      const data = await dispatch(getUserById(decodedToken.id) as any);
-      return data;
-    }
-    return;
-  };
 
   const handleMenuItemClick = (item: string) => {
     setSelectedItem(item);
@@ -334,7 +324,7 @@ const Dashboard = () => {
                 />
               )}
               {selectedItem === "profile" && (
-                <Profile user={user} onUpdate={onUpdate} company={company} />
+                <Profile user={user} company={company} />
               )}
             </>
           )}

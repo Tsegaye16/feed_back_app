@@ -33,13 +33,13 @@ const Customer = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch(getPreviewData(companyName, surveyId));
+      dispatch(getPreviewData({ companyName, surveyId }));
     };
 
     fetchData();
   }, [companyName, dispatch, surveyId]);
 
-  const previewData = useSelector((state: any) => state.preview?.previewData);
+  const previewData = useSelector((state: any) => state.preview?.preview);
   const questions = previewData?.questions || [];
   const companyInfo = previewData?.CompanyInfo;
 

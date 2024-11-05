@@ -52,11 +52,9 @@ const Draft: React.FC<onClickType> = ({
 
   const user = useSelector((state: any) => state.user?.user?.newUser);
   const managerId = user?.id;
-  const company = useSelector(
-    (state: any) => state.company?.companyData?.result
-  );
+  const company = useSelector((state: any) => state.company?.company);
 
-  const surveys = useSelector((state: any) => state.survey?.servey?.servey);
+  const surveys = useSelector((state: any) => state.survey?.survey);
 
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === false)

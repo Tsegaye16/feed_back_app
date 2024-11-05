@@ -226,10 +226,12 @@ export const changePassword = async (req, res) => {
 
     // 4. Hash the new password and update it
     updatingUser.password = await bcrypt.hash(newPassword, 12);
-    await updatingUser.save();
+    const result = await updatingUser.save();
 
     // 5. Return success response
-    return res.status(200).json({ message: "Password updated successfully" });
+    return res
+      .status(200)
+      .json({ message: "Password updated successfully", result });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Error updating password" });

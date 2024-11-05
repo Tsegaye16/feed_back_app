@@ -62,13 +62,13 @@ const Published: React.FC<onClickType> = ({
   }, [userId, currenTtoken, dispatch]);
 
   const user = useSelector((state: any) => state.user?.user?.newUser);
+
   const managerId = user?.id;
 
-  const company = useSelector(
-    (state: any) => state.company?.companyData?.result
-  );
+  const company = useSelector((state: any) => state.company?.company);
+  console.log("company: ", company);
 
-  const surveys = useSelector((state: any) => state.survey?.servey?.servey);
+  const surveys = useSelector((state: any) => state.survey?.survey);
 
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === true)
@@ -122,7 +122,7 @@ const Published: React.FC<onClickType> = ({
       }, 1000);
       setOpen(false);
     }
-    dispatch(getAllServey(company.id) as any);
+    //dispatch(getAllServey(company.id) as any);
 
     // Reset selection after deletion
     setSelectedSurveys(new Set());
