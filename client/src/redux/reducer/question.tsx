@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+
   addQuestion,
   deleteQuestionById,
   getAllQuestion,
@@ -7,6 +8,7 @@ import {
   sortQuestion,
   updateQuestion,
 } from "../action/company";
+
 
 const questionSlice = createSlice({
   name: "question",
@@ -74,7 +76,7 @@ const questionSlice = createSlice({
   },
 });
 
-export default questionSlice.reducer;
+
 
 // const questionReducer = (state = questionState, action: any) => {
 //   switch (action.type) {

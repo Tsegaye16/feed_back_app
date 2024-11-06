@@ -316,7 +316,7 @@ const QuestionTrueFalse: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-            {index + 1}
+            {question.index}
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
@@ -351,7 +351,11 @@ const QuestionChoice: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
+
             {index + 1}
+
+           
+
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
@@ -399,7 +403,11 @@ const QuestionRate: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
+
             {index + 1}
+
+           
+
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
@@ -428,7 +436,9 @@ const QuestionOpen: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
+
             {index + 1}
+
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>

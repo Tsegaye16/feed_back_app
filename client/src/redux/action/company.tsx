@@ -131,6 +131,7 @@ export const updateQuestion = createAsyncThunk(
       const response = await api.updateQuestion(id, question);
       return response.data;
     } catch (error: any) {
+
       return rejectWithValue(
         error.response?.data?.message || "Something went wrong"
       );
@@ -270,3 +271,43 @@ export const getFullSurvey = createAsyncThunk(
     }
   }
 );
+
+      const errorMessage =
+        error.response?.data?.message || "Something went wrong";
+      // Log error for debugging
+      return { error: errorMessage };
+    }
+  };
+
+export const sortQuestion = (formData: any) => async (dispatch: any) => {
+  try {
+    const response = await api.sortQuestion(formData);
+    const data = await dispatch({
+      type: SORT_QUESTION,
+      payload: response.data,
+    });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    // Log error for debugging
+    return { error: errorMessage };
+  }
+};
+// get full servey for client
+export const getFullSurvey = (secretePhrase: any) => async (dispatch: any) => {
+  try {
+    const response = await api.getFullSurvey(secretePhrase);
+    const data = await dispatch({
+      type: GET_FULL_SURVEY,
+      payload: response.data,
+    });
+    return data;
+  } catch (error: any) {
+    const errorMessage =
+      error.response?.data?.message || "Something went wrong";
+    // Log error for debugging
+    return { error: errorMessage };
+  }
+};
+

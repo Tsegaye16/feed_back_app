@@ -338,6 +338,7 @@ export const getPreviewData = async (req, res) => {
       where: {
         serveyId: surveyId,
       },
+      order: [["index", "ASC"]],
     });
 
     res.status(200).json({
@@ -438,6 +439,7 @@ export const sortQuestion = async (req, res) => {
   try {
     const questionsToUpdate = req.body; // Array of { id, index } objects
 
+
     // Execute all updates in parallel for better performance
     const updatePromises = questionsToUpdate.map(({ id, index }) =>
       Question.update({ index }, { where: { id } })
@@ -454,6 +456,10 @@ export const sortQuestion = async (req, res) => {
 
     // Send the updated list of questions back in the response
     res.status(200).json({ message: "Success.", updatedQuestions });
+=======
+    
+   
+
   } catch (error) {
     console.error("Error updating question indices:", error);
     res.status(500).json({ error: "Failed to reorder questions." });

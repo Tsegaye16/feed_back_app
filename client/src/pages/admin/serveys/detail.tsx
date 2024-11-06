@@ -146,7 +146,7 @@ const Detail: React.FC<DetailProps> = ({
       index: question.index,
     }));
     await dispatch(sortQuestion(idAndIndexArray) as any);
-    // await dispatch(getQuestionBySurveyId(id) as any);
+
   };
 
   const DraggableBodyRow = ({ className, style, ...restProps }: any) => {
