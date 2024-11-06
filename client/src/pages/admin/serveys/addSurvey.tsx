@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Input, Typography, Button, message } from "antd";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addServey } from "../../../redux/action/company";
 import { checkSecretePhrase } from "../../../redux/action/secretePhrase";
 //import { QRCodeCanvas } from "qrcode.react"; // For generating QR Code
@@ -23,7 +23,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
     "success" | "error" | null
   >(null);
   //const [surveyId, setSurveyId] = useState(null);
-
+  const { loading, error } = useSelector((state: any) => state.survey);
   const dispatch = useDispatch();
 
   const generateSecretPhrase = () => {
@@ -121,95 +121,6 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
   const handleCancelSurveyModal = () => {
     onSave();
   };
-  // console.log("Info: ", info);
-  // const generateStyledPdf = async () => {
-  //   if (surveyName) {
-  //     const response = await dispatch(
-  //       addServey({
-  //         surveyName,
-  //         secretPhrase,
-  //         isPublished: true,
-  //         companyId: info.companyId,
-  //         id: info.editingId,
-  //       }) as any
-  //     );
-  //     if (response?.payload) {
-  //       console.log("Info payload: ", info);
-  //       setSurveyId(
-  //         response.payload.result.id
-  //           ? response.payload.result.id
-  //           : info.editingId
-  //       );
-  //       console.log(
-  //         "SurveyId: ",
-  //         response.payload.result.id
-  //           ? response.payload.result.id
-  //           : info.editingId
-  //       );
-  //       const doc = new jsPDF("portrait", "pt", "A4");
-
-  //       doc.setFontSize(12);
-  //       doc.setTextColor(100);
-  //       doc.text("Company Name: " + companyName, 40, 60);
-
-  //       // Draw a separator line
-  //       doc.setLineWidth(0.5);
-  //       doc.line(40, 70, 550, 70);
-
-  //       // Add survey name with some styles
-  //       doc.setFontSize(16);
-  //       doc.setTextColor(0, 51, 153);
-  //       doc.text(
-  //         "Get  https://customer-feedback-collector.netlify.app/",
-  //         40,
-  //         100
-  //       );
-
-  //       // Add secret phrase
-  //       doc.setFontSize(14);
-  //       doc.setTextColor(0, 0, 0);
-  //       doc.text(
-  //         "Secret Phrase: " +
-  //           (response.payload.result.secretePhrase
-  //             ? response.payload.result.secretePhrase
-  //             : secretPhrase),
-  //         40,
-  //         130
-  //       );
-
-  //       // QR Code - rendered in the HTML and captured as an image
-  //       const qrCodeCanvas = document.getElementById(
-  //         "qr-code"
-  //       ) as HTMLCanvasElement;
-  //       const qrCodeDataURL = qrCodeCanvas.toDataURL("image/png");
-
-  //       // Add QR code to the PDF
-  //       doc.addImage(qrCodeDataURL, "PNG", 40, 160, 128, 128);
-
-  //       // Add a label under the QR code
-  //       doc.setFontSize(12);
-  //       doc.text("Scan this QR code to access the survey.", 40, 300);
-
-  //       // Add footer with page number
-  //       doc.setFontSize(10);
-  //       doc.setTextColor(150);
-  //       doc.text(
-  //         "Page 1",
-  //         doc.internal.pageSize.width - 50,
-  //         doc.internal.pageSize.height - 30
-  //       );
-
-  //       // Save or display the PDF
-  //       doc.save("survey_details.pdf");
-  //       message.success(`${response?.payload?.message}`);
-  //       onSave();
-  //     } else if (response?.error) {
-  //       message.error(`${response.error}`);
-  //     }
-  //   } else {
-  //     message.error("Survey name is required");
-  //   }
-  // };
 
   return (
     <Card
@@ -265,18 +176,6 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
           </Col>
         )}
 
-        {/* QR Code and URL Generator */}
-        {/* {surveyName && responseStatus === "success" ? (
-          <Col span={24} style={{ textAlign: "center", marginTop: "16px" }}>
-            <QRCodeCanvas
-              id="qr-code"
-              value={`https://customer-feedback-collector.netlify.app/${companyName}/surveys/${surveyId}`}
-              size={128}
-            />
-          </Col>
-        ) : null} */}
-
-        {/* Action Buttons */}
         <Col span={24} style={{ textAlign: "left", marginTop: "16px" }}>
           <Button
             // type="primary"
@@ -286,6 +185,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
               borderRadius: "8px",
             }}
             onClick={handlePublish}
+            loading={loading}
           >
             Publish
           </Button>
@@ -294,6 +194,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
             size="large"
             style={{ marginRight: "8px", borderRadius: "8px" }}
             onClick={handleSaveAsDraft}
+            loading={loading}
           >
             Save as Draft
           </Button>

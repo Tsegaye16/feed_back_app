@@ -361,7 +361,38 @@ export const getQuestionBySurveyId = async (req, res) => {
       },
     });
 
-    res.status(200).json({ question });
+    const Answers = await Answer.count({
+      where: {
+        surveyId: id,
+      },
+      group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
+    });
+
+    // console.log("Answers: ", Answers);
+
+    // 8. Get total distinct answers for this week (grouped by createdAt)
+    const startOfThisWeek = moment().startOf("isoWeek").toDate(); // Start of this week (Monday)
+    const endOfToday = moment().endOf("day").toDate(); // End of today
+
+    const thisWeekAnswers = await Answer.count({
+      where: {
+        surveyId: id,
+        createdAt: {
+          [Op.between]: [startOfThisWeek, endOfToday], // Answers between start of this week and end of today
+        },
+      },
+      group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
+    });
+
+    //console.log("thisWeekAnswers: ", thisWeekAnswers);
+
+    res
+      .status(200)
+      .json({
+        question: question,
+        tottalFeedback: Answers.length,
+        weeklyFeedback: thisWeekAnswers.length,
+      });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -391,12 +422,13 @@ export const updateQuestion = async (req, res) => {
   try {
     const id = req.params.id;
     // I need to update the question based on the id
-    const result = await Question.update(req.body, {
+    const [updatedCount, [updatedQuestion]] = await Question.update(req.body, {
       where: {
         id: id,
       },
+      returning: true,
     });
-    res.status(200).json({ message: "success", result });
+    res.status(200).json({ message: "success", updatedQuestion });
   } catch (error) {
     console.error("Error updating question:", error);
     res.status(400).json({ message: error.message });
@@ -407,19 +439,27 @@ export const sortQuestion = async (req, res) => {
   try {
     const questionsToUpdate = req.body; // Array of { id, index } objects
 
-    // Loop through each question in the request body
-    for (const question of questionsToUpdate) {
-      const { id, index } = question;
 
-      // Update the question with the corresponding id in the database
-      const result = await Question.update(
-        { index: index }, // set the new index value
-        { where: { id: id } } // find the question by id
-      );
-    }
+    // Execute all updates in parallel for better performance
+    const updatePromises = questionsToUpdate.map(({ id, index }) =>
+      Question.update({ index }, { where: { id } })
+    );
+    await Promise.all(updatePromises);
 
-    // Send a success response after all updates are done
-    res.status(200).json({ message: "Success.", result });
+    // Retrieve the updated questions sorted by their new indices
+    const updatedQuestions = await Question.findAll({
+      where: {
+        id: questionsToUpdate.map((q) => q.id),
+      },
+      order: [["index", "ASC"]],
+    });
+
+    // Send the updated list of questions back in the response
+    res.status(200).json({ message: "Success.", updatedQuestions });
+=======
+    
+   
+
   } catch (error) {
     console.error("Error updating question indices:", error);
     res.status(500).json({ error: "Failed to reorder questions." });
@@ -654,7 +694,7 @@ export const getStatData = async (req, res) => {
       },
       group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
     });
-
+    // console.log("totalAnswers: ", totalAnswers);
     // 8. Get total distinct answers for this week (grouped by createdAt)
     const startOfThisWeek = moment().startOf("isoWeek").toDate(); // Start of this week (Monday)
     const endOfToday = moment().endOf("day").toDate(); // End of today

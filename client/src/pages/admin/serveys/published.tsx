@@ -46,6 +46,7 @@ const Published: React.FC<onClickType> = ({
   const dispatch = useDispatch();
 
   const [selectedSurveys, setSelectedSurveys] = useState<any>(new Set());
+  const [loading, setLoading] = useState(true);
 
   const currenTtoken: any = localStorage.getItem("user");
 
@@ -62,14 +63,14 @@ const Published: React.FC<onClickType> = ({
   }, [userId, currenTtoken, dispatch]);
 
   const user = useSelector((state: any) => state.user?.user?.newUser);
+
   const managerId = user?.id;
 
-  const company = useSelector(
-    (state: any) => state.company?.companyData?.result
-  );
+  const company = useSelector((state: any) => state.company?.company);
+  console.log("company: ", company);
 
-  const surveys = useSelector((state: any) => state.survey?.servey?.servey);
-
+  const surveys = useSelector((state: any) => state.survey?.survey);
+  //const { loading, error } = useSelector((state: any) => state.survey);
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === true)
     : [];
@@ -82,7 +83,9 @@ const Published: React.FC<onClickType> = ({
 
   useEffect(() => {
     if (company?.id) {
-      dispatch(getAllServey(company.id) as any);
+      dispatch(getAllServey(company.id) as any).finally(() => {
+        setLoading(false); // Set loading to false once data is fetched
+      });
     }
   }, [company, dispatch]);
 
@@ -114,7 +117,7 @@ const Published: React.FC<onClickType> = ({
     } else if (response?.payload?.message) {
       message.success(response.payload.message);
       // message.success("Survey deleted successfully!");
-      setSelectedRowKeys(new Set() as any);
+      setSelectedRowKeys([]);
       setConfirmLoading(true);
       setTimeout(() => {
         setOpen(false);
@@ -122,10 +125,10 @@ const Published: React.FC<onClickType> = ({
       }, 1000);
       setOpen(false);
     }
-    dispatch(getAllServey(company.id) as any);
+    //dispatch(getAllServey(company.id) as any);
 
     // Reset selection after deletion
-    setSelectedSurveys(new Set());
+    setSelectedSurveys([]);
   };
 
   // Delete Confirmation detail
@@ -148,6 +151,7 @@ const Published: React.FC<onClickType> = ({
       // onClick={() => handleDelete(record.id)}
       confirmLoading={confirmLoading}
       onCancel={handleClose}
+      loading={loading}
     >
       <p>You are deleting a survey</p>
     </Modal>
@@ -245,7 +249,7 @@ const Published: React.FC<onClickType> = ({
   };
 
   //////// Ant Design Table
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const columns = [
     {
       title: "Survey Name",
@@ -303,7 +307,7 @@ const Published: React.FC<onClickType> = ({
     },
   ];
 
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+  const onSelectChange = (newSelectedRowKeys: any) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -403,6 +407,7 @@ const Published: React.FC<onClickType> = ({
               dataSource={surveyList}
               rowKey="id"
               pagination={{ pageSize: 10 }}
+              loading={loading}
               scroll={{ x: "max-content" }}
             />
           </Flex>

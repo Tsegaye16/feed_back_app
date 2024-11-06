@@ -1,24 +1,50 @@
+import { createSlice } from "@reduxjs/toolkit";
 import {
-  SAVE_COMPANY_DATA,
-  GATE_COMPANY_BY_MANAGER_ID,
-  UPDATE_COMPANY,
-} from "../../constants/types/actionType";
+  addCompanyInfo,
+  getCompanyById,
+  updateCompany,
+} from "../action/company";
 
-const companyState = {
-  companyData: null,
-};
+const companySlice = createSlice({
+  name: "company",
+  initialState: {
+    company: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(addCompanyInfo.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addCompanyInfo.fulfilled, (state, action) => {
+        state.company = action.payload.result;
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(addCompanyInfo.rejected, (state: any, action: any) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateCompany.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(updateCompany.fulfilled, (state, action) => {
+        // console.log("DDD: ", action.payload);
+        state.company = action.payload.result;
+        state.loading = false;
+      })
+      .addCase(updateCompany.rejected, (state: any, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
-const companyReducer = (state = companyState, action: any) => {
-  switch (action.type) {
-    case SAVE_COMPANY_DATA:
-      return { ...state, companyData: action.payload };
-    case GATE_COMPANY_BY_MANAGER_ID:
-      return { ...state, companyData: action.payload };
-    case UPDATE_COMPANY:
-      return { ...state, companyData: action.payload };
-    default:
-      return state;
-  }
-};
+      .addCase(getCompanyById.fulfilled, (state, action) => {
+        state.company = action.payload.result;
+        state.loading = false;
+      });
+  },
+});
 
-export default companyReducer;
+export default companySlice.reducer;

@@ -1,6 +1,9 @@
 import axios from "axios";
 import { AuthFormData } from "../../constants/types/dataType";
+
+
 const isLocal = window.location.hostname === "localhost";
+
 
 const API = axios.create({
   baseURL: isLocal
@@ -24,80 +27,216 @@ export const signUp = async (formData: AuthFormData) => {
   }
 };
 
-export const getUserById = async (userId: string) =>
-  API.get(`/getuser/${userId}`);
+export const getUserById = async (userId: string) => {
+  try {
+    return await API.get(`/getuser/${userId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const updateProfile = async (id: any, data: any) =>
-  API.put(`/updateprofile/${id}`, data);
+export const updateProfile = async (id: any, data: any) => {
+  try {
+    return await API.put(`/updateprofile/${id}`, data);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const changePassword = async (password: any) =>
-  API.put("/changepassword", password);
+export const changePassword = async (password: any) => {
+  try {
+    return await API.put("/changepassword", password);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const addCompanyInfo = async (companyData: any) =>
-  API.post("/addCompany", companyData);
+export const addCompanyInfo = async (companyData: any) => {
+  try {
+    return await API.post("/addCompany", companyData);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const updateCompany = async (id: any, companyData: any) =>
-  API.put(`/updateCompany/${id}`, companyData);
+export const updateCompany = async (id: any, companyData: any) => {
+  try {
+    return await API.put(`/updateCompany/${id}`, companyData);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const getCompanyByManagerId = async (managerId: any) =>
-  API.get(`/company/${managerId}`);
+export const getCompanyByManagerId = async (managerId: any) => {
+  try {
+    return await API.get(`/company/${managerId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const getAllQuestions = async (companyId: any) =>
-  API.get(`/getAllQuestions/${companyId}`);
+export const getAllQuestions = async (companyId: any) => {
+  try {
+    return await API.get(`/getAllQuestions/${companyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const submitAnswer = async (answerData: any) =>
-  API.post("/submitAnswer", answerData);
+export const submitAnswer = async (answerData: any) => {
+  try {
+    return await API.post("/submitAnswer", answerData);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const addServey = async (serveyInfo: any) =>
-  API.post("/addServey", serveyInfo);
-export const getAllServey = async (companyId: any) =>
-  API.get(`/getAllServey/${companyId}`);
-export const deleteServey = async (id: any) =>
-  API.delete("/deleteServey", { data: { id } });
+export const addServey = async (serveyInfo: any) => {
+  try {
+    return await API.post("/addServey", serveyInfo);
+  } catch (error) {
+    throw error;
+  }
+};
+export const getAllServey = async (companyId: any) => {
+  try {
+    return await API.get(`/getAllServey/${companyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
+export const deleteServey = async (id: any) => {
+  try {
+    return await API.delete("/deleteServey", { data: { id } });
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const addQuestion = async (questionInfo: any) =>
-  API.post("/addQuestion", questionInfo);
+export const addQuestion = async (questionInfo: any) => {
+  try {
+    return await API.post("/addQuestion", questionInfo);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const updateQuestion = async (id: any, questionInfo: any) =>
-  API.put(`/updateQuestion/${id}`, questionInfo);
 
-//export const sortQuestion = async()
+export const updateQuestion = async (id: any, questionInfo: any) => {
+  try {
+    return await API.put(`/updateQuestion/${id}`, questionInfo);
+  } catch (error) {
+    throw error;
+  }
+};
+export const getPreviewParams = async (serveyId: any) => {
+  try {
+    return await API.get(`/getPreviewParams/${serveyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const getPreviewParams = async (serveyId: any) =>
-  API.get(`/getPreviewParams/${serveyId}`);
 
-export const getPreviewData = async (companyName: any, surveyId: any) =>
-  API.get(`/getPreviewData/${companyName}/${surveyId}`);
+export const getPreviewData = async (companyName: any, surveyId: any) => {
+  try {
+    return await API.get(`/getPreviewData/${companyName}/${surveyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const getQuestionBySurveyId = async (id: any) =>
-  API.get(`/getQuestionBySurveyId/${id}`);
+export const getQuestionBySurveyId = async (id: any) => {
+  try {
+    return await API.get(`/getQuestionBySurveyId/${id}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const deleteQuestionById = async (id: any) =>
-  API.delete("/deleteQuestionById", { data: id });
+export const deleteQuestionById = async (id: any) => {
+  try {
+    return await API.delete("/deleteQuestionById", { data: id });
+  } catch (error) {
+    throw error;
+  }
+};
 
 // get full servey for client
-export const getFullSurvey = async (secretePhrase: any) =>
-  API.get(`/getFullSurvey/${secretePhrase}`);
+export const getFullSurvey = async (secretePhrase: any) => {
+  try {
+    return await API.get(`/getFullSurvey/${secretePhrase}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const getFeedback = async (companyId: any) =>
-  API.get(`/getFeedback/${companyId}`);
+export const getFeedback = async (companyId: any) => {
+  try {
+    return await API.get(`/getFeedback/${companyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const getStatData = async (companyId: any) =>
-  API.get(`/getStatData/${companyId}`);
+export const getStatData = async (companyId: any) => {
+  try {
+    return await API.get(`/getStatData/${companyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const getFeedbackDetail = async (surveyId: string) =>
-  API.get(`/getFeedbackDetail/${surveyId}`);
+export const getFeedbackDetail = async (surveyId: string) => {
+  try {
+    return await API.get(`/getFeedbackDetail/${surveyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const getRecentFeedback = async (companyId: any) =>
-  API.get(`/getRecentFeedback/${companyId}`);
+export const getRecentFeedback = async (companyId: any) => {
+  try {
+    return await API.get(`/getRecentFeedback/${companyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const publishSurvey = async (surveyId: string) =>
-  API.put(`/publishSurvey/${surveyId}`);
+export const publishSurvey = async (surveyId: string) => {
+  try {
+    return await API.put(`/publishSurvey/${surveyId}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const checkSecretePhrase = async (phrase: any) =>
-  API.post(`/checkSecretePhrase/`, phrase);
+export const checkSecretePhrase = async (phrase: any) => {
+  try {
+    return await API.post(`/checkSecretePhrase/`, phrase);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const emailConfirmation = async (token: any) =>
-  API.get(`/confirm-email/${token}`);
+export const emailConfirmation = async (token: any) => {
+  try {
+    return await API.get(`/confirm-email/${token}`);
+  } catch (error) {
+    throw error;
+  }
+};
 
-export const sortQuestion = async (data: any) => API.put("/sortQuestion", data);
+
+export const sortQuestion = async (data: any) => {
+  try {
+    return await API.put("/sortQuestion", data);
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+
+
+

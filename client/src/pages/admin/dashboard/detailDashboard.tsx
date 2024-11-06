@@ -20,34 +20,9 @@ import { getRecentFeedback } from "../../../redux/action/feedback";
 import moment from "moment";
 const { Title, Text } = Typography;
 // Sample data
-const feedbackData = {
-  averageRate: 4.2,
-  totalSurveys: { published: 12, drafted: 4 },
-  feedback: { positive: 5, neutral: 3, negative: 1 },
-  weeklyFeedback: {
-    Monday: 5,
-    Wednesday: 12,
-    Tuesday: 8,
-
-    Thursday: 10,
-    Friday: 15,
-    Saturday: 7,
-    Sunday: 3,
-  },
-};
 
 // Color configuration for PieChart
 const COLORS = ["#FF4D4F", "#52C41A", "#FAAD14"];
-
-// Pie chart data (feedback distribution)
-
-// Bar chart data (weekly feedback)
-// const barData = Object.entries(feedbackData.weeklyFeedback).map(
-//   ([day, value]) => ({
-//     day,
-//     feedback: value,
-//   })
-// );
 
 interface propType {
   companyId: any;
@@ -63,8 +38,9 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
 
   const statData = useSelector((state: any) => state.stat?.statData?.data);
   const todayData = useSelector(
-    (state: any) => state.recentFeedback?.recentFeedbackData?.data
+    (state: any) => state.recentFeedback?.recentFeedback?.data
   );
+  console.log("todayData: ", todayData);
 
   const barData = statData?.dailyAnswersThisWeek;
   const pieData = [

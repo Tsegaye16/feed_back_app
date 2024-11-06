@@ -1,16 +1,29 @@
-import { GET_RECENT_FEEDBACK } from "../../constants/types/actionType";
+import { createSlice } from "@reduxjs/toolkit";
+import { getRecentFeedback } from "../action/feedback";
 
-const recentFeedbackState = {
-  recentFeedbackData: null,
-};
+const recentFeedbackSlice = createSlice({
+  name: "recentFeedback",
+  initialState: {
+    recentFeedback: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getRecentFeedback.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getRecentFeedback.fulfilled, (state, action) => {
+        console.log("DAta action,", action.payload);
+        state.recentFeedback = action.payload;
+        state.loading = false;
+      })
+      .addCase(getRecentFeedback.rejected, (state: any, action) => {
+        state.error = action.payload;
+        state.loading = false;
+      });
+  },
+});
 
-const recentFeedbackReducer = (state = recentFeedbackState, action: any) => {
-  switch (action.type) {
-    case GET_RECENT_FEEDBACK:
-      return { ...state, recentFeedbackData: action.payload };
-    default:
-      return state;
-  }
-};
-
-export default recentFeedbackReducer;
+export default recentFeedbackSlice.reducer;

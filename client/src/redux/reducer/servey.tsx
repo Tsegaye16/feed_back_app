@@ -1,30 +1,50 @@
-import {
-  GET_ALL_SERVEY,
-  ADD_SERVEY,
-  DELETE_SERVEY,
-  GET_FULL_SURVEY,
-  PUBLISH_SURVEY,
-} from "../../constants/types/actionType";
+import { createSlice } from "@reduxjs/toolkit";
+import { addServey, deleteServey, getAllServey } from "../action/company";
 
-const serveyState = {
-  survey: null,
-};
+const surveySlice = createSlice({
+  name: "survey",
+  initialState: {
+    survey: [] as any[],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(addServey.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(addServey.fulfilled, (state, action: any) => {
+        state.loading = false;
+        if (Array.isArray(state.survey)) {
+          state.survey.push(action.payload); // Add new survey to the array
+        } else {
+          state.survey = [action.payload]; // If state.survey is not an array, set it
+        }
+      })
+      .addCase(addServey.rejected, (state: any, action) => {
+        state.error = action.error.message;
+      })
+      .addCase(getAllServey.fulfilled, (state, action) => {
+        state.survey = action.payload.servey;
+      })
+      .addCase(deleteServey.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(deleteServey.fulfilled, (state, action) => {
+        state.loading = false;
+        const deletedIds = action.meta.arg; // Assuming this is an array of IDs
 
-const serveyReducer = (state = serveyState, action: any) => {
-  switch (action.type) {
-    case ADD_SERVEY:
-      return { ...state, servey: action.payload };
-    case GET_ALL_SERVEY:
-      return { ...state, servey: action.payload };
-    case DELETE_SERVEY:
-      return { ...state, servey: action.payload };
-    case GET_FULL_SURVEY:
-      return { ...state, survey: action.payload };
-    case PUBLISH_SURVEY:
-      return { ...state, survey: action.payload };
-    default:
-      return state;
-  }
-};
+        // Filter out surveys whose IDs are in the deletedIds array
+        state.survey = state.survey.filter(
+          (survey: any) => !deletedIds.includes(survey.id)
+        );
+      })
 
-export default serveyReducer;
+      .addCase(deleteServey.rejected, (state: any, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+  },
+});
+export default surveySlice.reducer;

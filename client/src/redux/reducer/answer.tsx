@@ -1,21 +1,44 @@
+import { createSlice } from "@reduxjs/toolkit";
+
 import {
   SUBMIT_ANSWER,
   GET_ALL_FEEDBACK,
 } from "../../constants/types/actionType";
+import { getFeedback, submitAnswer } from "../action/answer";
 
-const answerState = {
-  answerDaata: null,
-};
+const answerSlice = createSlice({
+  name: "answer",
+  initialState: {
+    answers: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(submitAnswer.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(submitAnswer.fulfilled, (state, action) => {
+        state.answers = action.payload;
+        state.loading = false;
+      })
+      .addCase(submitAnswer.rejected, (state: any, action) => {
+        state.error = action.payload;
+        state.loading = false;
+      })
+      .addCase(getFeedback.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(getFeedback.fulfilled, (state, action) => {
+        state.answers = action.payload;
+        state.loading = false;
+      })
+      .addCase(getFeedback.rejected, (state: any, action) => {
+        state.error = action.payload;
+        state.loading = false;
+      });
+  },
+});
 
-const answerReducer = (state = answerState, action: any) => {
-  switch (action.type) {
-    case SUBMIT_ANSWER:
-      return { ...state, answerDaata: action.payload };
-    case GET_ALL_FEEDBACK:
-      return { ...state, answerDaata: action.payload };
-    default:
-      return state;
-  }
-};
-
-export default answerReducer;
+export default answerSlice.reducer;

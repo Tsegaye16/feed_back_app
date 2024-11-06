@@ -11,7 +11,7 @@ import {
   message,
 } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { Editor } from "primereact/editor";
 
@@ -31,7 +31,8 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
   const [choices, setChoices] = useState([""]);
 
   const dispatch = useDispatch();
-
+  const { loading, error } = useSelector((state: any) => state.question);
+  console.log("loading: ", loading);
   const handleAddChoice = () => {
     setChoices([...choices, ""]);
   };
@@ -186,7 +187,7 @@ const AddQuestion: React.FC<DetailProps> = ({ id, onSave }) => {
 
         <Form.Item>
           <Space>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={loading}>
               Save
             </Button>
             <Button htmlType="button" onClick={handleClose}>

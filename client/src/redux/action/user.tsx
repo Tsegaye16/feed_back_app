@@ -1,3 +1,4 @@
+import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   GET_USER_BY_ID,
   UPDATE_PROFILE,
@@ -5,50 +6,44 @@ import {
 } from "../../constants/types/actionType";
 import * as api from "../api/api";
 
-// Thunk action to get user by ID
-export const getUserById = (userId: string) => async (dispatch: any) => {
-  try {
-    const response = await api.getUserById(userId);
-
-    const data = await dispatch({
-      type: GET_USER_BY_ID,
-      payload: response.data,
-    });
-
-    return data;
-  } catch (err: any) {
-    const errorMessage = err.response?.data?.message || "Something went wrong";
-
-    return { error: errorMessage };
+export const getUserById = createAsyncThunk(
+  GET_USER_BY_ID,
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const response = await api.getUserById(userId);
+      return response.data;
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "Something went wrong"
+      );
+    }
   }
-};
+);
 
-export const updateProfile = (id: any, data: any) => async (dispatch: any) => {
-  try {
-    const response = await api.updateProfile(id, data);
-    const result = await dispatch({
-      type: UPDATE_PROFILE,
-      payload: response.data,
-    });
-    return result;
-  } catch (err: any) {
-    const errorMessage = err.response?.data?.message || "Something went wrong";
-
-    return { error: errorMessage };
+export const updateProfile = createAsyncThunk(
+  UPDATE_PROFILE,
+  async ({ id, data }: { id: any; data: any }, { rejectWithValue }) => {
+    try {
+      const response = await api.updateProfile(id, data);
+      return response.data;
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "Something went wrong"
+      );
+    }
   }
-};
+);
 
-export const changePassword = (password: any) => async (dispatch: any) => {
-  try {
-    const response = await api.changePassword(password);
-    const result = await dispatch({
-      type: CHANGE_PASSWORD,
-      payload: response.data,
-    });
-    return result;
-  } catch (err: any) {
-    const errorMessage = err.response?.data?.message || "Something went wrong";
-
-    return { error: errorMessage };
+export const changePassword = createAsyncThunk(
+  CHANGE_PASSWORD,
+  async (password: any, { rejectWithValue }) => {
+    try {
+      const response = await api.changePassword(password);
+      return response.data;
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || "Something went wrong"
+      );
+    }
   }
-};
+);
