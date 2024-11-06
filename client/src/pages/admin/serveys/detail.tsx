@@ -58,15 +58,23 @@ const Detail: React.FC<DetailProps> = ({
   const dispatch = useDispatch();
   const [deletingId, setDeletingId] = useState<React.Key | React.Key[]>([]);
   const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    dispatch(getQuestionBySurveyId(id) as any);
+    setLoading(true); // Set loading to true before fetching
+    dispatch(getQuestionBySurveyId(id) as any).finally(() => {
+      setLoading(false); // Set loading to false once data is fetched
+    });
   }, [dispatch, id]);
 
   const questionsFromState = useSelector(
     (state: any) => state.question?.question
   );
-
+  console.log("questionsFromState: ", questionsFromState);
+  const { tottalFeedback, weeklyFeedback } = useSelector(
+    (state: any) => state.question
+  );
+  //console.log("statData: ", statData);
   useEffect(() => {
     setQuestions(questionsFromState);
   }, [questionsFromState]);
@@ -167,9 +175,9 @@ const Detail: React.FC<DetailProps> = ({
     }
   };
 
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+  const onSelectChange = (newSelectedRowKeys: any) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -189,7 +197,7 @@ const Detail: React.FC<DetailProps> = ({
     if (response?.error) {
       message.error(`${response.error}`);
     } else if (response?.payload?.message) {
-      setSelectedRowKeys(new Set() as any);
+      setSelectedRowKeys([]);
       setConfirmLoading(true);
       setTimeout(() => {
         setOpen(false);
@@ -268,13 +276,13 @@ const Detail: React.FC<DetailProps> = ({
             style={{ textAlign: "center", backgroundColor: "#FDFDFD" }}
           >
             <Title level={5}>Total Feedback</Title>
-            <Text>{100}</Text>
+            <Text>{tottalFeedback}</Text>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card bordered={false} style={{ textAlign: "center" }}>
             <Title level={5}>Weekly Feedback</Title>
-            <Text>{65}</Text>
+            <Text>{weeklyFeedback}</Text>
           </Card>
         </Col>
       </Row>
@@ -327,8 +335,9 @@ const Detail: React.FC<DetailProps> = ({
           }}
           pagination={{ pageSize: 10 }}
           scroll={{ x: "max-content" }}
+          loading={loading}
         />
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
           <Button type="default" onClick={handlePreview}>
             Preview Survey
           </Button>

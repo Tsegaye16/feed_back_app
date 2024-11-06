@@ -35,6 +35,7 @@ const Draft: React.FC<onClickType> = ({
   const [selectedSurveys, setSelectedSurveys] = useState<Set<number>>(
     new Set()
   );
+  const [loading, setLoading] = useState(true);
 
   const currenTtoken: any = localStorage.getItem("user");
 
@@ -59,7 +60,7 @@ const Draft: React.FC<onClickType> = ({
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === false)
     : [];
-
+  const { error } = useSelector((state: any) => state.survey);
   useEffect(() => {
     if (user) {
       dispatch(getCompanyById(user?.id) as any);
@@ -68,7 +69,9 @@ const Draft: React.FC<onClickType> = ({
 
   useEffect(() => {
     if (company?.id) {
-      dispatch(getAllServey(company.id) as any);
+      dispatch(getAllServey(company.id) as any).finally(() => {
+        setLoading(false); // Set loading to false once data is fetched
+      });
     }
   }, [company, dispatch]);
 
@@ -130,6 +133,7 @@ const Draft: React.FC<onClickType> = ({
       onOk={() => handleDeleteSurveys(selectedRowKeys)}
       confirmLoading={confirmLoading}
       onCancel={handleClose}
+      loading={loading}
     >
       <p>You are deleting a survey</p>
     </Modal>
@@ -199,7 +203,11 @@ const Draft: React.FC<onClickType> = ({
           >
             Detail
           </Button>
-          <Button type="link" onClick={() => openPyblishDialog(record.id)}>
+          <Button
+            type="link"
+            onClick={() => openPyblishDialog(record.id)}
+            //loading={loading}
+          >
             Publish
           </Button>
         </Space>
@@ -243,6 +251,7 @@ const Draft: React.FC<onClickType> = ({
       onOk={() => handlePublish(publishingId)}
       confirmLoading={confirmLoading}
       onCancel={handleClose}
+      loading={loading}
     >
       <p>You are publishing a survey</p>
     </Modal>
@@ -328,6 +337,7 @@ const Draft: React.FC<onClickType> = ({
             rowKey="id"
             pagination={{ pageSize: 10 }}
             scroll={{ x: "max-content" }}
+            loading={loading}
           />
         </Flex>
       )}

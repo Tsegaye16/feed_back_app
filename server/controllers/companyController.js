@@ -360,7 +360,38 @@ export const getQuestionBySurveyId = async (req, res) => {
       },
     });
 
-    res.status(200).json({ question });
+    const Answers = await Answer.count({
+      where: {
+        surveyId: id,
+      },
+      group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
+    });
+
+    // console.log("Answers: ", Answers);
+
+    // 8. Get total distinct answers for this week (grouped by createdAt)
+    const startOfThisWeek = moment().startOf("isoWeek").toDate(); // Start of this week (Monday)
+    const endOfToday = moment().endOf("day").toDate(); // End of today
+
+    const thisWeekAnswers = await Answer.count({
+      where: {
+        surveyId: id,
+        createdAt: {
+          [Op.between]: [startOfThisWeek, endOfToday], // Answers between start of this week and end of today
+        },
+      },
+      group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
+    });
+
+    //console.log("thisWeekAnswers: ", thisWeekAnswers);
+
+    res
+      .status(200)
+      .json({
+        question: question,
+        tottalFeedback: Answers.length,
+        weeklyFeedback: thisWeekAnswers.length,
+      });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -657,7 +688,7 @@ export const getStatData = async (req, res) => {
       },
       group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
     });
-
+    // console.log("totalAnswers: ", totalAnswers);
     // 8. Get total distinct answers for this week (grouped by createdAt)
     const startOfThisWeek = moment().startOf("isoWeek").toDate(); // Start of this week (Monday)
     const endOfToday = moment().endOf("day").toDate(); // End of today

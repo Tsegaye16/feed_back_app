@@ -13,6 +13,7 @@ import {
   // Button,
   Form,
   message,
+  Spin,
 } from "antd";
 import { getPreviewData } from "../../../redux/action/company";
 import "antd/dist/reset.css";
@@ -33,7 +34,8 @@ const Preview: React.FC = () => {
   }, [companyName, dispatch, surveyId]);
 
   const previewData = useSelector((state: any) => state.preview?.preview);
-  //console.log("previewData: ", previewData);
+  const { loading, error } = useSelector((state: any) => state.preview);
+  console.log("previewData: ", loading);
   const questions = previewData?.questions || [];
   const companyInfo = previewData?.CompanyInfo;
 
@@ -57,8 +59,25 @@ const Preview: React.FC = () => {
     Rate: questions.filter((q: any) => q.type === "Rate"),
     Open: questions.filter((q: any) => q.type === "Open"),
   };
-  if (!previewData) {
+  if (error) {
     return <div>something was wrong...</div>;
+  }
+  if (loading) {
+    return (
+      <div>
+        <Spin
+          tip="Loading data..."
+          size="large"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "50px 0",
+          }}
+        >
+          {" "}
+        </Spin>
+      </div>
+    );
   }
   return (
     <div
@@ -204,8 +223,6 @@ const QuestionTrueFalse: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-            {index + 1}
-            {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
         }

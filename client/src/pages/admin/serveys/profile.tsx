@@ -41,6 +41,7 @@ const Profile: React.FC<ProfileProps> = ({ user, company }) => {
   const dispatch = useDispatch();
 
   const { loading, error } = useSelector((state: any) => state.company);
+  const userLoading = useSelector((state: any) => state.user.loading);
   // Define theme options
   const themes: {
     [key: string]: { backGroundColor: string; textColor: string };
@@ -288,6 +289,7 @@ const Profile: React.FC<ProfileProps> = ({ user, company }) => {
                 disabled={!isUserChanged}
                 icon={<EditOutlined />}
                 style={{ marginRight: 8 }}
+                loading={userLoading}
               >
                 Save
               </Button>
@@ -350,6 +352,7 @@ const Profile: React.FC<ProfileProps> = ({ user, company }) => {
                       icon={<EditOutlined />}
                       style={{ marginRight: 8 }}
                       onClick={handleChangePassword}
+                      loading={userLoading}
                     >
                       Save
                     </Button>

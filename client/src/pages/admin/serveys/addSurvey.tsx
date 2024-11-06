@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Input, Typography, Button, message } from "antd";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addServey } from "../../../redux/action/company";
 import { checkSecretePhrase } from "../../../redux/action/secretePhrase";
 //import { QRCodeCanvas } from "qrcode.react"; // For generating QR Code
@@ -23,7 +23,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
     "success" | "error" | null
   >(null);
   //const [surveyId, setSurveyId] = useState(null);
-
+  const { loading, error } = useSelector((state: any) => state.survey);
   const dispatch = useDispatch();
 
   const generateSecretPhrase = () => {
@@ -185,6 +185,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
               borderRadius: "8px",
             }}
             onClick={handlePublish}
+            loading={loading}
           >
             Publish
           </Button>
@@ -193,6 +194,7 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
             size="large"
             style={{ marginRight: "8px", borderRadius: "8px" }}
             onClick={handleSaveAsDraft}
+            loading={loading}
           >
             Save as Draft
           </Button>

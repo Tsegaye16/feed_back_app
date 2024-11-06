@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Table, Button } from "antd"; // Import Table and Button from Ant Design
 import { getFeedback } from "../../../redux/action/answer";
@@ -20,9 +20,12 @@ const FeedBack: React.FC<PropType> = ({
   handleFeedbackDetailClick,
 }) => {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    dispatch(getFeedback(companyId) as any);
+    dispatch(getFeedback(companyId) as any).finally(() => {
+      setLoading(false); // Set loading to false once data is fetched
+    });
   }, [companyId, dispatch]);
 
   // Fetch feedback data from Redux store
@@ -65,6 +68,8 @@ const FeedBack: React.FC<PropType> = ({
         columns={columns}
         dataSource={feedback}
         rowKey="surveyId" // Ensures unique key for each row
+        loading={loading} // Set loading state to true when data is being fetched
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

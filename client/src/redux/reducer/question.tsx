@@ -12,6 +12,8 @@ const questionSlice = createSlice({
   name: "question",
   initialState: {
     question: [] as any[],
+    tottalFeedback: null,
+    weeklyFeedback: null,
     loading: false,
     error: null,
   },
@@ -25,13 +27,15 @@ const questionSlice = createSlice({
       })
       .addCase(getQuestionBySurveyId.fulfilled, (state, action) => {
         state.question = action.payload.question;
+        state.tottalFeedback = action.payload.tottalFeedback;
+        state.weeklyFeedback = action.payload.weeklyFeedback;
       })
       .addCase(addQuestion.pending, (state) => {
         state.loading = true;
       })
       .addCase(addQuestion.fulfilled, (state, action: any) => {
-        state.question.push(action.payload.newQuestion);
         state.loading = false;
+        state.question.push(action.payload.newQuestion);
       })
       .addCase(addQuestion.rejected, (state: any, action) => {
         state.loading = false;
@@ -54,6 +58,7 @@ const questionSlice = createSlice({
         state.loading = true;
       })
       .addCase(updateQuestion.fulfilled, (state, action: any) => {
+        state.loading = false;
         const updatedQuestion = action.payload.updatedQuestion;
         state.question = state.question.map((question: any) =>
           question.id === updatedQuestion.id ? updateQuestion : question

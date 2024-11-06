@@ -11,7 +11,7 @@ import {
   message,
 } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { Editor } from "primereact/editor";
 
@@ -34,7 +34,7 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
   const [choices, setChoices] = useState(record?.options || [""]);
 
   const dispatch = useDispatch();
-
+  const { loading, error } = useSelector((state: any) => state.question);
   // If record changes, update the state (helpful for when the component re-renders with new data)
   useEffect(() => {
     if (record) {
@@ -195,7 +195,7 @@ const EditQuestion: React.FC<DetailProps> = ({ record, onSave }) => {
 
         <Form.Item style={{ marginTop: "10px" }}>
           <Space>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={loading}>
               Save
             </Button>
             <Button htmlType="button" onClick={handleClose}>

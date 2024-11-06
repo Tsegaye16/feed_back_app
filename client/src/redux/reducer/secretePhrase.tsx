@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { CHECK_SECRETE_PHRASE } from "../../constants/types/actionType";
+//import { CHECK_SECRETE_PHRASE } from "../../constants/types/actionType";
 import { checkSecretePhrase } from "../action/secretePhrase";
 
 const secretePhraseSlice = createSlice({
@@ -16,18 +16,3 @@ const secretePhraseSlice = createSlice({
 });
 
 export default secretePhraseSlice.reducer;
-
-// const phraseState = {
-//   phraseData: null,
-// };
-
-// const secretePhrasekReducer = (state = phraseState, action: any) => {
-//   switch (action.type) {
-//     case CHECK_SECRETE_PHRASE:
-//       return { ...state, phraseData: action.payload };
-//     default:
-//       return state;
-//   }
-// };
-
-// export default secretePhrasekReducer;
