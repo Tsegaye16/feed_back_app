@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addCompanyInfo } from "../../../redux/action/company";
 import {
   Button,
@@ -11,6 +11,8 @@ import {
   Upload,
   Card,
   message,
+  Alert,
+  Spin,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
@@ -35,6 +37,8 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
     textColor: "#FFFFFF", // opposite of black
     theme: "black", // default theme
   });
+
+  const { loading, error } = useSelector((state: any) => state.company);
 
   const handleFileChange = (info: any) => {
     const file = info.file.originFileObj; // Directly get the file object
@@ -63,8 +67,6 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
         textColor: "#FFFFFF", // White text for better contrast
       },
     };
-
-  // Rest of the component remains the same
 
   // Handle theme change
   const handleThemeChange = (selectedTheme: Theme) => {
@@ -108,6 +110,23 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
   return (
     <div style={{ padding: "24px", maxWidth: "600px", margin: "0 auto" }}>
       <Title level={3}>Register Company</Title>
+
+      {/* Show loading spinner if loading */}
+      {loading ? (
+        <Spin tip="Saving company data..." style={{ marginBottom: 16 }} />
+      ) : null}
+
+      {/* Display error message if there's an error */}
+      {error && (
+        <Alert
+          message="Error"
+          description="Failed to save company info. Please try again."
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
       <Form layout="vertical" onFinish={handleSaveCompany}>
         <Form.Item
           label="Company Name"
@@ -127,7 +146,6 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
             name="logo"
             listType="picture"
             maxCount={1}
-            //  beforeUpload={() => false} // Prevent auto-upload
             onChange={handleFileChange}
           >
             <Button icon={<UploadOutlined />}>Click to Upload</Button>
@@ -139,13 +157,7 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
             {Object.keys(themes).map((themeKey) => {
               const theme = themeKey as Theme;
               return (
-                <Col
-                  xs={8} // For mobile responsiveness (8 spans per button in small screens)
-                  sm={6} // For slightly larger screens (6 spans per button)
-                  md={4} // For medium screens (4 spans per button)
-                  lg={3} // For large screens (3 spans per button)
-                  key={theme}
-                >
+                <Col xs={8} sm={6} md={4} lg={3} key={theme}>
                   <Button
                     style={{
                       backgroundColor: themes[theme].backgroundColor,
@@ -154,7 +166,7 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
                         companyData.theme === theme
                           ? "4px solid #1890ff"
                           : "1px solid #f0f0f0",
-                      width: "100%", // Ensure the button takes full width of the column
+                      width: "100%",
                       height: 40,
                     }}
                     onClick={() => handleThemeChange(theme)}
@@ -172,7 +184,7 @@ const AddCompany: React.FC<Props> = ({ managerId, onSave }) => {
             <Button onClick={handleCancelCompany}>Cancel</Button>
           </Col>
           <Col>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={loading}>
               Save
             </Button>
           </Col>

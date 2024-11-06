@@ -1,21 +1,28 @@
-import {
-  GET_FEEDBACK_DETAIL,
-  CLEAR_DATA,
-} from "../../constants/types/actionType";
+import { createSlice } from "@reduxjs/toolkit";
+import { getFeedbackDetail } from "../action/feedback";
 
-const feedbackState = {
-  feedbackData: null,
-};
+const feedbackSlice = createSlice({
+  name: "feedback",
+  initialState: {
+    feedback: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getFeedbackDetail.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getFeedbackDetail.fulfilled, (state, action) => {
+        state.feedback = action.payload;
+        state.loading = false;
+      })
+      .addCase(getFeedbackDetail.rejected, (state: any, action) => {
+        state.error = action.payload;
+        state.loading = false;
+      });
+  },
+});
 
-const feedbackReducer = (state = feedbackState, action: any) => {
-  switch (action.type) {
-    case GET_FEEDBACK_DETAIL:
-      return { ...state, feedbackData: action.payload };
-    case CLEAR_DATA:
-      return { ...state, feedbackData: null };
-    default:
-      return state;
-  }
-};
-
-export default feedbackReducer;
+export default feedbackSlice.reducer;

@@ -1,57 +1,40 @@
-// Importing your action types (keeping these as constants is fine)
-import {
-  GET_USER_BY_ID,
-  UPDATE_PROFILE,
-  CHANGE_PASSWORD,
-  GET_STAT_DATA,
-} from "../../constants/types/actionType";
+import { createSlice } from "@reduxjs/toolkit";
+import { changePassword, getUserById, updateProfile } from "../action/user";
 
-// Define the shape of your user and stat data (example)
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+const userSlice = createSlice({
+  name: "user",
+  initialState: {
+    user: null,
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getUserById.fulfilled, (state, action) => {
+        console.log("Updating Info: ", action.payload);
+        state.user = action.payload.newUser;
+      })
+      .addCase(updateProfile.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.loading = false;
+      })
+      .addCase(changePassword.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.user = action.payload.result;
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(changePassword.rejected, (state: any, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
 
-interface StatData {
-  totalSurveys: number;
-  totalResponses: number;
-}
-
-// Define the state type
-interface UserState {
-  user: User | null;
-  statData?: StatData;
-}
-
-// Define action type structure
-interface Action<T = any> {
-  type: string;
-  payload?: T; // Allowing payload to be optional, but we can adjust this per action if necessary
-}
-
-// Initial state
-const initialState: UserState = {
-  user: null,
-};
-
-// User reducer with type safety
-const userReducer = (
-  state: UserState = initialState,
-  action: Action
-): UserState => {
-  switch (action.type) {
-    case GET_USER_BY_ID:
-      return { ...state, user: action.payload as User };
-    case UPDATE_PROFILE:
-      return { ...state, user: action.payload as User };
-    case CHANGE_PASSWORD:
-      return { ...state, user: action.payload as User };
-    case GET_STAT_DATA:
-      return { ...state, statData: action.payload as StatData };
-    default:
-      return state;
-  }
-};
-
-export default userReducer;
+export default userSlice.reducer;

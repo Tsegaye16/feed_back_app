@@ -9,16 +9,17 @@ import {
   Radio,
   Checkbox,
   Rate,
-  Input,
-  Button,
+  //Input,
+  // Button,
   Form,
   message,
+  Spin,
 } from "antd";
 import { getPreviewData } from "../../../redux/action/company";
 import "antd/dist/reset.css";
 
-const { Title, Text } = Typography;
-const { TextArea } = Input;
+const { Title } = Typography;
+//const { TextArea } = Input;
 
 const Preview: React.FC = () => {
   const dispatch: any = useDispatch();
@@ -26,13 +27,15 @@ const Preview: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch(getPreviewData(companyName, surveyId));
+      dispatch(getPreviewData({ companyName, surveyId }));
     };
 
     fetchData();
   }, [companyName, dispatch, surveyId]);
 
-  const previewData = useSelector((state: any) => state.preview?.previewData);
+  const previewData = useSelector((state: any) => state.preview?.preview);
+  const { loading, error } = useSelector((state: any) => state.preview);
+  console.log("previewData: ", loading);
   const questions = previewData?.questions || [];
   const companyInfo = previewData?.CompanyInfo;
 
@@ -56,22 +59,39 @@ const Preview: React.FC = () => {
     Rate: questions.filter((q: any) => q.type === "Rate"),
     Open: questions.filter((q: any) => q.type === "Open"),
   };
-  if (!previewData) {
+  if (error) {
     return <div>something was wrong...</div>;
+  }
+  if (loading) {
+    return (
+      <div>
+        <Spin
+          tip="Loading data..."
+          size="large"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "50px 0",
+          }}
+        >
+          {" "}
+        </Spin>
+      </div>
+    );
   }
   return (
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: companyInfo.backGroundColor || "#fff",
+        backgroundColor: companyInfo?.backGroundColor || "#fff",
       }}
     >
       {/* Company Header */}
       {companyInfo && (
         <div
           style={{
-            backgroundColor: companyInfo.backGroundColor || "#fff",
-            color: companyInfo.textColor || "#000",
+            backgroundColor: companyInfo?.backGroundColor || "#fff",
+            color: companyInfo?.textColor || "#000",
             display: "flex",
             alignItems: "center",
             padding: "18px",
@@ -84,8 +104,8 @@ const Preview: React.FC = () => {
           }}
         >
           <Avatar
-            src={`https://feed-back-app.onrender.com/${companyInfo.logo}`}
-            alt={companyInfo.name}
+            src={`https://feed-back-app.onrender.com/${companyInfo?.logo}`}
+            alt={companyInfo?.name}
             size={65}
             style={{
               marginRight: "16px",
@@ -94,9 +114,9 @@ const Preview: React.FC = () => {
           />
           <Title
             level={3}
-            style={{ margin: 0, color: companyInfo.textColor || "#000" }}
+            style={{ margin: 0, color: companyInfo?.textColor || "#000" }}
           >
-            {companyInfo.name}
+            {companyInfo?.name}
           </Title>
         </div>
       )}
@@ -109,8 +129,8 @@ const Preview: React.FC = () => {
           maxWidth: "800px",
           marginLeft: "auto",
           marginRight: "auto",
-          backgroundColor: companyInfo.backGroundColor || "#fff",
-          color: companyInfo.textColor || "#000",
+          backgroundColor: companyInfo?.backGroundColor || "#fff",
+          color: companyInfo?.textColor || "#000",
         }}
       >
         <Form layout="vertical" onFinish={handleSubmit}>
@@ -203,8 +223,6 @@ const QuestionTrueFalse: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-            {index + 1}
-            {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
         }

@@ -1,16 +1,18 @@
-import { CHECK_SECRETE_PHRASE } from "../../constants/types/actionType";
+import { createSlice } from "@reduxjs/toolkit";
+//import { CHECK_SECRETE_PHRASE } from "../../constants/types/actionType";
+import { checkSecretePhrase } from "../action/secretePhrase";
 
-const phraseState = {
-  phraseData: null,
-};
+const secretePhraseSlice = createSlice({
+  name: "secretePhrase",
+  initialState: {
+    phrase: [],
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(checkSecretePhrase.fulfilled, (state, action) => {
+      state.phrase = action.payload;
+    });
+  },
+});
 
-const secretePhrasekReducer = (state = phraseState, action: any) => {
-  switch (action.type) {
-    case CHECK_SECRETE_PHRASE:
-      return { ...state, phraseData: action.payload };
-    default:
-      return state;
-  }
-};
-
-export default secretePhrasekReducer;
+export default secretePhraseSlice.reducer;

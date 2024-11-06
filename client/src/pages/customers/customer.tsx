@@ -14,6 +14,7 @@ import {
   message,
   Progress,
   Alert,
+  Spin,
 } from "antd";
 
 import "antd/dist/reset.css";
@@ -30,16 +31,19 @@ const Customer = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [responses, setResponses] = useState<any>({}); // Store all responses
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch(getPreviewData(companyName, surveyId));
+      dispatch(getPreviewData({ companyName, surveyId })).finally(() => {
+        setLoading(false); // Set loading to false once data is fetched
+      });
     };
 
     fetchData();
   }, [companyName, dispatch, surveyId]);
 
-  const previewData = useSelector((state: any) => state.preview?.previewData);
+  const previewData = useSelector((state: any) => state.preview?.preview);
   const questions = previewData?.questions || [];
   const companyInfo = previewData?.CompanyInfo;
 
@@ -88,7 +92,23 @@ const Customer = () => {
     const answeredCount = Object.keys(responses).length;
     return (answeredCount / questions.length) * 100;
   };
-
+  if (loading) {
+    return (
+      <div>
+        <Spin
+          tip="Loading data..."
+          size="large"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "50px 0",
+          }}
+        >
+          {" "}
+        </Spin>
+      </div>
+    );
+  }
   // If no preview data, return an error message
   if (!previewData) {
     return (
@@ -122,7 +142,7 @@ const Customer = () => {
   return (
     <div
       style={{
-        backgroundColor: companyInfo.backGroundColor,
+        backgroundColor: companyInfo?.backGroundColor,
         minHeight: "100vh",
       }}
     >
@@ -130,8 +150,8 @@ const Customer = () => {
       {companyInfo && (
         <div
           style={{
-            backgroundColor: companyInfo.backGroundColor || "#fff",
-            color: companyInfo.textColor || "#000",
+            backgroundColor: companyInfo?.backGroundColor || "#fff",
+            color: companyInfo?.textColor || "#000",
             display: "flex",
             alignItems: "center",
             padding: "18px",
@@ -144,8 +164,8 @@ const Customer = () => {
           }}
         >
           <Avatar
-            src={`https://feed-back-app.onrender.com/${companyInfo.logo}`}
-            alt={companyInfo.name}
+            src={`https://feed-back-app.onrender.com/${companyInfo?.logo}`}
+            alt={companyInfo?.name}
             size={65}
             style={{
               marginRight: "16px",
@@ -154,9 +174,9 @@ const Customer = () => {
           />
           <Title
             level={3}
-            style={{ margin: 0, color: companyInfo.textColor || "#000" }}
+            style={{ margin: 0, color: companyInfo?.textColor || "#000" }}
           >
-            {companyInfo.name}
+            {companyInfo?.name}
           </Title>
         </div>
       )}
@@ -192,7 +212,7 @@ const Customer = () => {
                 type="primary"
                 onClick={handlePrevious}
                 disabled={currentIndex === 0}
-                style={{ color: companyInfo.textColor }}
+                style={{ color: companyInfo?.textColor }}
               >
                 Previous
               </Button>
@@ -200,7 +220,7 @@ const Customer = () => {
                 type="primary"
                 onClick={handleNext}
                 disabled={currentIndex === questions.length - 1}
-                style={{ color: companyInfo.textColor }}
+                style={{ color: companyInfo?.textColor }}
               >
                 Next
               </Button>
@@ -331,7 +351,11 @@ const QuestionChoice: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-            {question.index}
+
+            {index + 1}
+
+           
+
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
@@ -379,7 +403,11 @@ const QuestionRate: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-            {question.index}
+
+            {index + 1}
+
+           
+
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>
@@ -408,7 +436,9 @@ const QuestionOpen: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-            {question.index}
+
+            {index + 1}
+
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
           </Title>

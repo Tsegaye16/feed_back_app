@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Card,
@@ -9,6 +9,7 @@ import {
   Button,
   Row,
   Col,
+  Spin,
 } from "antd";
 import moment from "moment";
 import { getFeedbackDetail } from "../../../redux/action/feedback";
@@ -23,17 +24,20 @@ interface propType {
 
 const FeedbackDetail: React.FC<propType> = ({ feedbackDetail, onSave }) => {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    dispatch(getFeedbackDetail(feedbackDetail.surveyId) as any);
+    dispatch(getFeedbackDetail(feedbackDetail.surveyId) as any).finally(() => {
+      setLoading(false); // Set loading to false once data is fetched
+    });
 
     return () => {
       dispatch({ type: CLEAR_DATA });
     };
   }, [dispatch, feedbackDetail.surveyId]);
 
-  const data = useSelector((state: any) => state.feedback?.feedbackData?.data);
-
+  const data = useSelector((state: any) => state.feedback?.feedback?.data);
+  //console.log("data: ", data);
   return (
     <div style={{ padding: "20px" }}>
       <Row
@@ -71,91 +75,104 @@ const FeedbackDetail: React.FC<propType> = ({ feedbackDetail, onSave }) => {
         </Col>
       </Row>
 
-      <Timeline style={{ padding: "10px 0" }}>
-        {data && data.length > 0 ? (
-          data.map((feedback: any, index: number) => (
-            <Timeline.Item
-              key={index}
-              dot={
-                <span style={{ fontSize: "14px", color: "#1890ff" }}>⬤</span>
-              }
-              style={{ paddingBottom: "20px" }}
-            >
-              <Card
-                title={
-                  <Text style={{ color: "#1890ff" }}>
-                    Feedback Received:{" "}
-                    {moment(feedback.timestamp).format("MMMM Do YYYY, h:mm:ss")}
-                  </Text>
+      {loading ? (
+        <Spin
+          size="large"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            padding: "50px 0",
+          }}
+        />
+      ) : (
+        <Timeline style={{ padding: "10px 0" }}>
+          {data && data.length > 0 ? (
+            data.map((feedback: any, index: number) => (
+              <Timeline.Item
+                key={index}
+                dot={
+                  <span style={{ fontSize: "14px", color: "#1890ff" }}>⬤</span>
                 }
-                bordered={false}
-                bodyStyle={{ padding: "20px" }}
-                style={{
-                  marginBottom: "20px",
-                  borderRadius: "10px",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                }}
+                style={{ paddingBottom: "20px" }}
               >
-                <Divider>Feedback Details</Divider>
-                {feedback.questionsWithAnswers.map(
-                  (questionWithAnswer: any, qIndex: number) => (
-                    <div key={qIndex} style={{ marginBottom: "25px" }}>
-                      <Text
-                        strong
-                        style={{
-                          fontSize: "16px",
-                          color: "#595959",
-                          display: "block",
-                          marginBottom: "8px",
-                        }}
-                      >
-                        Question {qIndex + 1}:
-                      </Text>
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: questionWithAnswer.question,
-                        }}
-                        style={{
-                          paddingLeft: "10px",
-                          marginBottom: "10px",
-                          fontStyle: "italic",
-                          color: "#3d3d3d",
-                        }}
-                      />
-                      <Text
-                        strong
-                        style={{
-                          fontSize: "15px",
-                          color: "#595959",
-                          marginTop: "10px",
-                        }}
-                      >
-                        Feed Back:
-                      </Text>
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: questionWithAnswer.answer.replace(
-                            /["\[\]]/g,
-                            ""
-                          ),
-                        }}
-                        style={{
-                          paddingLeft: "10px",
-                          marginTop: "5px",
-                          color: "#1DA57A", // Make answer more prominent with green color
-                          fontSize: "14px",
-                        }}
-                      />
-                    </div>
-                  )
-                )}
-              </Card>
-            </Timeline.Item>
-          ))
-        ) : (
-          <Text>No feedback available.</Text>
-        )}
-      </Timeline>
+                <Card
+                  title={
+                    <Text style={{ color: "#1890ff" }}>
+                      Feedback Received:{" "}
+                      {moment(feedback.timestamp).format(
+                        "MMMM Do YYYY, h:mm:ss"
+                      )}
+                    </Text>
+                  }
+                  bordered={false}
+                  bodyStyle={{ padding: "20px" }}
+                  style={{
+                    marginBottom: "20px",
+                    borderRadius: "10px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  <Divider>Feedback Details</Divider>
+                  {feedback.questionsWithAnswers.map(
+                    (questionWithAnswer: any, qIndex: number) => (
+                      <div key={qIndex} style={{ marginBottom: "25px" }}>
+                        <Text
+                          strong
+                          style={{
+                            fontSize: "16px",
+                            color: "#595959",
+                            display: "block",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          Question {qIndex + 1}:
+                        </Text>
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: questionWithAnswer.question,
+                          }}
+                          style={{
+                            paddingLeft: "10px",
+                            marginBottom: "10px",
+                            fontStyle: "italic",
+                            color: "#3d3d3d",
+                          }}
+                        />
+                        <Text
+                          strong
+                          style={{
+                            fontSize: "15px",
+                            color: "#595959",
+                            marginTop: "10px",
+                          }}
+                        >
+                          Feedback:
+                        </Text>
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: questionWithAnswer.answer.replace(
+                              /["\[\]]/g,
+                              ""
+                            ),
+                          }}
+                          style={{
+                            paddingLeft: "10px",
+                            marginTop: "5px",
+                            color: "#1DA57A",
+                            fontSize: "14px",
+                          }}
+                        />
+                      </div>
+                    )
+                  )}
+                </Card>
+              </Timeline.Item>
+            ))
+          ) : (
+            <Text>No feedback available.</Text>
+          )}
+        </Timeline>
+      )}
     </div>
   );
 };
