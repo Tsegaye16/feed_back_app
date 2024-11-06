@@ -386,13 +386,11 @@ export const getQuestionBySurveyId = async (req, res) => {
 
     //console.log("thisWeekAnswers: ", thisWeekAnswers);
 
-    res
-      .status(200)
-      .json({
-        question: question,
-        tottalFeedback: Answers.length,
-        weeklyFeedback: thisWeekAnswers.length,
-      });
+    res.status(200).json({
+      question: question,
+      tottalFeedback: Answers.length,
+      weeklyFeedback: thisWeekAnswers.length,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -439,7 +437,6 @@ export const sortQuestion = async (req, res) => {
   try {
     const questionsToUpdate = req.body; // Array of { id, index } objects
 
-
     // Execute all updates in parallel for better performance
     const updatePromises = questionsToUpdate.map(({ id, index }) =>
       Question.update({ index }, { where: { id } })
@@ -456,10 +453,6 @@ export const sortQuestion = async (req, res) => {
 
     // Send the updated list of questions back in the response
     res.status(200).json({ message: "Success.", updatedQuestions });
-=======
-    
-   
-
   } catch (error) {
     console.error("Error updating question indices:", error);
     res.status(500).json({ error: "Failed to reorder questions." });
