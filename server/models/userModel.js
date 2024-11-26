@@ -1,56 +1,50 @@
-import { Sequelize, DataTypes, UUID, UUIDV4 } from "sequelize";
+import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import { sequelize } from "../db.js";
+import { v4 as uuidv4 } from "uuid";
 
-const User = sequelize.define("User", {
-  id: {
-    type: UUID,
-    defaultValue: UUIDV4,
-    primaryKey: true,
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: { msg: "Please tell us your name!" },
+const userSchema = new mongoose.Schema(
+  {
+    id: {
+      type: String, // Use String for UUIDs
+      default: uuidv4, // Generate UUID using the `uuid` library
+      unique: true,
+    },
+    name: {
+      type: String,
+      required: [true, "Please tell us your name!"],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, "Please provide a valid email"],
+      unique: true,
+      lowercase: true,
+    },
+    isConfirmed: {
+      type: Boolean,
+      default: false,
+    },
+    password: {
+      type: String,
+      required: [true, "Please provide a password"],
+    },
+    image: {
+      type: String,
     },
   },
+  { timestamps: true }
+);
 
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-    lowercase: true,
-    validate: {
-      isEmail: { msg: "Please provide a valid email" },
-    },
-  },
-  isConfirmed: {
-    type: Sequelize.BOOLEAN,
-    defaultValue: false, // By default, the user is not confirmed
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: { msg: "Please provide a password" },
-    },
-  },
-  image: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
 });
 
-// Before saving, hash the password and remove passwordConfirm
-User.beforeCreate(async (user) => {
-  if (user.password) {
-    user.password = await bcrypt.hash(user.password, 12);
-  }
-});
-
-User.prototype.comparePassword = async function (candidatePassword) {
+// Compare passwords
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
-
-export default User;
+const user = mongoose.model("User", userSchema);
+export default user;

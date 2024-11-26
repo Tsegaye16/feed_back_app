@@ -1,6 +1,6 @@
 import Company from "../models/companyModel.js";
 import Question from "../models/questionModel.js";
-import Servey from "../models/serveyModel.js";
+import Survey from "../models/serveyModel.js";
 import Answer from "../models/answerModel.js";
 import { Op } from "sequelize";
 import moment from "moment";
@@ -185,7 +185,7 @@ export const addServey = async (req, res) => {
   try {
     const { surveyName, secretPhrase, isPublished, companyId, id } = req.body;
     if (!id) {
-      const newQuestion = await Servey.create({
+      const newQuestion = await Survey.create({
         name: surveyName,
         secretePhrase: secretPhrase,
         isPublished: isPublished,
@@ -196,7 +196,7 @@ export const addServey = async (req, res) => {
         result: newQuestion,
       });
     }
-    const updatedQuestion = await Servey.update(
+    const updatedQuestion = await Survey.update(
       {
         name: surveyName,
         secretePhrase: secretPhrase,
@@ -219,7 +219,7 @@ export const publishSurvey = async (req, res) => {
     const surveyId = req.params.surveyId;
 
     // 1. update the servey column and make isPublished is true when surveyId = surveyId
-    const updatedSurvey = await Servey.update(
+    const updatedSurvey = await Survey.update(
       { isPublished: true },
       { where: { id: surveyId } }
     );
@@ -233,7 +233,7 @@ export const publishSurvey = async (req, res) => {
 export const getAllServey = async (req, res) => {
   try {
     const companyId = req.params.companyId;
-    const servey = await Servey.findAll({
+    const servey = await Survey.findAll({
       where: { companyId: companyId },
     });
 
@@ -248,7 +248,7 @@ export const deleteServey = async (req, res) => {
   try {
     const { id } = req.body;
     // delete all rows from surver based on the list of id
-    const result = await Servey.destroy({
+    const result = await Survey.destroy({
       where: {
         id: {
           [Op.in]: id,
@@ -280,7 +280,7 @@ export const getPreviewParams = async (req, res) => {
     const serveyId = req.params.serveyId;
 
     // 1. fetch companyId from Serveys where serveyId = serveyId
-    const ServerInfo = await Servey.findOne({
+    const ServerInfo = await Survey.findOne({
       where: {
         id: serveyId,
       },
@@ -322,7 +322,7 @@ export const getPreviewData = async (req, res) => {
     const companyId = CompanyInfo.id;
 
     // 2. Check whether surveyId exists in Serveys table with the correct companyId
-    const SurveyInfo = await Servey.findOne({
+    const SurveyInfo = await Survey.findOne({
       where: {
         id: surveyId, // Include surveyId in the query
         companyId: companyId, // Ensure the survey belongs to the company
@@ -464,7 +464,7 @@ export const getFullSurvey = async (req, res) => {
   try {
     const secretePhrase = req.params.secretePhrase;
     // 1. get companyId from survey table where secretePhrase = secretePhrase
-    const data = await Servey.findOne({
+    const data = await Survey.findOne({
       where: {
         secretePhrase: secretePhrase,
       },
@@ -577,7 +577,7 @@ export const getFeedback = async (req, res) => {
     const id = req.params.id; // Get companyId from the request parameters
 
     // 1. Fetch surveys based on companyId
-    const surveys = await Servey.findAll({ where: { companyId: id } });
+    const surveys = await Survey.findAll({ where: { companyId: id } });
 
     if (!surveys.length) {
       return res
@@ -632,17 +632,17 @@ export const getStatData = async (req, res) => {
     const id = req.params.id;
 
     // 1. Extract total number of published surveys from Servey table where companyId = id
-    const publishedSurveys = await Servey.count({
+    const publishedSurveys = await Survey.count({
       where: { companyId: id, isPublished: true },
     });
 
     // 2. Extract total number of drafted surveys from Servey table where companyId = id
-    const draftedSurvey = await Servey.count({
+    const draftedSurvey = await Survey.count({
       where: { companyId: id, isPublished: false },
     });
 
     // 3. Get all survey IDs from Servey where companyId = id
-    const result = await Servey.findAll({
+    const result = await Survey.findAll({
       attributes: ["id"],
       where: { companyId: id },
     });
@@ -871,7 +871,7 @@ export const getRecentFeedback = async (req, res) => {
     const companyId = req.params.companyId;
 
     // 1. Get all surveys from Survey table where companyId = companyId
-    const surveys = await Servey.findAll({
+    const surveys = await Survey.findAll({
       where: {
         companyId,
       },
@@ -977,7 +977,7 @@ export const checkSecretePhrase = async (req, res) => {
     //const secretPhrase = Object.keys(phrase)[0];
     // 1. check the secrete survey is present or not on survey table
 
-    const survey = await Servey.findOne({
+    const survey = await Survey.findOne({
       where: {
         secretePhrase: phrase,
       },

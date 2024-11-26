@@ -1,43 +1,42 @@
-import { DataTypes, UUID, UUIDV4 } from "sequelize";
+import mongoose from "mongoose";
 
-import { sequelize } from "../db.js";
-
-const Question = sequelize.define("Question", {
-  id: {
-    type: UUID,
-    defaultValue: UUIDV4,
-    primaryKey: true,
-  },
-  index: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  text: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: { msg: "Please insert the question" },
+const questionSchema = new mongoose.Schema(
+  {
+    id: {
+      type: mongoose.Schema.Types.UUID, // Use UUID if required, else MongoDB uses `_id` by default
+      default: () => mongoose.Types.ObjectId(),
+      unique: true,
+    },
+    index: {
+      type: Number,
+    },
+    text: {
+      type: String,
+      required: [true, "Please insert the question"],
+    },
+    type: {
+      type: String,
+      enum: ["True/False", "Choice", "Open", "Rate"],
+      required: [true, "Please select question type"],
+    },
+    options: {
+      type: [String], // For multiple-choice questions
+    },
+    additionalOption: {
+      type: String,
+      enum: ["True/False", "Agree/Disagree", "Yes/No"],
+    },
+    singleSelect: {
+      type: Boolean, // For single/multiple select
+    },
+    surveyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Survey", // Reference to Survey model
+      required: true,
     },
   },
-  type: {
-    type: DataTypes.ENUM("True/False", "Choice", "Open", "Rate"),
-    allowNull: false,
-    validate: {
-      notEmpty: { msg: "Please select question type" },
-    },
-  },
-  options: {
-    type: DataTypes.ARRAY(DataTypes.STRING), // For multiple choice questions
-    allowNull: true,
-  },
-  additionalOption: {
-    type: DataTypes.ENUM("True/False", "Agree/Disagree", "Yes/No"),
-    allowNull: true,
-  },
-  singleSelect: {
-    type: DataTypes.BOOLEAN, // For single/multiple select
-    allowNull: true,
-  },
-});
+  { timestamps: true }
+);
 
+const Question = mongoose.model("Question", questionSchema);
 export default Question;

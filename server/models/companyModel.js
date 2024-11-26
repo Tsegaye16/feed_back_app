@@ -1,37 +1,33 @@
-import { DataTypes, UUID, UUIDV4 } from "sequelize";
+import mongoose from "mongoose";
 
-import { sequelize } from "../db.js";
-
-const Company = sequelize.define("Company", {
-  id: {
-    type: UUID,
-    defaultValue: UUIDV4,
-    primaryKey: true,
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: { msg: "Please insert your company name" },
+const companySchema = new mongoose.Schema(
+  {
+    id: {
+      type: mongoose.Schema.Types.UUID, // Use UUID if required, else MongoDB uses `_id` by default
+      default: () => mongoose.Types.ObjectId(),
+      unique: true,
+    },
+    name: {
+      type: String,
+      required: [true, "Please insert your company name"],
+    },
+    logo: {
+      type: String,
+    },
+    backGroundColor: {
+      type: String,
+    },
+    textColor: {
+      type: String,
+    },
+    managerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // Reference to User model
+      required: true,
     },
   },
-  logo: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  backGroundColor: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  textColor: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  // managerId: {
-  //   type: DataTypes.STRING,
-  //   allowNull: false,
-  //   unique: true,
-  // },
-});
+  { timestamps: true }
+);
 
+const Company = mongoose.model("Company", companySchema);
 export default Company;

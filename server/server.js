@@ -1,56 +1,25 @@
 import express from "express";
 import dotenv from "dotenv";
-import { sequelize } from "./db.js";
+import mongoose from "mongoose";
 import app from "./app.js";
-import User from "./models/userModel.js";
-import Question from "./models/questionModel.js";
-import Company from "./models/companyModel.js";
-import Servey from "./models/serveyModel.js";
-import Answer from "./models/answerModel.js";
 
 // Load environment variables
 dotenv.config();
 
-/////////////////////////////////////////////////////////////////////////////////////
-//Define table Relations
-//A company has one manager (user)
-Company.belongsTo(User, { as: "manager", foreignKey: "managerId" });
-User.hasMany(Company, { foreignKey: "managerId" });
-
-// A company has many Servey
-Company.hasMany(Servey, { foreignKey: "companyId" });
-Servey.belongsTo(Company, { foreignKey: "companyId" });
-//*************************** */
-// A Servey has many questions
-Servey.hasMany(Question, { foreignKey: "serveyId" });
-Question.belongsTo(Servey, { foreignKey: "serveyId" });
-//************************* */
-// A question has many answers
-Question.hasMany(Answer, { foreignKey: "questionId" });
-Answer.belongsTo(Question, { foreignKey: "questionId" });
-///////////////////////////////////////////////////////////////////////////////////
-
-// Test DB connectivity
-sequelize
-  .authenticate()
-  .then(() => console.log("Connection has been established successfully."))
-  .catch((error) => console.error("Unable to connect to the database:", error));
-
-// Sync all models
-const syncDatabase = async () => {
-  try {
-    // Adjust force as per your needs: force: true in development, force: false in production
-    await sequelize.sync({ force: false }); // Use force: true only when you want to reset tables
-    console.log("Database synchronized");
-  } catch (error) {
-    console.error("Error synchronizing the database:", error);
-  }
-};
-//console
-syncDatabase();
+mongoose
+  .connect(process.env.CONNECTION_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.log("Error connecting to MongoDB:", err.message);
+  });
 
 // Start the server
-const port = process.env.PORT || 4000; // Default to 3000 if no env variable set
+const port = process.env.PORT; // Default to 4000 if no env variable set
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

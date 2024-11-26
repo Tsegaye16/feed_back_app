@@ -1,46 +1,45 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import user from "../models/userModel.js";
+import User from "../models/userModel.js"; // Adjust the import based on your file structure
 
-const secret = "this_is-my-secrete_password/for$node*mailer";
-
+// Nodemailer setup
 const transporter = nodemailer.createTransport({
-  service: "gmail", // You can use any email service provider (e.g., SendGrid, Mailgun)
+  service: "gmail", // Use any email service provider (e.g., SendGrid, Mailgun)
   auth: {
-    user: process.env.MY_EMAIL, // Your email address
-    pass: process.env.EMAIL_PASSWORD, // Your email password (use environment variables in production)
+    user: process.env.MY_EMAIL,
+    pass: process.env.EMAIL_PASSWORD,
   },
+  port: 465,
+  host: "smtp.gmail.com",
 });
 
 export const signup = async (req, res) => {
   try {
-    const tokenExpirationTime = process.env.TOKEN_EXPIRATION_TIME; // 1 hour in milliseconds
+    console.log(process.env.MY_EMAIL);
+    const tokenExpirationTime = process.env.TOKEN_EXPIRATION_TIME; // Token validity
     const { name, email, password } = req.body;
 
-    // Check if user with the given email already exists
-    const oldUser = await user.findOne({ where: { email: email } });
+    // Check if user exists
+    const oldUser = await User.findOne({ email });
 
     if (oldUser) {
-      // If the user exists but hasn't confirmed their email
       if (!oldUser.isConfirmed) {
         const currentTime = new Date().getTime();
-        const createdAtTime = new Date(oldUser.createdAt).getTime(); // Get the creation time of the user
+        const createdAtTime = new Date(oldUser.createdAt).getTime();
 
-        // Check if the token (based on creation time) has expired
         if (currentTime - createdAtTime < tokenExpirationTime) {
           return res.status(400).json({
             message:
-              "A confirmation email has already been sent. Please check your inbox and confirm your email.",
+              "A confirmation email has already been sent. Please check your inbox.",
           });
         }
 
-        // Generate a new token if the old one (based on createdAt) has expired
         const token = jwt.sign(
-          { email: oldUser.email, id: oldUser.id },
-          secret,
+          { email: oldUser.email, id: oldUser._id },
+          process.env.JWT_SECRET,
           {
-            expiresIn: tokenExpirationTime, // Token valid for 1 hour
+            expiresIn: tokenExpirationTime,
           }
         );
 
@@ -51,7 +50,7 @@ export const signup = async (req, res) => {
           to: email,
           subject: "Email Confirmation",
           html: `<h1>Confirm your Email</h1>
-                 <p>Your previous confirmation token has expired. Please click on the link below to confirm your email:</p>
+                 <p>Your previous confirmation token has expired. Please click the link below:</p>
                  <a href="${confirmationUrl}">Confirm Email</a>`,
         });
 
@@ -66,63 +65,57 @@ export const signup = async (req, res) => {
         .json({ message: "User already exists and confirmed." });
     }
 
-    // Create new user if no existing user with the email
-    const token = jwt.sign({ email, id: name }, secret, {
-      expiresIn: tokenExpirationTime, // Token valid for 1 hour
+    // Create new user
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      isConfirmed: false,
     });
 
-    const result = await user.create({
-      email,
-      password,
-      name,
-      isConfirmed: false, // Default to false until email is confirmed
+    const token = jwt.sign({ email, id: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: tokenExpirationTime,
     });
 
     const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
 
-    await transporter.sendMail({
+    const mailer = await transporter.sendMail({
       from: process.env.MY_EMAIL,
       to: email,
       subject: "Email Confirmation",
       html: `<h1>Confirm your Email</h1>
-             <p>Please click on the link below to confirm your email:</p>
+             <p>Please click the link below:</p>
              <a href="${confirmationUrl}">Confirm Email</a>`,
     });
+    console.log("Mailer: ", mailer);
 
     res.status(201).json({
       message: "You have successfully registered. Please confirm your email.",
-      result,
+      result: newUser,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
 
 export const confirmEmail = async (req, res) => {
-  const token = req.params.token;
+  const { token } = req.params;
 
   try {
-    // Verify the token
-    const decodedData = jwt.verify(token, secret);
+    const decodedData = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find the user by email and mark email as confirmed
-    const existingUser = await user.findOne({
-      where: { email: decodedData.email },
-    });
+    const user = await User.findOne({ email: decodedData.email });
 
-    if (!existingUser) {
+    if (!user) {
       return res.status(400).json({ message: "Invalid confirmation link" });
     }
 
-    // Mark the user as confirmed (you may want to add a field like 'isConfirmed' in the user model)
-    const data = await user.update(
-      { isConfirmed: true },
-      { where: { email: decodedData.email } }
-    );
+    user.isConfirmed = true;
+    await user.save();
 
-    res
-      .status(200)
-      .json({ data: data, message: "Email confirmed successfully" });
+    res.status(200).json({ message: "Email confirmed successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -132,27 +125,31 @@ export const signin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const oldUser = await user.findOne({ where: { email: email } }); // FIX: ensure correct email query
+    const user = await User.findOne({ email });
 
-    if (!oldUser) {
+    if (!user) {
       return res.status(404).json({ message: "User doesn't exist" });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-    // check whether it is verified or not
-    if (oldUser.isConfirmed === false) {
+
+    if (!user.isConfirmed) {
       return res.status(400).json({ message: "Email is not verified" });
     }
 
-    const token = jwt.sign({ email: oldUser.email, id: oldUser.id }, secret, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { email: user.email, id: user._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
 
-    res.status(200).json({ message: "Successfully loged in!", token, oldUser });
+    res.status(200).json({ message: "Successfully logged in!", token, user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -160,48 +157,42 @@ export const signin = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const id = req.params.userId;
+    const { userId } = req.params;
 
-    // Ensure the id is a valid number
-    //const parsedId = parseInt(id, 10);
+    const user = await User.findById(userId);
 
-    const newUser = await user.findByPk(id);
-
-    if (!newUser) {
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Respond with the user data
-    res.status(200).json({ message: "success", newUser });
+    res.status(200).json({ message: "Success", user });
   } catch (error) {
-    console.error(err);
-
-    // Respond with a generic error message
     res.status(500).json({ message: error.message });
   }
 };
 
 export const edditProfile = async (req, res) => {
   try {
+    const { id } = req.params;
     const { name, email } = req.body;
-    const id = req.params.id;
     const image = req.file?.filename;
-    // 1. get user bay id
-    const updatingUser = await user.findByPk(id);
-    // 2. if user does not exist return
-    if (!updatingUser) {
+
+    const user = await User.findById(id);
+
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    // 3. update user
-    updatingUser.name = name || updatingUser.name;
-    updatingUser.email = email || updatingUser.email;
-    updatingUser.image = image || updatingUser.image;
-    // 4. save user
-    const saved = await updatingUser.save();
-    // 5. return user
-    res.status(200).json({ message: "success", user: saved });
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.image = image || user.image;
+
+    const updatedUser = await user.save();
+
+    res
+      .status(200)
+      .json({ message: "Profile updated successfully", user: updatedUser });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -210,30 +201,26 @@ export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, email } = req.body;
 
-    // 1. Fetch user based on email
-    const updatingUser = await user.findOne({ where: { email } });
+    const user = await User.findOne({ email });
 
-    // 2. If user does not exist, return an error
-    if (!updatingUser) {
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 3. Check if the current password is correct
-    const isValidPassword = await updatingUser.comparePassword(currentPassword);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: "Invalid current password" });
+    const isPasswordCorrect = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "Invalid current password" });
     }
 
-    // 4. Hash the new password and update it
-    updatingUser.password = await bcrypt.hash(newPassword, 12);
-    const result = await updatingUser.save();
+    user.password = await bcrypt.hash(newPassword, 12);
+    await user.save();
 
-    // 5. Return success response
-    return res
-      .status(200)
-      .json({ message: "Password updated successfully", result });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Error updating password" });
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
