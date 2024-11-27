@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import User from "../models/userModel.js"; // Adjust the import based on your file structure
+import User from "../models/userModel.js";
 
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
@@ -10,17 +10,16 @@ const transporter = nodemailer.createTransport({
     user: process.env.MY_EMAIL,
     pass: process.env.EMAIL_PASSWORD,
   },
-  port: 465,
-  host: "smtp.gmail.com",
 });
 
 export const signup = async (req, res) => {
+  console.log("user: ", process.env.MY_EMAIL);
+  console.log("pass: ", process.env.EMAIL_PASSWORD);
   try {
-    console.log(process.env.MY_EMAIL);
-    const tokenExpirationTime = process.env.TOKEN_EXPIRATION_TIME; // Token validity
+    const tokenExpirationTime = process.env.TOKEN_EXPIRATION_TIME; // e.g., "1h"
     const { name, email, password } = req.body;
 
-    // Check if user exists
+    // Check if the user already exists
     const oldUser = await User.findOne({ email });
 
     if (oldUser) {
@@ -28,23 +27,23 @@ export const signup = async (req, res) => {
         const currentTime = new Date().getTime();
         const createdAtTime = new Date(oldUser.createdAt).getTime();
 
-        if (currentTime - createdAtTime < tokenExpirationTime) {
+        if (currentTime - createdAtTime < tokenExpirationTime * 1000) {
           return res.status(400).json({
             message:
               "A confirmation email has already been sent. Please check your inbox.",
           });
         }
 
+        // Generate a new token for resending the confirmation email
         const token = jwt.sign(
           { email: oldUser.email, id: oldUser._id },
           process.env.JWT_SECRET,
-          {
-            expiresIn: tokenExpirationTime,
-          }
+          { expiresIn: tokenExpirationTime }
         );
 
         const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
 
+        // Send the new confirmation email
         await transporter.sendMail({
           from: process.env.MY_EMAIL,
           to: email,
@@ -65,8 +64,34 @@ export const signup = async (req, res) => {
         .json({ message: "User already exists and confirmed." });
     }
 
-    // Create new user
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Generate a token
+    const token = jwt.sign({ email, id: null }, process.env.JWT_SECRET, {
+      expiresIn: tokenExpirationTime,
+    });
+
+    const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
+
+    // Send the email
+    try {
+      await transporter.sendMail({
+        from: process.env.MY_EMAIL,
+        to: email,
+        subject: "Email Confirmation",
+        html: `<h1>Confirm your Email</h1>
+               <p>Please click the link below:</p>
+               <a href="${confirmationUrl}">Confirm Email</a>`,
+      });
+    } catch (error) {
+      console.error("Email sending error:", error);
+      return res
+        .status(500)
+        .json({ message: "Failed to send confirmation email." });
+    }
+
+    // Create the user in the database only if the email is sent successfully
     const newUser = await User.create({
       name,
       email,
@@ -74,29 +99,13 @@ export const signup = async (req, res) => {
       isConfirmed: false,
     });
 
-    const token = jwt.sign({ email, id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: tokenExpirationTime,
-    });
-
-    const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
-
-    const mailer = await transporter.sendMail({
-      from: process.env.MY_EMAIL,
-      to: email,
-      subject: "Email Confirmation",
-      html: `<h1>Confirm your Email</h1>
-             <p>Please click the link below:</p>
-             <a href="${confirmationUrl}">Confirm Email</a>`,
-    });
-    console.log("Mailer: ", mailer);
-
     res.status(201).json({
       message: "You have successfully registered. Please confirm your email.",
       result: newUser,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Something went wrong." });
   }
 };
 
