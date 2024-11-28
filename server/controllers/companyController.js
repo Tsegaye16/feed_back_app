@@ -520,11 +520,11 @@ export const getFullSurvey = async (req, res) => {
 };
 
 // Submit Answer
-import { pipeline } from "@xenova/transformers";
-let pip;
-(async () => {
-  pip = await pipeline("sentiment-analysis");
-})();
+// import { pipeline } from "@xenova/transformers";
+// let pip;
+// (async () => {
+//   pip = await pipeline("sentiment-analysis");
+// })();
 
 export const submitAnswer = async (req, res) => {
   try {
@@ -544,8 +544,8 @@ export const submitAnswer = async (req, res) => {
       if (typeof answer === "string") {
         try {
           // Analyze sentiment using the loaded pipeline
-          const sentimentAnalysisResult = await pip(answer);
-          sentiment = sentimentAnalysisResult[0]?.label || "NEUTRAL"; // Default to "NEUTRAL" if no result
+          //const sentimentAnalysisResult = await pip(answer);
+          // sentiment = sentimentAnalysisResult[0]?.label || "NEUTRAL"; // Default to "NEUTRAL" if no result
         } catch (error) {
           console.error("Error analyzing sentiment:", error);
         }
