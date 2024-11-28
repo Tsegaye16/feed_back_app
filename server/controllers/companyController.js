@@ -48,7 +48,8 @@ export const addOrUpdateCompanyInfo = async (req, res) => {
 
 export const updateCompany = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.params;
+    console.log("ID: ", id);
     const { name, backGroundColor, textColor } = req.body;
 
     const logo = req.file?.filename;

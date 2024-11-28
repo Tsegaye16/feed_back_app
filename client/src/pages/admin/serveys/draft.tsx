@@ -35,7 +35,7 @@ const Draft: React.FC<onClickType> = ({
   const [selectedSurveys, setSelectedSurveys] = useState<Set<number>>(
     new Set()
   );
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
   const currenTtoken: any = localStorage.getItem("user");
 
@@ -51,7 +51,7 @@ const Draft: React.FC<onClickType> = ({
     }
   }, [userId, currenTtoken, dispatch]);
 
-  const user = useSelector((state: any) => state.user?.user?.newUser);
+  const user = useSelector((state: any) => state.user?.user);
   const managerId = user?.id;
   const company = useSelector((state: any) => state.company?.company);
 
@@ -60,7 +60,7 @@ const Draft: React.FC<onClickType> = ({
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === false)
     : [];
-  const { error } = useSelector((state: any) => state.survey);
+  const { loading, error } = useSelector((state: any) => state.survey);
   useEffect(() => {
     if (user) {
       dispatch(getCompanyById(user?.id) as any);
@@ -70,7 +70,7 @@ const Draft: React.FC<onClickType> = ({
   useEffect(() => {
     if (company?.id) {
       dispatch(getAllServey(company.id) as any).finally(() => {
-        setLoading(false); // Set loading to false once data is fetched
+        //setLoading(false); // Set loading to false once data is fetched
       });
     }
   }, [company, dispatch]);
@@ -286,13 +286,13 @@ const Draft: React.FC<onClickType> = ({
             event.stopPropagation();
             handleAddSurveyClick("add");
           }}
-          disabled={!company}
+          disabled={company.length === 0}
         >
           Add New Survey
         </Button>
       </Box>
 
-      {!company ? (
+      {company.length === 0 ? (
         <Paper sx={{ p: 3, mb: 3, textAlign: "start" }}>
           <Title level={5}>
             You have to register your company before proceeding to other tasks.

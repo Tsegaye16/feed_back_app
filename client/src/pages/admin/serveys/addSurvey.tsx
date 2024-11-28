@@ -46,8 +46,9 @@ const AddSurvey: React.FC<propType> = ({ info, onSave, companyName }) => {
   const validateSecretPhrase = async (phrase: string) => {
     if (phrase.length === 6) {
       const response = await dispatch(checkSecretePhrase(phrase) as any);
+      console.log("responsse: ", response.payload);
       if (response?.error) {
-        setSecretPhraseResponse(response.error);
+        setSecretPhraseResponse(response.payload);
         setResponseStatus("error");
       } else if (response?.payload?.message) {
         setSecretPhraseResponse(response?.payload?.message);

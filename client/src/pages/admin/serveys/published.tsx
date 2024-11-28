@@ -46,7 +46,7 @@ const Published: React.FC<onClickType> = ({
   const dispatch = useDispatch();
 
   const [selectedSurveys, setSelectedSurveys] = useState<any>(new Set());
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
 
   const currenTtoken: any = localStorage.getItem("user");
 
@@ -62,29 +62,30 @@ const Published: React.FC<onClickType> = ({
     }
   }, [userId, currenTtoken, dispatch]);
 
-  const user = useSelector((state: any) => state.user?.user?.newUser);
+  const user = useSelector((state: any) => state.user?.user);
 
   const managerId = user?.id;
-
+  console.log("managerId: ", user);
   const company = useSelector((state: any) => state.company?.company);
-  console.log("company: ", company);
 
   const surveys = useSelector((state: any) => state.survey?.survey);
-  //const { loading, error } = useSelector((state: any) => state.survey);
+  const { loading, error } = useSelector((state: any) => state.survey);
   const surveyList = Array.isArray(surveys)
     ? surveys.filter((survey: any) => survey.isPublished === true)
     : [];
 
   useEffect(() => {
     if (user) {
-      dispatch(getCompanyById(user?.id) as any);
+      dispatch(getCompanyById(user?.id) as any).finally(() => {
+        //setLoading(false);
+      });
     }
   }, [user, dispatch]);
 
   useEffect(() => {
     if (company?.id) {
       dispatch(getAllServey(company.id) as any).finally(() => {
-        setLoading(false); // Set loading to false once data is fetched
+        // setLoading(false); // Set loading to false once data is fetched
       });
     }
   }, [company, dispatch]);
@@ -348,14 +349,14 @@ const Published: React.FC<onClickType> = ({
             event.stopPropagation();
             handleAddSurveyClick("add");
           }}
-          disabled={!company}
+          disabled={company.length === 0}
         >
           Add New Survey
         </Button>
       </Box>
 
       {/* Company Check */}
-      {!company ? (
+      {company.length === 0 ? (
         <Paper sx={{ p: 3, mb: 3, textAlign: "start" }}>
           <Title level={5}>
             You have to register your company before proceeding to other tasks.
@@ -363,7 +364,6 @@ const Published: React.FC<onClickType> = ({
           <Button
             onClick={(event) => {
               event.stopPropagation();
-
               onAddCompany(managerId);
             }}
           >

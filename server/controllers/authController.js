@@ -44,7 +44,7 @@ export const signup = async (req, res) => {
           }
         );
 
-        const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
+        const confirmationUrl = `http://localhost:3000/confirm-email?token=${token}`;
 
         await transporter.sendMail({
           from: process.env.MY_EMAIL,
@@ -78,7 +78,7 @@ export const signup = async (req, res) => {
       isConfirmed: false, // Default to false until email is confirmed
     });
 
-    const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
+    const confirmationUrl = `http://localhost:3000/confirm-email?token=${token}`;
 
     await transporter.sendMail({
       from: process.env.MY_EMAIL,
@@ -174,7 +174,7 @@ export const getUserById = async (req, res) => {
     // Respond with the user data
     res.status(200).json({ message: "success", newUser });
   } catch (error) {
-    console.error(err);
+    //console.error(err);
 
     // Respond with a generic error message
     res.status(500).json({ message: error.message });

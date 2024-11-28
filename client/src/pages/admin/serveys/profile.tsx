@@ -39,7 +39,7 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ user, company }) => {
   const dispatch = useDispatch();
-
+  console.log("company: ", company);
   const { loading, error } = useSelector((state: any) => state.company);
   const userLoading = useSelector((state: any) => state.user.loading);
   // Define theme options
@@ -372,88 +372,92 @@ const Profile: React.FC<ProfileProps> = ({ user, company }) => {
       </Col>
 
       {/* Company Section */}
-      <Col xs={24} sm={24} md={12}>
-        <Card title="Company" bordered={false}>
-          {company ? (
-            <Form layout="vertical">
-              <Form.Item label="Company Logo">
-                <Upload
-                  name="logo"
-                  listType="picture-circle"
-                  showUploadList={false}
-                  onChange={handleCompanyLogoChange}
-                >
-                  {companyData.logo ? (
-                    <Avatar
-                      src={
-                        typeof companyData.logo === "string"
-                          ? `https://feed-back-app.onrender.com/${companyData.logo}`
-                          : URL.createObjectURL(companyData.logo)
-                      }
-                      size={100}
-                      style={{ objectFit: "cover" }}
-                    />
-                  ) : (
-                    <Avatar size={100} icon={<PlusOutlined />} />
-                  )}
-                </Upload>
-              </Form.Item>
+      {!company ? (
+        ""
+      ) : (
+        <Col xs={24} sm={24} md={12}>
+          <Card title="Company" bordered={false}>
+            {company ? (
+              <Form layout="vertical">
+                <Form.Item label="Company Logo">
+                  <Upload
+                    name="logo"
+                    listType="picture-circle"
+                    showUploadList={false}
+                    onChange={handleCompanyLogoChange}
+                  >
+                    {companyData.logo ? (
+                      <Avatar
+                        src={
+                          typeof companyData.logo === "string"
+                            ? `https://feed-back-app.onrender.com/${companyData.logo}`
+                            : URL.createObjectURL(companyData.logo)
+                        }
+                        size={100}
+                        style={{ objectFit: "cover" }}
+                      />
+                    ) : (
+                      <Avatar size={100} icon={<PlusOutlined />} />
+                    )}
+                  </Upload>
+                </Form.Item>
 
-              <Form.Item label="Company Name">
-                <Input
-                  name="name"
-                  value={companyData.name}
-                  onChange={handleCompanyInputChange}
-                />
-              </Form.Item>
+                <Form.Item label="Company Name">
+                  <Input
+                    name="name"
+                    value={companyData.name}
+                    onChange={handleCompanyInputChange}
+                  />
+                </Form.Item>
 
-              <Form.Item label="Theme">
-                <Row gutter={[8, 8]}>
-                  {Object.keys(themes).map((themeKey) => (
-                    <Col key={themeKey}>
-                      <Button
-                        style={{
-                          backgroundColor: themes[themeKey].backGroundColor,
-                          color: themes[themeKey].textColor,
-                          border:
-                            selectedTheme === themeKey
-                              ? "4px solid #1890ff"
-                              : "1px solid #f0f0f0",
-                          width: 80,
-                          height: 40,
-                        }}
-                        onClick={() => handleThemeChange(themeKey)}
-                      >
-                        {themeKey}
-                      </Button>
-                    </Col>
-                  ))}
-                </Row>
-              </Form.Item>
+                <Form.Item label="Theme">
+                  <Row gutter={[8, 8]}>
+                    {Object.keys(themes).map((themeKey) => (
+                      <Col key={themeKey}>
+                        <Button
+                          style={{
+                            backgroundColor: themes[themeKey].backGroundColor,
+                            color: themes[themeKey].textColor,
+                            border:
+                              selectedTheme === themeKey
+                                ? "4px solid #1890ff"
+                                : "1px solid #f0f0f0",
+                            width: 80,
+                            height: 40,
+                          }}
+                          onClick={() => handleThemeChange(themeKey)}
+                        >
+                          {themeKey}
+                        </Button>
+                      </Col>
+                    ))}
+                  </Row>
+                </Form.Item>
 
-              <Form.Item>
-                <Button
-                  type="primary"
-                  onClick={handleEditCompany}
-                  disabled={!isCompanyChanged}
-                  icon={<EditOutlined />}
-                  style={{ marginRight: 8 }}
-                  loading={loading}
-                >
-                  {loading ? "Saving" : "Save"}
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    onClick={handleEditCompany}
+                    disabled={!isCompanyChanged}
+                    icon={<EditOutlined />}
+                    style={{ marginRight: 8 }}
+                    loading={loading}
+                  >
+                    {loading ? "Saving" : "Save"}
+                  </Button>
+                </Form.Item>
+              </Form>
+            ) : (
+              <div>
+                <Title level={5}>Your company is not registered yet</Title>
+                <Button type="primary" icon={<PlusOutlined />}>
+                  Add New Company
                 </Button>
-              </Form.Item>
-            </Form>
-          ) : (
-            <div>
-              <Title level={5}>Your company is not registered yet</Title>
-              <Button type="primary" icon={<PlusOutlined />}>
-                Add New Company
-              </Button>
-            </div>
-          )}
-        </Card>
-      </Col>
+              </div>
+            )}
+          </Card>
+        </Col>
+      )}
     </Row>
   );
 };
