@@ -20,10 +20,12 @@ const authSlice = createSlice({
       })
       .addCase(signin.fulfilled, (state, action) => {
         state.loading = false;
+
         state.authData = action.payload;
       })
       .addCase(signin.rejected, (state: any, action) => {
         state.loading = false;
+        //console.log("Action: ", action);
         state.error = action.payload;
       })
       .addCase(signup.pending, (state, action) => {

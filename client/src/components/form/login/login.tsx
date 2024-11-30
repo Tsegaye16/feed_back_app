@@ -46,6 +46,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (values: any) => {
     const response = await dispatch(signin(values) as any);
+    console.log("response: ", response);
     if (response?.payload?.message) {
       message.success(`${response?.payload?.message}`);
       navigate("/manager");

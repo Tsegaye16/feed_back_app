@@ -48,6 +48,7 @@ export const signin = createAsyncThunk(
       localStorage.setItem("user", token);
       return response.data; // Return the user data as payload
     } catch (error: any) {
+      console.log("Error: ", error);
       const errorMessage =
         error.response?.data?.message || "Something went wrong";
       return rejectWithValue(errorMessage);
