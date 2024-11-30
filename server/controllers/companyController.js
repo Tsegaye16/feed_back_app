@@ -586,43 +586,39 @@ export const getFeedback = async (req, res) => {
     }
 
     // 2. Fetch survey IDs and names
-    const surveyData = surveys.map((survey) => ({
-      id: survey.id,
-      name: survey.name,
-    }));
-    const surveyIds = surveyData.map((survey) => survey.id);
+    const surveyData = await Promise.all(
+      surveys.map(async (survey) => {
+        // Fetch and count answers grouped by createdAt truncated to the minute
+        const answersGrouped = await Answer.findAll({
+          where: { surveyId: survey.id },
+          attributes: [
+            [
+              sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
+              "createdAt",
+            ],
+            [sequelize.fn("COUNT", sequelize.col("id")), "answerCount"],
+          ],
+          group: [
+            sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
+          ],
+          raw: true,
+        });
 
-    // 3. Fetch answers based on the surveyIds, group them by 'surveyId' and 'createdAt'
-    const answers = await Answer.findAll({
-      where: { surveyId: { [Op.in]: surveyIds } },
-      attributes: [
-        "surveyId",
-        "createdAt",
-        [sequelize.fn("COUNT", sequelize.col("id")), "answerCount"],
-      ],
-      group: ["surveyId", "createdAt"],
-    });
+        // Count unique grouped entries
+        const answerCount = answersGrouped.length;
 
-    // 4. Aggregate the grouped answers by survey
-    const feedback = surveyData.map((survey) => {
-      // Filter answers for the current survey
-      const surveyAnswers = answers.filter(
-        (answer) => answer.surveyId === survey.id
-      );
+        return {
+          surveyId: survey.id,
+          surveyName: survey.name,
+          answerCount, // Count of unique 'createdAt' groups for the survey
+        };
+      })
+    );
 
-      // Group by 'createdAt' and count unique 'createdAt' groups
-      const answerCount = surveyAnswers.length;
+    console.log("surveyData: ", surveyData);
 
-      return {
-        surveyId: survey.id,
-        surveyName: survey.name,
-        answerCount: answerCount, // Count of unique 'createdAt' entries for the survey
-      };
-    });
-
-    return res.status(200).json({ message: "success", feedback: feedback });
+    res.status(200).json({ message: "success", feedback: surveyData });
   } catch (error) {
-    //console.error("Error fetching feedback:", error);
     res.status(400).json({ message: error.message });
   }
 };
