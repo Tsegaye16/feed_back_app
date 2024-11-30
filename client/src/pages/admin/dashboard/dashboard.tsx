@@ -245,9 +245,9 @@ const Dashboard = () => {
                 paddingRight: "20px",
               }}
             >
-              <Badge count={4}>
+              {/* <Badge count={4}>
                 <NotificationOutlined style={{ fontSize: "24px" }} />
-              </Badge>
+              </Badge> */}
 
               <Dropdown overlay={menu} trigger={["click"]}>
                 <Avatar
