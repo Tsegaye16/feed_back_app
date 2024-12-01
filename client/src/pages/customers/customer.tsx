@@ -90,7 +90,7 @@ const Customer = () => {
   // Calculate progress percentage
   const calculateProgress = () => {
     const answeredCount = Object.keys(responses).length;
-    return (answeredCount / questions.length) * 100;
+    return Math.round((answeredCount / questions.length) * 100);
   };
   if (loading) {
     return (
@@ -351,10 +351,7 @@ const QuestionChoice: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-
             {index + 1}
-
-           
 
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
@@ -403,10 +400,7 @@ const QuestionRate: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-
             {index + 1}
-
-           
 
             {". "}
             <span dangerouslySetInnerHTML={{ __html: question.text }} />
@@ -436,7 +430,6 @@ const QuestionOpen: React.FC<QuestionProps> = ({
       <Form.Item
         label={
           <Title level={5}>
-
             {index + 1}
 
             {". "}

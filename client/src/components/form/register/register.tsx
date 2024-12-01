@@ -1,37 +1,28 @@
 import React, { useState } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  Typography,
-  message,
-  Avatar,
-  Watermark,
-  Spin,
-} from "antd";
+import { Form, Input, Button, Typography, message, Avatar, Spin } from "antd";
 import { LockOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-
+import { RegisterData } from "../../../constants/types/dataType";
 //import "./../form.css";
 import { signup } from "../../../redux/action/auth";
 
 const { Title, Link } = Typography;
 
-const initialState = {
+const initialState: RegisterData = {
   name: "",
   email: "",
   password: "",
 };
 
 const Registration = () => {
-  const [formData, setFormData] = useState(initialState);
+  const [formData, setFormData] = useState<RegisterData>(initialState);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { loading, error } = useSelector((state: any) => state.auth);
+  const { loading } = useSelector((state: any) => state.auth);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: RegisterData) => {
     const response = await dispatch(signup(values) as any);
 
     if (response?.payload?.message) {
@@ -208,5 +199,3 @@ const Registration = () => {
 };
 
 export default Registration;
-
-//////////////////////////////////////////////////////
