@@ -227,11 +227,12 @@ const Profile: React.FC<ProfileProps> = ({ user, company }) => {
         email: user?.email,
       }) as any
     );
+    console.log("response: ", response);
     if (response?.payload?.message) {
       message.success(`${response?.payload?.message}`);
       setShowChangePassword(false);
     } else if (response?.error) {
-      message.error(`${response.error}`);
+      message.error(`${response.payload}`);
     } else {
       message.error("Error changing password");
     }

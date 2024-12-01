@@ -54,7 +54,7 @@ export const updateCompany = createAsyncThunk(
 
 export const getCompanyById = createAsyncThunk(
   GATE_COMPANY_BY_MANAGER_ID,
-  async (managerId: any, { rejectWithValue }) => {
+  async (managerId: string, { rejectWithValue }) => {
     try {
       const response = await api.getCompanyByManagerId(managerId);
 
@@ -257,9 +257,14 @@ export const getPreviewData = createAsyncThunk(
   }
 );
 
+interface FullSurveyResponse {
+  questionData: { serveyId: string };
+  companyData: { name: string };
+  message: string;
+}
 export const getFullSurvey = createAsyncThunk(
   GET_FULL_SURVEY,
-  async (secretePhrase: any, { rejectWithValue }) => {
+  async (secretePhrase: string, { rejectWithValue }) => {
     try {
       const response = await api.getFullSurvey(secretePhrase);
       return response.data;

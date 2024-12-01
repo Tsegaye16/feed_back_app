@@ -39,14 +39,15 @@ import AddSurvey from "../serveys/addSurvey";
 import FeedBack from "../feebBack/feedBack";
 import FeedbackDetail from "../feebBack/feedbackDetail";
 import { LOGOUT } from "../../../constants/types/actionType";
+import { RootState } from "../../..";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 
 const Dashboard = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [selectedItem, setSelectedItem] = useState("Dashboard");
-  const [isServeysOpen, setIsServeysOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<string>("Dashboard");
+  const [isServeysOpen, setIsServeysOpen] = useState<boolean>(false);
   const [selectedAddSurvey, setSelectedAddSurvey] = useState(null);
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [selectedAddCompany, setSelectedAddCompany] = useState(null);
@@ -56,7 +57,7 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const token = localStorage.getItem("user");
+  const token = localStorage.getItem("user") as string;
 
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);

@@ -11,11 +11,7 @@ import upload from "../config/multerConfig.js";
 import {
   addOrUpdateCompanyInfo,
   getCompanyById,
-  addTrueFalseQuestion,
   getAllquestion,
-  updateTrueFalse,
-  deleteTrueFalse,
-  addChoiceQuestion,
   addServey,
   getAllServey,
   deleteServey,

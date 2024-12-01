@@ -155,27 +155,6 @@ const Published: React.FC<onClickType> = ({
     >
       <p>You are deleting a survey</p>
     </Modal>
-    // <Dialog
-    //   open={open}
-    //   onClose={handleClose}
-    //   aria-labelledby="alert-dialog-title"
-    //   aria-describedby="alert-dialog-description"
-    // >
-    //   <DialogTitle id="alert-dialog-title">
-    //     {"You are deleting survey"}
-    //   </DialogTitle>
-    //   <DialogContent>
-    //     <DialogContentText id="alert-dialog-description">
-    //       Are you sure?
-    //     </DialogContentText>
-    //   </DialogContent>
-    //   <DialogActions>
-    //     <Button onClick={handleClose}>No</Button>
-    //     <Button onClick={() => handleDeleteSurveys(selectedRowKeys)} autoFocus>
-    //       Yes
-    //     </Button>
-    //   </DialogActions>
-    // </Dialog>
   );
 
   // Edit selected servey functionality
