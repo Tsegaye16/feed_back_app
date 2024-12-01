@@ -10,28 +10,28 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { signin } from "../../../redux/action/auth";
 import { jwtDecode } from "jwt-decode";
-//import { RootState } from "../../../redux/store"; // Adjust import based on your store file structure
-
+import { AppDispatch, RootState } from "../../..";
+import { LoginData } from "../../../constants/types/dataType";
 const { Title } = Typography;
 
-const initialState = {
+const initialState: LoginData = {
   email: "",
   password: "",
 };
 
 const Login: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState(initialState);
+  const [formData, setFormData] = useState<LoginData>(initialState);
 
   // Select loading and error state from Redux store
-  const { loading, error } = useSelector((state: any) => state.auth);
+  const { loading, error } = useSelector((state: RootState) => state.auth);
 
   const token = localStorage.getItem("user");
 
   useEffect(() => {
     if (token) {
-      const decodedToken: any = jwtDecode(token);
+      const decodedToken: { exp: number } = jwtDecode(token);
       if (decodedToken.exp * 1000 > new Date().getTime()) {
         navigate("/manager");
       }
@@ -44,13 +44,12 @@ const Login: React.FC = () => {
     }
   }, [error]);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: LoginData) => {
     const response = await dispatch(signin(values) as any);
-    console.log("response: ", response);
-    if (response?.payload?.message) {
+    if ("payload" in response && response?.payload?.message) {
       message.success(`${response?.payload?.message}`);
       navigate("/manager");
-    } else if (response?.error) {
+    } else if ("error" in response) {
       if (response.payload.includes(":")) {
         message.error(`${response.payload.split(":")[1]?.trim()}`);
       } else {

@@ -11,7 +11,7 @@ const EmailConfirm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const query = new URLSearchParams(useLocation().search);
-  const token = query.get("token");
+  const token = query.get("token") as string;
 
   const [status, setStatus] = useState<"loading" | "success" | "error" | null>(
     null

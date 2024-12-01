@@ -1,31 +1,27 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { AuthResponse, AuthState } from "../../constants/types/dataType";
 import { emailConfirmation, signin, signup } from "../action/auth";
 
-interface AuthState {
-  authData: any | null; // Replace `any` with your actual auth data type
-}
-
+const initialState: AuthState = {
+  authData: null,
+  loading: false,
+  error: null,
+};
 const authSlice = createSlice({
   name: "auth",
-  initialState: {
-    authData: null,
-    loading: false,
-    error: null,
-  },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(signin.pending, (state) => {
         state.loading = true;
       })
-      .addCase(signin.fulfilled, (state, action) => {
+      .addCase(signin.fulfilled, (state, action: any) => {
         state.loading = false;
-
         state.authData = action.payload;
       })
       .addCase(signin.rejected, (state: any, action) => {
         state.loading = false;
-        //console.log("Action: ", action);
         state.error = action.payload;
       })
       .addCase(signup.pending, (state, action) => {
