@@ -1,9 +1,7 @@
 import axios from "axios";
-import { AuthFormData } from "../../constants/types/dataType";
-
+import { LoginData } from "../../constants/types/dataType";
 
 const isLocal = window.location.hostname === "localhost";
-
 
 const API = axios.create({
   baseURL: isLocal
@@ -11,7 +9,7 @@ const API = axios.create({
     : process.env.REACT_APP_PROD_API_BASE_URL,
 });
 
-export const signIn = async (formData: any) => {
+export const signIn = async (formData: LoginData) => {
   try {
     return await API.post("/signin", formData);
   } catch (error) {
@@ -19,7 +17,7 @@ export const signIn = async (formData: any) => {
   }
 };
 
-export const signUp = async (formData: AuthFormData) => {
+export const signUp = async (formData: LoginData) => {
   try {
     return API.post("/signup", formData);
   } catch (error) {
@@ -121,7 +119,6 @@ export const addQuestion = async (questionInfo: any) => {
   }
 };
 
-
 export const updateQuestion = async (id: any, questionInfo: any) => {
   try {
     return await API.put(`/updateQuestion/${id}`, questionInfo);
@@ -136,7 +133,6 @@ export const getPreviewParams = async (serveyId: any) => {
     throw error;
   }
 };
-
 
 export const getPreviewData = async (companyName: any, surveyId: any) => {
   try {
@@ -227,7 +223,6 @@ export const emailConfirmation = async (token: any) => {
   }
 };
 
-
 export const sortQuestion = async (data: any) => {
   try {
     return await API.put("/sortQuestion", data);
@@ -235,8 +230,3 @@ export const sortQuestion = async (data: any) => {
     throw error;
   }
 };
-
-
-
-
-
