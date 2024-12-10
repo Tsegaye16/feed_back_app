@@ -21,6 +21,7 @@ import {
   UnorderedListOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -39,6 +40,8 @@ import AddSurvey from "../serveys/addSurvey";
 import FeedBack from "../feebBack/feedBack";
 import FeedbackDetail from "../feebBack/feedbackDetail";
 import { LOGOUT } from "../../../constants/types/actionType";
+import { toggleTheme } from "../../../redux/reducer/theme";
+//import { toggleTheme } from "../../../redux/action/theme";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -141,6 +144,14 @@ const Dashboard = () => {
     setFeedbackDetail(null);
   };
 
+  // Theming functionality
+
+  const theme = useSelector((state: any) => state.theme); // Adjust state typing if needed
+  // console.log("theme: ", theme);
+  const handleToggleTheme = () => {
+    dispatch(toggleTheme());
+  };
+
   const menu = (
     <Menu onClick={({ key }) => handleMenuItemClick(key)}>
       <Menu.Item key="profile" icon={<UserOutlined />}>
@@ -156,12 +167,16 @@ const Dashboard = () => {
   );
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout
+      style={{
+        minHeight: "100vh",
+      }}
+    >
       <Sider
         collapsible
         collapsed={collapsed}
         onCollapse={toggleCollapsed}
-        theme="light"
+        theme={theme}
         style={{ position: "fixed", height: "100vh", left: 0, top: 0 }}
       >
         {company === null ? (
@@ -172,14 +187,22 @@ const Dashboard = () => {
             style={{ padding: "16px", textAlign: "center" }}
           >
             <Avatar
+              style={{
+                backgroundColor: `${theme === "light" ? "black" : "white"}`,
+              }}
               src={`https://feed-back-app.onrender.com/${company?.logo}`}
             />
-            <Title level={5}>{company?.name}</Title>
+            <Title
+              level={5}
+              style={{ color: `${theme === "dark" ? "white" : "black"}` }}
+            >
+              {company?.name}
+            </Title>
           </div>
         )}
 
         <Menu
-          //theme="light"
+          theme={theme}
           defaultSelectedKeys={["Dashboard"]}
           mode="inline"
           onClick={({ key }) => handleMenuItemClick(key)}
@@ -217,12 +240,13 @@ const Dashboard = () => {
         style={{
           marginLeft: collapsed ? 80 : 200,
           transition: "margin-left 0.2s",
-          backgroundColor: "#FAF9F6",
+          color: `${theme === "light" ? "black" : "white"}`,
+          backgroundColor: `${theme === "light" ? "#FAF9F6" : "black"}`,
         }}
       >
         <Header
           style={{
-            backgroundColor: "white",
+            backgroundColor: `${theme === "light" ? "white" : "#001529"}`,
             padding: 0,
             top: 0,
             position: "sticky",
@@ -234,7 +258,12 @@ const Dashboard = () => {
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={toggleCollapsed}
-              style={{ fontSize: "16px", width: 64, height: 64 }}
+              style={{
+                fontSize: "16px",
+                width: 64,
+                height: 64,
+                color: `${theme === "light" ? "black" : "white"}`,
+              }}
             />
 
             <div
@@ -245,6 +274,15 @@ const Dashboard = () => {
                 paddingRight: "20px",
               }}
             >
+              <Button
+                type="text"
+                icon={theme === "dark" ? <SunOutlined /> : <MoonOutlined />}
+                onClick={handleToggleTheme}
+                style={{
+                  fontSize: "16px",
+                  color: `${theme === "light" ? "black" : "white"}`,
+                }}
+              />
               {/* <Badge count={4}>
                 <NotificationOutlined style={{ fontSize: "24px" }} />
               </Badge> */}
@@ -255,7 +293,14 @@ const Dashboard = () => {
                   style={{ cursor: "pointer" }}
                 />
               </Dropdown>
-              <Title level={5}>{user?.name}</Title>
+              <Title
+                level={5}
+                style={{
+                  color: `${theme === "light" ? "black" : "white"}`,
+                }}
+              >
+                {user?.name}
+              </Title>
             </div>
           </div>
         </Header>

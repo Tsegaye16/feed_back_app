@@ -13,6 +13,7 @@ import { LOGOUT } from "../../constants/types/actionType";
 import recentFeedbackReducer from "./recentFeedback";
 import secretePhrasekReducer from "./secretePhrase";
 import previewParamReducer from "./previewParams";
+import themeReducer from "./theme";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -27,6 +28,7 @@ const appReducer = combineReducers({
   recentFeedback: recentFeedbackReducer,
   phrase: secretePhrasekReducer,
   param: previewParamReducer,
+  theme: themeReducer,
 });
 
 const rootReducer = (state: any, action: any) => {

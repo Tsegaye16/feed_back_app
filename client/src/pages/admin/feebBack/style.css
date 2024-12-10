@@ -1,0 +1,6 @@
+table > tbody > tr {
+  background-color: aqua;
+}
+table > tbody > tr:hover {
+  background-color: blue !important;
+}

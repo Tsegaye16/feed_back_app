@@ -1,8 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Table, Button } from "antd"; // Import Table and Button from Ant Design
+import { Table, Button, Typography } from "antd"; // Import Table and Button from Ant Design
 import { getFeedback } from "../../../redux/action/answer";
-import styled from "@emotion/styled";
+import "./style.css";
+const { Title } = Typography;
+
+const themeStyles: any = {
+  dark: {
+    container: {
+      backgroundColor: "#333",
+      color: "#fff",
+    },
+    color: "#fff",
+  },
+  light: {
+    container: {
+      backgroundColor: "#fff",
+      color: "#333",
+    },
+    color: "black",
+  },
+};
 
 interface FeedbackType {
   surveyId: string;
@@ -60,9 +78,21 @@ const FeedBack: React.FC<PropType> = ({
     },
   ];
 
+  const theme = useSelector((state: any) => state.theme);
+  const styles = themeStyles[theme];
+
   return (
-    <div>
-      <h2>Feedback</h2>
+    <div style={styles.container}>
+      <Title
+        level={5}
+        style={{
+          marginBottom: "20px",
+          marginLeft: "30px",
+          color: styles.color,
+        }}
+      >
+        Feedback
+      </Title>
       {/* Ant Design Table component */}
       <Table<FeedbackType>
         columns={columns}

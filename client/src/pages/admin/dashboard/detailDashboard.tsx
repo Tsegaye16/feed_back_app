@@ -18,11 +18,38 @@ import {
 import { getStatData } from "../../../redux/action/stat";
 import { getRecentFeedback } from "../../../redux/action/feedback";
 import moment from "moment";
+import { fontWeight } from "html2canvas/dist/types/css/property-descriptors/font-weight";
 const { Title, Text } = Typography;
 // Sample data
 
 // Color configuration for PieChart
 const COLORS = ["#FF4D4F", "#52C41A", "#FAAD14"];
+const themeStyles: any = {
+  light: {
+    background: "#ffffff",
+    color: "#000000",
+    cardShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+    cardBackground: "#f9f9f9",
+    answerColor: "#1DA57A",
+    cardTitle: {
+      font: "16px",
+      fontWeight: 500,
+      color: "rgba(0, 0, 0, 0.85)",
+    },
+  },
+  dark: {
+    background: "#1f1f1f",
+    color: "#ffffff",
+    cardShadow: "0 4px 12px rgba(255, 255, 255, 0.1)",
+    cardBackground: "#2b2b2b",
+    answerColor: "#52c41a",
+    cardTitle: {
+      font: "16px",
+      fontWeight: 500,
+      color: "rgba(255, 255, 255, 0.85)",
+    },
+  },
+};
 
 interface propType {
   companyId: any;
@@ -40,7 +67,6 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
   const todayData = useSelector(
     (state: any) => state.recentFeedback?.recentFeedback?.data
   );
-  console.log("todayData: ", todayData);
 
   const barData = statData?.dailyAnswersThisWeek;
   const pieData = [
@@ -48,22 +74,34 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
     { name: "Positive", value: statData?.averageSentiment?.POSITIVE },
     { name: "Neutral", value: statData?.averageSentiment?.NEUTRAL },
   ];
+
+  const theme = useSelector((state: any) => state.theme);
+  const styles = themeStyles[theme];
   return (
-    <div style={{ padding: "20px" }}>
+    <div
+      style={{
+        padding: "20px",
+        //backgroundColor: styles.background,
+        color: styles.color,
+      }}
+    >
       <Timeline style={{ padding: "10px 0" }}>
         <Title>Todays feed back</Title>
         {todayData && todayData.length > 0 ? (
           todayData.map((feedback: any, index: number) => (
             <Timeline.Item
               key={index}
-              dot={
-                <span style={{ fontSize: "14px", color: "#1890ff" }}>⬤</span>
-              }
+              dot={<span style={{ fontSize: "14px" }}>⬤</span>}
               style={{ paddingBottom: "20px" }}
             >
               <Card
                 title={
-                  <Text style={{ color: "#1890ff" }}>
+                  <Text
+                    style={{
+                      color: styles.color,
+                      // backgroundColor: styles.cardBackground,
+                    }}
+                  >
                     Feedback Received:{" "}
                     {moment(feedback.timestamp).format("h:mm:ss a")}
                   </Text>
@@ -73,10 +111,18 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
                 style={{
                   marginBottom: "20px",
                   borderRadius: "10px",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  // boxShadow: styles.cardShadow,
+                  backgroundColor: styles.background,
                 }}
               >
-                <Divider>Feedback Details</Divider>
+                <Divider
+                  style={{
+                    border: `${styles.color}`,
+                    color: styles.color,
+                  }}
+                >
+                  Feedback Details
+                </Divider>
                 {feedback.questionsWithAnswers.map(
                   (questionWithAnswer: any, qIndex: number) => (
                     <div key={qIndex} style={{ marginBottom: "25px" }}>
@@ -84,7 +130,7 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
                         strong
                         style={{
                           fontSize: "16px",
-                          color: "#595959",
+                          color: styles.color,
                           display: "block",
                           marginBottom: "8px",
                         }}
@@ -99,14 +145,14 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
                           paddingLeft: "10px",
                           marginBottom: "10px",
                           fontStyle: "italic",
-                          color: "#3d3d3d",
+                          color: styles.answerColor,
                         }}
                       />
                       <Text
                         strong
                         style={{
                           fontSize: "15px",
-                          color: "#595959",
+                          color: styles.color,
                           marginTop: "10px",
                         }}
                       >
@@ -119,7 +165,7 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
                         style={{
                           paddingLeft: "10px",
                           marginTop: "5px",
-                          color: "#1DA57A", // Make answer more prominent with green color
+                          color: styles.answerColor, // Make answer more prominent with green color
                           fontSize: "14px",
                         }}
                       />
@@ -130,25 +176,38 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
             </Timeline.Item>
           ))
         ) : (
-          <Text>No feedback available.</Text>
+          <Text style={{ color: styles.color }}>No feedback available.</Text>
         )}
       </Timeline>
       {/* First Section: Overview */}
       <Row gutter={[16, 16]}>
         {/* Average Rate */}
-        <Col xs={24} sm={12} md={6}>
+        <Col
+          xs={24}
+          sm={12}
+          md={6}
+          //style={{ backgroundColor: styles.background  }}
+        >
           <Card
             style={{
               height: "100%",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              backgroundColor: styles.background,
+              border: "none",
+              //boxShadow: styles.cardShadow,
             }}
           >
             <Statistic
-              title="Average Rate"
+              title={
+                <Text type="secondary" style={{ color: styles.color }}>
+                  Average Rate
+                </Text>
+              }
               value={statData?.averageRate}
               precision={1}
+              valueStyle={{ color: styles.color }}
             />
           </Card>
         </Col>
@@ -160,14 +219,21 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              backgroundColor: styles.background,
+              border: "none",
             }}
           >
             <Statistic
-              title="Total Surveys"
+              title={
+                <Text type="secondary" style={{ color: styles.color }}>
+                  Total Surveys
+                </Text>
+              }
               value={
                 (statData?.publishedSurveys ?? 0) +
                 (statData?.draftedSurvey ?? 0)
               }
+              valueStyle={{ color: styles.color }}
             />
             <div
               style={{
@@ -177,10 +243,23 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
               }}
             >
               <Statistic
-                title="Published"
+                title={
+                  <Text type="secondary" style={{ color: styles.color }}>
+                    Published
+                  </Text>
+                }
                 value={statData?.publishedSurveys ?? 0}
+                valueStyle={{ color: styles.color }}
               />
-              <Statistic title="Drafted" value={statData?.draftedSurvey ?? 0} />
+              <Statistic
+                title={
+                  <Text type="secondary" style={{ color: styles.color }}>
+                    Drafted
+                  </Text>
+                }
+                value={statData?.draftedSurvey ?? 0}
+                valueStyle={{ color: styles.color }}
+              />
             </div>
           </Card>
         </Col>
@@ -192,9 +271,19 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              backgroundColor: styles.background,
+              border: "none",
             }}
           >
-            <Statistic title="Total Feedback" value={statData?.totalAnswers} />
+            <Statistic
+              title={
+                <Text type="secondary" style={{ color: styles.color }}>
+                  Total Feedback
+                </Text>
+              }
+              value={statData?.totalAnswers}
+              valueStyle={{ color: styles.color }}
+            />
             <div
               style={{
                 display: "flex",
@@ -203,16 +292,31 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
               }}
             >
               <Statistic
-                title="Positive"
+                title={
+                  <Text type="secondary" style={{ color: styles.color }}>
+                    Positive
+                  </Text>
+                }
                 value={`${statData?.averageSentiment?.POSITIVE ?? 0}%`}
+                valueStyle={{ color: styles.color }}
               />
               <Statistic
-                title="Neutral"
+                title={
+                  <Text type="secondary" style={{ color: styles.color }}>
+                    Neutral
+                  </Text>
+                }
                 value={`${statData?.averageSentiment?.NEUTRAL ?? 0}%`}
+                valueStyle={{ color: styles.color }}
               />
               <Statistic
-                title="Negative"
+                title={
+                  <Text type="secondary" style={{ color: styles.color }}>
+                    Negative
+                  </Text>
+                }
                 value={`${statData?.averageSentiment?.NEGATIVE ?? 0}%`}
+                valueStyle={{ color: styles.color }}
               />
             </div>
           </Card>
@@ -225,11 +329,18 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              backgroundColor: styles.background,
+              border: "none",
             }}
           >
             <Statistic
-              title="Weekly Feedback"
+              title={
+                <Text type="secondary" style={{ color: styles.color }}>
+                  Weekly Feedback
+                </Text>
+              }
               value={statData?.thisWeekAnswers}
+              valueStyle={{ color: styles.color }}
             />
           </Card>
         </Col>
@@ -238,7 +349,10 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
       {/* Second Section: Feedback Distribution (Pie Chart) */}
       <Row gutter={16} style={{ marginTop: "20px" }}>
         <Col xs={24} md={12}>
-          <Card title="Feedback Distribution">
+          <Card
+            title={<Text style={styles.cardTitle}>Feedback Distribution</Text>}
+            style={{ backgroundColor: styles.background, border: "none" }}
+          >
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -264,7 +378,12 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
         </Col>
 
         <Col xs={24} md={12}>
-          <Card title="Weekly Feedback (Bar Chart)">
+          <Card
+            title={
+              <Text style={styles.cardTitle}>Weekly Feedback (Bar Chart)</Text>
+            }
+            style={{ backgroundColor: styles.background, border: "none" }}
+          >
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={barData} barCategoryGap="20%">
                 <CartesianGrid strokeDasharray="3 3" />
