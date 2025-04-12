@@ -33,3 +33,17 @@ export const getFeedback = createAsyncThunk(
     }
   }
 );
+
+export const getReport = createAsyncThunk(
+  "GET_REPORT",
+  async (surveyId: string, { rejectWithValue }) => {
+    try {
+      const response = await api.getReport(surveyId);
+      return response.data;
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.message || "Something went wrong";
+      return rejectWithValue(errorMessage);
+    }
+  }
+);

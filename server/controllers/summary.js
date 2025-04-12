@@ -1,5 +1,5 @@
 // src/controllers/summarize.controller.ts
-import { Request, Response } from "express";
+//import { Request, Response } from "express";
 import axios from "axios";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -11,10 +11,12 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 export const getSurveySummary = async (req, res) => {
   try {
     // 1. Get data from your API
+    console.log("Fetching survey data from API...");
     if (!process.env.SUMMARY_SOURCE_API) {
       throw new Error("SUMMARY_SOURCE_API environment variable is not defined");
     }
     const surveyResponse = await axios.get(process.env.SUMMARY_SOURCE_API);
+    console.log("Survey Response:", surveyResponse.data);
     const surveyData = JSON.stringify(surveyResponse.data);
 
     // 2. Prepare Gemini prompt

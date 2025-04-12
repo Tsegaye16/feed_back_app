@@ -9,14 +9,14 @@ export const sequelize = new Sequelize(
 
   {
     host: process.env.DB_HOST, // Just the hostname (without the 'postgresql://')
-    port: process.env.DB_PORT || 5432,
+    port: process.env.DB_PORT,
     dialect: "postgres",
     logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    },
+    // dialectOptions: {
+    //   ssl: {
+    //     require: true,
+    //     rejectUnauthorized: false,
+    //   },
+    //},
   }
 );

@@ -230,3 +230,11 @@ export const sortQuestion = async (data: any) => {
     throw error;
   }
 };
+
+export const getReport = async (surveyId: string) => {
+  try {
+    return await API.get(`/getReport/${surveyId}`);
+  } catch (error) {
+    throw error;
+  }
+};

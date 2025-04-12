@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import router from "./routes/userRout.js";
-import summarizeRoutes from "./routes/summarize.route";
+import summarizeRoutes from "./routes/summarize.js";
 const app = express();
 // Serve the uploaded images statically
 app.use(express.static("uploads"));

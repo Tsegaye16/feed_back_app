@@ -53,6 +53,7 @@ const Dashboard = () => {
   const [selectedAddQuestion, setSelectedAddQuestion] = useState(null);
   const [selectedEditQuestion, setSelectedEditQuestion] = useState(null);
   const [feedbackDetail, setFeedbackDetail] = useState(null);
+  const [summaryDetail, setSummaryDetail] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -100,6 +101,7 @@ const Dashboard = () => {
     setSelectedEditQuestion(null);
     setSelectedAddSurvey(null);
     setFeedbackDetail(null);
+    setSummaryDetail(null);
   };
 
   const handleServeysClick = () => {
@@ -245,9 +247,9 @@ const Dashboard = () => {
                 paddingRight: "20px",
               }}
             >
-              {/* <Badge count={4}>
+              <Badge count={4}>
                 <NotificationOutlined style={{ fontSize: "24px" }} />
-              </Badge> */}
+              </Badge>
 
               <Dropdown overlay={menu} trigger={["click"]}>
                 <Avatar
@@ -315,6 +317,7 @@ const Dashboard = () => {
                 <FeedBack
                   companyId={company?.id}
                   handleFeedbackDetailClick={handleFeedbackDetailClick}
+                 
                 />
               )}
               {selectedItem === "setting" && (

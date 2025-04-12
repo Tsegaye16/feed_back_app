@@ -7,6 +7,8 @@ import moment from "moment";
 import { sequelize } from "../db.js";
 import { catchAsync } from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
+import dotenv from "dotenv";
+//import { GeminiLLM } from "gemini-llm";
 
 export const addOrUpdateCompanyInfo = catchAsync(async (req, res, next) => {
   const { name, backgroundColor, textColor, managerId } = req.body;
@@ -764,5 +766,124 @@ export const checkSecretePhrase = catchAsync(async (req, res, next) => {
     res.status(400).json({ message: "currently in use" });
   } else {
     res.status(200).json({ message: "available" });
+  }
+});
+
+import { GoogleGenerativeAI } from "@google/generative-ai";
+// Load environment variables from .env file
+dotenv.config({ path: "./.env" });
+
+// Get the API key from environment variables
+const LLM_API_KEY = process.env.GEMINI_API_KEY;
+
+// Configuration for the Gemini model
+const geminiConfig = {
+  temperature: 0.4,
+  topP: 1,
+  topK: 32,
+  maxOutputTokens: 4096,
+};
+
+// Initialize the GoogleGenerativeAI instance with the API key
+const googleAI = new GoogleGenerativeAI(LLM_API_KEY);
+
+// Get the Gemini model instance
+const geminiModel = googleAI.getGenerativeModel({
+  model: "gemini-2.0-flash",
+  geminiConfig,
+});
+
+/**
+ * Function to generate a feedback report using the Gemini LLM.
+ */
+
+export const getFeedbackReport = catchAsync(async (req, res, next) => {
+  const surveyId = req.params.surveyId;
+
+  // 1. Fetch all answers based on the surveyId
+  const answers = await Answer.findAll({
+    where: {
+      surveyId: surveyId,
+    },
+    raw: true, // Fetch data as raw objects
+  });
+
+  if (!answers || answers.length === 0) {
+    return next(new AppError("No answers found for the given survey ID.", 404));
+  }
+
+  // 2. Group the fetched answers by createdAt (including hour, minute, second, millisecond)
+  const groupedAnswers = answers.reduce((acc, answer) => {
+    const createdAtFull = moment(answer.createdAt).format(
+      "YYYY-MM-DD HH:mm:ss"
+    ); // Full timestamp including milliseconds
+
+    if (!acc[createdAtFull]) {
+      acc[createdAtFull] = [];
+    }
+    acc[createdAtFull].push(answer);
+    return acc;
+  }, {});
+
+  // 3. Fetch the questions related to the grouped answers (question.id = answer.questionId)
+  const questionIds = [...new Set(answers.map((answer) => answer.questionId))]; // Get unique question IDs
+
+  const questions = await Question.findAll({
+    where: {
+      id: {
+        [Op.in]: questionIds,
+      },
+    },
+    raw: true,
+  });
+
+  if (!questions || questions.length === 0) {
+    return next(
+      new AppError("No questions found for the given survey ID.", 404)
+    );
+  }
+
+  // 4. Prepare the data for the Gemini LLM
+  const feedbackData = Object.keys(groupedAnswers).map((timestamp) => {
+    const answersForTimestamp = groupedAnswers[timestamp];
+
+    const questionsWithAnswers = answersForTimestamp.map((answer) => {
+      const question = questions.find((q) => q.id === answer.questionId);
+      return {
+        question: question ? question.text : "Question not found", // You can adjust to return full question details if needed
+        answer: answer.answer, // Assuming your Answer model has an 'answerText' field
+      };
+    });
+
+    return {
+      timestamp, // Full timestamp (YYYY-MM-DD HH:mm:ss.SSS)
+      questionsWithAnswers,
+    };
+  });
+
+  // 5. Generate the report using Gemini LLM
+  try {
+    const promptConfig = [
+      {
+        text: "Generate a comprehensive report based on the following feedback data:",
+      },
+      { text: JSON.stringify(feedbackData, null, 2) },
+    ];
+
+    const result = await geminiModel.generateContent({
+      contents: [{ role: "user", parts: promptConfig }],
+    });
+
+    const response = await result.response;
+    const report = await response.text();
+    console.log("Data: ", report);
+    // 6. Send the generated report back to the client
+    return res.status(200).json({
+      status: "success",
+      data: report,
+    });
+  } catch (error) {
+    console.error("Error generating report:", error);
+    return next(new AppError("Failed to generate report.", 500));
   }
 });
