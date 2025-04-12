@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import "./App.css";
 import Home from "./components/home";
-
+import RootLayout from "./components/RootLayout";
 import Dashboard from "./pages/admin/dashboard/dashboard";
 import Login from "./components/form/login/login";
 import Registration from "./components/form/register/register";
@@ -26,23 +26,53 @@ const App: React.FC = () => {
         draggable
         pauseOnHover
       />
+
       <Routes>
+        {/* Pages that don't use the layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Registration />} />
 
-        <Route path="/" element={<Home />} />
-
-        <Route path="/confirm-email" element={<EmailConfirm />} />
+        {/* Pages wrapped in layout */}
         <Route
-          path={"/:companyName/surveys/preview/:surveyId"}
-          element={<Preview />}
+          path="/"
+          element={
+            <RootLayout>
+              <Home />
+            </RootLayout>
+          }
         />
         <Route
-          path={"/:companyName/surveys/:surveyId"}
-          element={<Customer />}
+          path="/confirm-email"
+          element={
+            <RootLayout>
+              <EmailConfirm />
+            </RootLayout>
+          }
         />
-
-        <Route path="/manager" element={<Dashboard />} />
+        <Route
+          path="/:companyName/surveys/preview/:surveyId"
+          element={
+            <RootLayout>
+              <Preview />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/:companyName/surveys/:surveyId"
+          element={
+            <RootLayout>
+              <Customer />
+            </RootLayout>
+          }
+        />
+        <Route
+          path="/manager"
+          element={
+            <RootLayout>
+              <Dashboard />
+            </RootLayout>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

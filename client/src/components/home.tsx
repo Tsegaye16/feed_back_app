@@ -17,8 +17,10 @@ const Home: React.FC = () => {
       const response = await dispatch(getFullSurvey(secretePhrase) as any);
 
       if (response?.error) {
-        message.error(response.error);
+        message.error(response.payload || "Failed to fetch the survey.");
+        //message.error(`${response.payload}`);
       } else if (response?.payload) {
+        //console.log("response: ", response.payload);
         const surveyId = response.payload?.questionData?.serveyId;
         const companyName = response.payload?.companyData?.name;
 
