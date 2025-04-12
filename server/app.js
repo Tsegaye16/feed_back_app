@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import router from "./routes/userRout.js";
+import summarizeRoutes from "./routes/summarize.route";
 const app = express();
 // Serve the uploaded images statically
 app.use(express.static("uploads"));
@@ -18,6 +19,7 @@ app.use(
 app.use(cors());
 // Routes
 app.use("/user", router);
+app.use("/api", summarizeRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
