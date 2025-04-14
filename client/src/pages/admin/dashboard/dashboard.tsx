@@ -144,13 +144,13 @@ const Dashboard = () => {
     setFeedbackDetail(null);
   };
 
-  // Theming functionality
+  // // Theming functionality
 
-  const theme = useSelector((state: any) => state.theme); // Adjust state typing if needed
-  // console.log("theme: ", theme);
-  const handleToggleTheme = () => {
-    dispatch(toggleTheme());
-  };
+  // const theme = useSelector((state: any) => state.theme); // Adjust state typing if needed
+  // // console.log("theme: ", theme);
+  // const handleToggleTheme = () => {
+  //   dispatch(toggleTheme());
+  // };
 
   const menu = (
     <Menu onClick={({ key }) => handleMenuItemClick(key)}>
@@ -176,7 +176,7 @@ const Dashboard = () => {
         collapsible
         collapsed={collapsed}
         onCollapse={toggleCollapsed}
-        theme={theme}
+        theme="light"
         style={{ position: "fixed", height: "100vh", left: 0, top: 0 }}
       >
         {company === null ? (
@@ -187,22 +187,14 @@ const Dashboard = () => {
             style={{ padding: "16px", textAlign: "center" }}
           >
             <Avatar
-              style={{
-                backgroundColor: `${theme === "light" ? "black" : "white"}`,
-              }}
               src={`https://feed-back-app.onrender.com/${company?.logo}`}
             />
-            <Title
-              level={5}
-              style={{ color: `${theme === "dark" ? "white" : "black"}` }}
-            >
-              {company?.name}
-            </Title>
+            <Title level={5}>{company?.name}</Title>
           </div>
         )}
 
         <Menu
-          theme={theme}
+          //theme={theme}
           defaultSelectedKeys={["Dashboard"]}
           mode="inline"
           onClick={({ key }) => handleMenuItemClick(key)}
@@ -240,13 +232,12 @@ const Dashboard = () => {
         style={{
           marginLeft: collapsed ? 80 : 200,
           transition: "margin-left 0.2s",
-          color: `${theme === "light" ? "black" : "white"}`,
-          backgroundColor: `${theme === "light" ? "#FAF9F6" : "black"}`,
+          backgroundColor: "#FAF9F6",
         }}
       >
         <Header
           style={{
-            backgroundColor: `${theme === "light" ? "white" : "#001529"}`,
+            backgroundColor: "white",
             padding: 0,
             top: 0,
             position: "sticky",
@@ -258,12 +249,7 @@ const Dashboard = () => {
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={toggleCollapsed}
-              style={{
-                fontSize: "16px",
-                width: 64,
-                height: 64,
-                color: `${theme === "light" ? "black" : "white"}`,
-              }}
+              style={{ fontSize: "16px", width: 64, height: 64 }}
             />
 
             <div
@@ -274,7 +260,7 @@ const Dashboard = () => {
                 paddingRight: "20px",
               }}
             >
-              <Button
+              {/* <Button
                 type="text"
                 icon={theme === "dark" ? <SunOutlined /> : <MoonOutlined />}
                 onClick={handleToggleTheme}
@@ -282,10 +268,10 @@ const Dashboard = () => {
                   fontSize: "16px",
                   color: `${theme === "light" ? "black" : "white"}`,
                 }}
-              />
-              {/* <Badge count={4}>
+              /> */}
+              <Badge count={4}>
                 <NotificationOutlined style={{ fontSize: "24px" }} />
-              </Badge> */}
+              </Badge>
 
               <Dropdown overlay={menu} trigger={["click"]}>
                 <Avatar
@@ -293,14 +279,7 @@ const Dashboard = () => {
                   style={{ cursor: "pointer" }}
                 />
               </Dropdown>
-              <Title
-                level={5}
-                style={{
-                  color: `${theme === "light" ? "black" : "white"}`,
-                }}
-              >
-                {user?.name}
-              </Title>
+              <Title level={5}>{user?.name}</Title>
             </div>
           </div>
         </Header>
