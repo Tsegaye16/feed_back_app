@@ -7,6 +7,12 @@ import moment from "moment";
 import { sequelize } from "../db.js";
 import { catchAsync } from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
+import { GoogleGenAI } from "@google/genai";
+
+import dotenv from 'dotenv';
+import User from "../models/userModel.js";
+
+dotenv.config();
 
 export const addOrUpdateCompanyInfo = catchAsync(async (req, res, next) => {
   const { name, backgroundColor, textColor, managerId } = req.body;
@@ -155,69 +161,60 @@ export const addQuestion = catchAsync(async (req, res) => {
 export const getPreviewParams = catchAsync(async (req, res) => {
   const serveyId = req.params.serveyId;
 
-  // 1. fetch companyId from Serveys where serveyId = serveyId
-  const ServerInfo = await Servey.findOne({
-    where: {
-      id: serveyId,
-    },
-    attributes: ["companyId"],
+  // Fetch the Servey along with its associated Company in a single query
+  const servey = await Servey.findOne({
+    where: { id: serveyId },
+    include: [
+      {
+        model: Company,
+        attributes: ["name"],
+      },
+    ],
+    attributes: [], // Exclude Servey attributes, we only need the included Company
   });
-  const companyId = ServerInfo.dataValues.companyId;
 
-  // 2. fetch company name from Companies where id = companyId
-  const CompanyInfo = await Company.findOne({
-    where: {
-      id: companyId,
-    },
-    attributes: ["name"],
-  });
-  const companyName = CompanyInfo.dataValues.name;
+  if (!servey) {
+    return res.status(404).json({ message: "Servey not found" });
+  }
 
-  // 3. send company name, servey is and message to client
-  res.json({ companyName, serveyId, message: "succuss" });
+  const companyName = servey.Company.name;
+
+  // Send company name, serveyId, and message to client
+  res.json({ companyName, serveyId, message: "success" });
 });
 
 export const getPreviewData = catchAsync(async (req, res, next) => {
   const { companyName, surveyId } = req.params;
 
-  // 1. Fetch the company data from Companies by its name
-  const CompanyInfo = await Company.findOne({
-    where: {
-      name: companyName,
-    },
+  // Fetch the Company along with its associated Serveys and Questions in a single query
+  const company = await Company.findOne({
+    where: { name: companyName },
+    include: [
+      {
+        model: Servey,
+        where: { id: surveyId },
+        include: [
+          {
+            model: Question,
+            order: [["index", "ASC"]],
+          },
+        ],
+      },
+    ],
   });
 
-  if (!CompanyInfo) {
-    return next(new AppError("Company not found", 404));
+  if (!company) {
+    return next(new AppError("Company or Survey not found", 404));
   }
 
-  const companyId = CompanyInfo.id;
-
-  // 2. Check whether surveyId exists in Serveys table with the correct companyId
-  const SurveyInfo = await Servey.findOne({
-    where: {
-      id: surveyId, // Include surveyId in the query
-      companyId: companyId, // Ensure the survey belongs to the company
-    },
-  });
-
-  if (!SurveyInfo) {
-    return next(new AppError("Survey not found", 404));
-  }
-
-  // 3. Fetch all questions from the Questions table where surveyId matches
-  const QuestionInfo = await Question.findAll({
-    where: {
-      serveyId: surveyId,
-    },
-    order: [["index", "ASC"]],
-  });
+  const questions = company.Serveys[0]?.Questions || [];
 
   res.status(200).json({
-    questions: QuestionInfo,
-    CompanyInfo,
+    questions,
+    company,
   });
 });
+
 
 export const getQuestionBySurveyId = catchAsync(async (req, res) => {
   const id = req.params.surveyId;
@@ -311,58 +308,62 @@ export const sortQuestion = catchAsync(async (req, res) => {
 // get a full servey for client
 export const getFullSurvey = catchAsync(async (req, res, next) => {
   const secretePhrase = req.params.secretePhrase;
-  // 1. get companyId from survey table where secretePhrase = secretePhrase
-  const data = await Servey.findOne({
-    where: {
-      secretePhrase: secretePhrase,
-    },
+
+  // Fetch the Servey along with its associated Company and Questions in a single query
+  const servey = await Servey.findOne({
+    where: { secretePhrase: secretePhrase, isPublished: true },
+    include: [
+      {
+        model: Company,
+        include: [
+          {
+            model: User,
+            as: "manager",
+            attributes: ["id", "name", "email"], // Include manager details if needed
+          },
+        ],
+      },
+      {
+        model: Question,
+        order: [["index", "ASC"]],
+      },
+    ],
     attributes: ["id", "companyId", "isPublished"],
   });
 
-  if (!data) {
-    return next(new AppError("Survey not found on this secrete phrase", 404));
-  }
-  const isPublished = data.dataValues.isPublished;
-  if (!isPublished) {
-    return next(new AppError("Survey is not published", 404));
-  }
-  const companyId = data.dataValues.companyId;
-  const surveyId = data.dataValues.id;
-
-  // 2. get entire question data from question table where surveyId = surveyId
-
-  const questionData = await Question.findOne({
-    where: {
-      serveyId: surveyId,
-    },
-  });
-
-  if (!questionData) {
-    return next(new AppError("Survey not found on this secrete phrase", 404));
+  if (!servey) {
+    return next(new AppError("Survey not found or not published", 404));
   }
 
-  // 3. get full company information where companyId = companyId
-  const companyData = await Company.findOne({
-    where: {
-      id: companyId,
-    },
-  });
-
-  // 4. get managerId from Company where companyId = companyId
-
-  if (!companyData) {
-    return next(new AppError("Company not found on this secrete phrase", 404));
-  }
+  const companyData = servey.Company;
+  const questionData = servey.Questions;
 
   res.status(200).json({ message: "success", companyData, questionData });
 });
 
-// Submit Answer
-// import { pipeline } from "@xenova/transformers";
-// let pip;
-// (async () => {
-//   pip = await pipeline("sentiment-analysis");
-// })();
+
+
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY });
+
+const analyzeSentiment = async (text) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Analyze the sentiment of the following text: "${text}"`,
+    });
+    const sentimentText = response.text.toLowerCase();
+    if (sentimentText.includes("positive")) {
+      return "POSITIVE";
+    } else if (sentimentText.includes("negative")) {
+      return "NEGATIVE";
+    } else {
+      return "NEUTRAL";
+    }
+  } catch (error) {
+    console.error("Error analyzing sentiment:", error);
+    return "NEUTRAL";
+  }
+};
 
 export const submitAnswer = catchAsync(async (req, res, next) => {
   const answers = req.body;
@@ -377,6 +378,10 @@ export const submitAnswer = catchAsync(async (req, res, next) => {
 
     let sentiment = "NEUTRAL"; // Default sentiment for non-string answers (e.g., number)
 
+    if (typeof answer === "string") {
+      sentiment = await analyzeSentiment(answer);
+    }
+
     // Create or insert into the Answer table with the sentiment
     return await Answer.create({
       questionId: id, // Assuming id refers to the question
@@ -389,161 +394,123 @@ export const submitAnswer = catchAsync(async (req, res, next) => {
   // Wait for all inserts to finish
   const result = await Promise.all(insertPromises);
 
-  res
-    .status(200)
-    .json({ message: "Answers submitted successfully", answer: result });
+  res.status(200).json({ message: "Answers submitted successfully", answer: result });
 });
 
+
 export const getFeedback = catchAsync(async (req, res, next) => {
-  const id = req.params.id; // Get companyId from the request parameters
+  const companyId = req.params.id;
 
   // 1. Fetch surveys based on companyId
-  const surveys = await Servey.findAll({ where: { companyId: id } });
+  const surveys = await Servey.findAll({ where: { companyId } });
 
   if (!surveys.length) {
     return next(new AppError("No surveys found for the company", 404));
   }
 
-  // 2. Fetch survey IDs and names
+  // 2. Fetch survey IDs and names along with aggregated answers
   const surveyData = await Promise.all(
-    surveys.map(async (survey) => {
-      // Fetch and count answers grouped by createdAt truncated to the minute
-      const answersGrouped = await Answer.findAll({
-        where: { surveyId: survey.id },
-        attributes: [
-          [
-            sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
-            "createdAt",
+      surveys.map(async (survey) => {
+        // Fetch and count answers grouped by createdAt truncated to the minute
+        const answersGrouped = await Answer.findAll({
+          where: { surveyId: survey.id },
+          attributes: [
+            [sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), "createdAt"],
+            [sequelize.fn("COUNT", sequelize.col("id")), "answerCount"],
           ],
-          [sequelize.fn("COUNT", sequelize.col("id")), "answerCount"],
-        ],
-        group: [
-          sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
-        ],
-        raw: true,
-      });
+          group: [sequelize.fn("date_trunc", "minute", sequelize.col("createdAt"))],
+          raw: true,
+        });
 
-      // Count unique grouped entries
-      const answerCount = answersGrouped.length;
+        // Count unique grouped entries
+        const answerCount = answersGrouped.length;
 
-      return {
-        surveyId: survey.id,
-        surveyName: survey.name,
-        answerCount, // Count of unique 'createdAt' groups for the survey
-      };
-    })
+        return {
+          surveyId: survey.id,
+          surveyName: survey.name,
+          answerCount, // Count of unique 'createdAt' groups for the survey
+        };
+      })
   );
 
   res.status(200).json({ message: "success", feedback: surveyData });
 });
 
 export const getStatData = catchAsync(async (req, res) => {
-  const id = req.params.id;
+  const companyId = req.params.id;
 
-  // 1. Extract total number of published surveys from Servey table where companyId = id
-  const publishedSurveys = await Servey.count({
-    where: { companyId: id, isPublished: true },
+  // Fetch survey counts and IDs
+  const surveyCounts = await Servey.findAll({
+    where: { companyId },
+    attributes: [
+      "id",
+      [sequelize.fn("COUNT", sequelize.col("id")), "totalSurveys"],
+      [sequelize.literal("SUM(CASE WHEN \"isPublished\" = true THEN 1 ELSE 0 END)"), "publishedSurveys"],
+      [sequelize.literal("SUM(CASE WHEN \"isPublished\" = false THEN 1 ELSE 0 END)"), "draftedSurveys"],
+    ],
+    group: ["Servey.id"],
+    raw: true,
   });
 
-  // 2. Extract total number of drafted surveys from Servey table where companyId = id
-  const draftedSurvey = await Servey.count({
-    where: { companyId: id, isPublished: false },
-  });
+  const surveyIds = surveyCounts.map((survey) => survey.id);
 
-  // 3. Get all survey IDs from Servey where companyId = id
-  const result = await Servey.findAll({
-    attributes: ["id"],
-    where: { companyId: id },
-  });
-  const surveyIds = result.map((survey) => survey.id);
-
-  // 4. Get total number of questions for each survey based on the surveyIds list
-
+  // Fetch total questions and answers
   const totalQuestions = await Question.count({
-    where: {
-      serveyId: {
-        [Op.in]: surveyIds, // Match surveyIds from the list
-      },
-    },
+    where: { serveyId: { [Op.in]: surveyIds } },
   });
 
-  // 5. Get all answers for the given surveys
   const allAnswers = await Answer.findAll({
-    where: {
-      surveyId: {
-        [Op.in]: surveyIds, // Match surveyIds from the list
-      },
-    },
+    where: { surveyId: { [Op.in]: surveyIds } },
   });
 
-  // 6. Filter numeric answers (those representing rates) and calculate the average rate
+  // Calculate average rate
   const numericAnswers = allAnswers
-    .map((answer) => parseFloat(answer.answer))
-    .filter((value) => !isNaN(value)); // Filter only valid numeric values
+      .map((answer) => parseFloat(answer.answer))
+      .filter((value) => !isNaN(value));
 
   const averageRate =
-    numericAnswers.length > 0
-      ? numericAnswers.reduce((sum, value) => sum + value, 0) /
-        numericAnswers.length
-      : 0; // Calculate average, default to 0 if no numeric answers
+      numericAnswers.length > 0
+          ? numericAnswers.reduce((sum, value) => sum + value, 0) / numericAnswers.length
+          : 0;
 
-  // 7. Get total number of distinct answers grouped by createdAt based on surveyIds
+  // Calculate total distinct answers grouped by createdAt
   const totalAnswers = await Answer.count({
-    where: {
-      surveyId: {
-        [Op.in]: surveyIds, // Match surveyIds from the list
-      },
-    },
-    group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
+    where: { surveyId: { [Op.in]: surveyIds } },
+    group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
   });
 
-  // 8. Get total distinct answers for this week (grouped by createdAt)
-  const startOfThisWeek = moment().startOf("isoWeek").toDate(); // Start of this week (Monday)
-  const endOfToday = moment().endOf("day").toDate(); // End of today
+  // Calculate answers for this week
+  const startOfThisWeek = moment().startOf("isoWeek").toDate();
+  const endOfToday = moment().endOf("day").toDate();
 
   const thisWeekAnswers = await Answer.count({
     where: {
-      surveyId: {
-        [Op.in]: surveyIds,
-      },
-      createdAt: {
-        [Op.between]: [startOfThisWeek, endOfToday], // Answers between start of this week and end of today
-      },
+      surveyId: { [Op.in]: surveyIds },
+      createdAt: { [Op.between]: [startOfThisWeek, endOfToday] },
     },
-    group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
+    group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
   });
 
-  // 9. Get total distinct answers for each day of this week (grouped by createdAt)
+  // Calculate daily answers for this week
   const dailyAnswersThisWeek = await Promise.all(
-    Array.from({ length: 7 }).map(async (_, index) => {
-      const dayStart = moment()
-        .subtract(index, "days") // Subtract index from today to get the day for each iteration
-        .startOf("day")
-        .toDate(); // Start of each day
-      const dayEnd = moment(dayStart).endOf("day").toDate(); // End of each day
+      Array.from({ length: 7 }).map(async (_, index) => {
+        const dayStart = moment().subtract(index, "days").startOf("day").toDate();
+        const dayEnd = moment(dayStart).endOf("day").toDate();
 
-      const count = await Answer.count({
-        where: {
-          surveyId: {
-            [Op.in]: surveyIds,
+        const count = await Answer.count({
+          where: {
+            surveyId: { [Op.in]: surveyIds },
+            createdAt: { [Op.between]: [dayStart, dayEnd] },
           },
-          createdAt: {
-            [Op.between]: [dayStart, dayEnd], // Answers for each day
-          },
-        },
-        group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")), // Group by createdAt truncated to the minute
-      });
+          group: sequelize.fn("date_trunc", "minute", sequelize.col("createdAt")),
+        });
 
-      return { day: moment(dayStart).format("dddd"), count: count.length }; // Format day as a readable string (e.g., Monday, Tuesday), and count distinct entries
-    })
+        return { day: moment(dayStart).format("dddd"), count: count.length };
+      })
   );
 
-  // 10. Calculate sentiment breakdown (positive, negative, neutral)
-  const sentimentCounts = {
-    POSITIVE: 0,
-    NEGATIVE: 0,
-    NEUTRAL: 0,
-  };
+  // Calculate sentiment breakdown
+  const sentimentCounts = { POSITIVE: 0, NEGATIVE: 0, NEUTRAL: 0 };
 
   allAnswers.forEach((answer) => {
     const sentiment = answer.sentiment;
@@ -553,38 +520,29 @@ export const getStatData = catchAsync(async (req, res) => {
   });
 
   const totalSentiments =
-    sentimentCounts.POSITIVE +
-    sentimentCounts.NEGATIVE +
-    sentimentCounts.NEUTRAL;
+      sentimentCounts.POSITIVE + sentimentCounts.NEGATIVE + sentimentCounts.NEUTRAL;
   const averageSentiment = {
-    POSITIVE:
-      totalSentiments > 0
-        ? Math.round((sentimentCounts.POSITIVE / totalSentiments) * 100)
-        : 0,
-    NEGATIVE:
-      totalSentiments > 0
-        ? Math.round((sentimentCounts.NEGATIVE / totalSentiments) * 100)
-        : 0,
-    NEUTRAL:
-      totalSentiments > 0
-        ? Math.round((sentimentCounts.NEUTRAL / totalSentiments) * 100)
-        : 0,
+    POSITIVE: totalSentiments > 0 ? Math.round((sentimentCounts.POSITIVE / totalSentiments) * 100) : 0,
+    NEGATIVE: totalSentiments > 0 ? Math.round((sentimentCounts.NEGATIVE / totalSentiments) * 100) : 0,
+    NEUTRAL: totalSentiments > 0 ? Math.round((sentimentCounts.NEUTRAL / totalSentiments) * 100) : 0,
   };
 
   res.status(200).json({
     status: "success",
     data: {
-      publishedSurveys,
-      draftedSurvey,
+      publishedSurveys: parseInt(surveyCounts[0]?.publishedSurveys || 0),
+      draftedSurvey: parseInt(surveyCounts[0]?.draftedSurveys || 0),
       totalQuestions,
-      totalAnswers: totalAnswers.length, // Length of distinct entries
-      thisWeekAnswers: thisWeekAnswers.length, // Length of distinct entries
+      totalAnswers: totalAnswers.length,
+      thisWeekAnswers: thisWeekAnswers.length,
       dailyAnswersThisWeek,
       averageRate,
       averageSentiment,
     },
   });
 });
+
+
 
 export const getFeedbackDetail = catchAsync(async (req, res, next) => {
   const surveyId = req.params.surveyId;
@@ -749,6 +707,7 @@ export const getRecentFeedback = catchAsync(async (req, res, next) => {
     data: response,
   });
 });
+
 
 export const checkSecretePhrase = catchAsync(async (req, res, next) => {
   const { phrase } = req.body;

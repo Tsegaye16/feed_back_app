@@ -74,7 +74,7 @@ const DetailDashboard: React.FC<propType> = ({ companyId }) => {
     { name: "Positive", value: statData?.averageSentiment?.POSITIVE },
     { name: "Neutral", value: statData?.averageSentiment?.NEUTRAL },
   ];
-
+//console.log("Test: ", typeof statData?.draftedSurvey)
   const theme = useSelector((state: any) => state.theme);
   const styles = themeStyles[theme];
   return (

@@ -39,25 +39,25 @@ const Home: React.FC = () => {
   };
 
   return (
-    <StyledContainer>
-      <Header>
-        <Button type="link" onClick={() => navigate("/login")}>
-          Login
-        </Button>
-        <Button type="link" onClick={() => navigate("/register")}>
-          Register
-        </Button>
-      </Header>
-      <InputWrapper>
-        <Input
-          placeholder="Insert the secret phrase"
-          prefix={<SearchOutlined />}
-          value={secretePhrase}
-          onChange={(e) => setSecretePhrase(e.target.value)}
-          onPressEnter={handleSearch}
-        />
-      </InputWrapper>
-    </StyledContainer>
+      <StyledContainer>
+        <Header>
+          <Button type="link" onClick={() => navigate("/login")}>
+            Login
+          </Button>
+          <Button type="link" onClick={() => navigate("/register")}>
+            Register
+          </Button>
+        </Header>
+        <InputWrapper>
+          <Input
+              placeholder="Insert the secret phrase"
+              prefix={<SearchOutlined />}
+              value={secretePhrase}
+              onChange={(e) => setSecretePhrase(e.target.value)}
+              onPressEnter={handleSearch}
+          />
+        </InputWrapper>
+      </StyledContainer>
   );
 };
 

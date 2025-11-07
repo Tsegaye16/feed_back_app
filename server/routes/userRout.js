@@ -32,45 +32,46 @@ import {
   checkSecretePhrase,
   sortQuestion,
 } from "../controllers/companyController.js";
-
+import {authenticateToken} from "../midlwares/authMidleware.js"
 const router = express.Router();
+//authenticateToken
 // 1. User routes
 router.route("/signup").post(signup);
 router.route("/signin").post(signin);
-router.route("/getuser/:userId").get(getUserById);
-router.route("/updateProfile/:id").put(upload.single("image"), edditProfile);
+router.route("/getuser/:userId", authenticateToken).get(getUserById);
+router.route("/updateProfile/:id", authenticateToken).put(upload.single("image"), edditProfile);
 router.route("/confirm-email/:token").get(confirmEmail);
 
 // 2. Company routes
-router.route("/addCompany").post(upload.single("logo"), addOrUpdateCompanyInfo);
-router.route("/company/:id").get(getCompanyById);
-router.route("/updateCompany/:id").put(upload.single("logo"), updateCompany);
+router.route("/addCompany",authenticateToken).post(upload.single("logo"), addOrUpdateCompanyInfo);
+router.route("/company/:id",authenticateToken).get(getCompanyById);
+router.route("/updateCompany/:id",authenticateToken).put(upload.single("logo"), updateCompany);
 
 // 3. Survey routes
-router.route("/addServey").post(addServey);
-router.route("/getFullSurvey/:secretePhrase").get(getFullSurvey);
-router.route("/deleteServey").delete(deleteServey);
-router.route("/publishSurvey/:surveyId").put(publishSurvey);
+router.route("/addServey",authenticateToken).post(addServey);
+router.route("/getFullSurvey/:secretePhrase",authenticateToken).get(getFullSurvey);
+router.route("/deleteServey",authenticateToken).delete(deleteServey);
+router.route("/publishSurvey/:surveyId",authenticateToken).put(publishSurvey);
 
-router.route("/getAllServey/:companyId").get(getAllServey);
-router.route("/getQuestionBySurveyId/:surveyId").get(getQuestionBySurveyId);
-router.route("/addQuestion").post(addQuestion);
+router.route("/getAllServey/:companyId",authenticateToken).get(getAllServey);
+router.route("/getQuestionBySurveyId/:surveyId",authenticateToken).get(getQuestionBySurveyId);
+router.route("/addQuestion",authenticateToken).post(addQuestion);
 
-router.route("/updateQuestion/:id").put(updateQuestion);
-router.route("/deleteQuestionById").delete(deleteQuestionById);
-router.route("/sortQuestion").put(sortQuestion);
+router.route("/updateQuestion/:id",authenticateToken).put(updateQuestion);
+router.route("/deleteQuestionById",authenticateToken).delete(deleteQuestionById);
+router.route("/sortQuestion",authenticateToken).put(sortQuestion);
 
 // 3. preview routes
-router.route("/getPreviewParams/:serveyId").get(getPreviewParams);
-router.route("/getPreviewData/:companyName/:surveyId").get(getPreviewData);
-router.route("/getAllQuestions/:companyId").get(getAllquestion);
+router.route("/getPreviewParams/:serveyId",authenticateToken).get(getPreviewParams);
+router.route("/getPreviewData/:companyName/:surveyId",authenticateToken).get(getPreviewData);
+router.route("/getAllQuestions/:companyId",authenticateToken).get(getAllquestion);
 
 router.route("/submitAnswer").post(submitAnswer);
-router.route("/changepassword").put(changePassword);
-router.route("/getFeedback/:id").get(getFeedback);
-router.route("/getStatData/:id").get(getStatData);
-router.route("/getFeedbackDetail/:surveyId").get(getFeedbackDetail);
-router.route("/getRecentFeedback/:companyId").get(getRecentFeedback);
-router.route("/checkSecretePhrase").post(checkSecretePhrase);
+router.route("/changepassword", authenticateToken).put(changePassword);
+router.route("/getFeedback/:id", authenticateToken).get(getFeedback);
+router.route("/getStatData/:id", authenticateToken).get(getStatData);
+router.route("/getFeedbackDetail/:surveyId", authenticateToken).get(getFeedbackDetail);
+router.route("/getRecentFeedback/:companyId", authenticateToken).get(getRecentFeedback);
+router.route("/checkSecretePhrase", authenticateToken).post(checkSecretePhrase);
 
 export default router;

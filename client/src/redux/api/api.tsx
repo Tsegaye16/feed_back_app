@@ -8,6 +8,12 @@ const API = axios.create({
     ? process.env.REACT_APP_LOCAL_API_BASE_URL
     : process.env.REACT_APP_PROD_API_BASE_URL,
 });
+// Get token from localStorage
+const token = localStorage.getItem("user");
+
+if (token) {
+  API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+}
 
 export const signIn = async (formData: LoginData) => {
   try {

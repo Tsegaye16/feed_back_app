@@ -5,7 +5,7 @@ import user from "../models/userModel.js";
 import { catchAsync } from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 
-const secret = "this_is-my-secrete_password/for$node*mailer";
+const secret = process.env.JWT_SECRETE;
 
 const transporter = nodemailer.createTransport({
   service: "gmail", // You can use any email service provider (e.g., SendGrid, Mailgun)
