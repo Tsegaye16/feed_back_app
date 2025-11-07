@@ -8,7 +8,9 @@ import AppError from "../utils/appError.js";
 const secret = "this_is-my-secrete_password/for$node*mailer";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail", // You can use any email service provider (e.g., SendGrid, Mailgun)
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.MY_EMAIL, // Your email address
     pass: process.env.EMAIL_PASSWORD, // Your email password (use environment variables in production)
