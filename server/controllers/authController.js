@@ -47,20 +47,14 @@ export const signup = catchAsync(async (req, res, next) => {
 
       const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
 
-      try {
-  await transporter.sendMail({
-    from: process.env.MY_EMAIL,
-    to: email,
-    subject: "Email Confirmation",
-    html: `<h1>Confirm your Email</h1>
-           <p>Please click on the link below to confirm your email:</p>
-           <a href="${confirmationUrl}">Confirm Email</a>`,
-  });
-  console.log("✅ Verification email sent successfully!");
-} catch (error) {
-  console.error("❌ Error sending verification email:", error);
-  return next(new AppError("Failed to send verification email. Try again later.", 500));
-}
+ await transporter.sendMail({
+        from: process.env.MY_EMAIL,
+        to: email,
+        subject: "Email Confirmation",
+        html: `<h1>Confirm your Email</h1>
+                 <p>Your previous confirmation token has expired. Please click on the link below to confirm your email:</p>
+                 <a href="${confirmationUrl}">Confirm Email</a>`,
+      });
 
       return next(
         new AppError(
