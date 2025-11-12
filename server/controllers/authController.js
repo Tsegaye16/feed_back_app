@@ -6,11 +6,9 @@ import { catchAsync } from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 
 const secret = "this_is-my-secrete_password/for$node*mailer";
-
+console.log("E-mail: ", process.env.EMAIL_PASSWORD);
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  service: "gmail", // You can use any email service provider (e.g., SendGrid, Mailgun)
   auth: {
     user: process.env.MY_EMAIL, // Your email address
     pass: process.env.EMAIL_PASSWORD, // Your email password (use environment variables in production)
@@ -47,7 +45,7 @@ export const signup = catchAsync(async (req, res, next) => {
 
       const confirmationUrl = `https://customer-feedback-collector.netlify.app/confirm-email?token=${token}`;
 
- await transporter.sendMail({
+      await transporter.sendMail({
         from: process.env.MY_EMAIL,
         to: email,
         subject: "Email Confirmation",
